@@ -3,10 +3,11 @@
   <component name="Encoding">
     <file url="file://$PROJECT_DIR$/client/src/main/kotlin" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/client/src/main/resources" charset="UTF-8" />
-    <file url="file://$PROJECT_DIR$/server/src/main/kotlin" charset="UTF-8" />
-    <file url="file://$PROJECT_DIR$/server/src/main/resources" charset="UTF-8" />
-    <file url="file://$PROJECT_DIR$/shared/src/main/kotlin" charset="UTF-8" />
-    <file url="file://$PROJECT_DIR$/shared/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/client/src/main/resources/font.fnt" charset="UTF-16" />
+    <file url="file://$PROJECT_DIR$/server-old/src/main/kotlin" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/server-old/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/shared-old/src/main/kotlin" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/shared-old/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/src/main/kotlin" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/src/main/resources" charset="UTF-8" />
   </component>
