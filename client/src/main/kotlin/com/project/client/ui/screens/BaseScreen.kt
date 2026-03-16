@@ -1,11 +1,11 @@
-package com.project.client.screens
+package com.project.client.ui.screens
 
 import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.ScreenAdapter
 import com.badlogic.gdx.graphics.GL20
 import com.badlogic.gdx.utils.viewport.ExtendViewport
 import com.project.client.MyGame
-import com.project.client.stages.BaseStage
+import com.project.client.ui.stages.BaseStage
 
 abstract class BaseScreen(protected val game: MyGame) : ScreenAdapter() {
     protected val viewport = ExtendViewport(800f, 600f)

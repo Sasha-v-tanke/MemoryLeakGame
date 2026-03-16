@@ -2,6 +2,7 @@ package com.project.server
 
 import com.project.server.database.initDatabase
 import com.project.server.routing.authModule
+import com.project.server.routing.matchMakingModule
 import com.project.server.routing.testModule
 import io.ktor.server.application.*
 import io.ktor.server.netty.EngineMain
@@ -34,6 +35,7 @@ fun Application.module() {
     testModule()
 
     authModule()
+    matchMakingModule()
 }
 
 

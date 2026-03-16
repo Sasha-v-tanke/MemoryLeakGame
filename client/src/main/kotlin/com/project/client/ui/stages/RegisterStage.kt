@@ -1,35 +1,30 @@
-package com.project.client.stages
+package com.project.client.ui.stages
 
-import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.scenes.scene2d.InputEvent
 import com.badlogic.gdx.scenes.scene2d.ui.*
-import com.badlogic.gdx.utils.Align
 import com.badlogic.gdx.utils.viewport.Viewport
 import com.project.client.MyGame
-import com.project.client.api.AuthWebSocket
-import com.project.client.screens.RegisterScreen
-import com.project.client.stages.BaseStage
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
+import com.project.client.network.api.AuthWebSocket
+import com.project.client.ui.screens.LoginScreen
+import kotlinx.coroutines.*
 
-class LoginStage(
+class RegisterStage(
     viewport: Viewport,
     private val game: MyGame
 ) : BaseStage(viewport) {
+
     private val scope = CoroutineScope(Dispatchers.IO)
-    private val authSocket = AuthWebSocket("ws://localhost:8080/user/login")
+    private val authSocket = AuthWebSocket("/user/register")
 
     override fun show() {
         scope.launch { authSocket.connect() }
-        super.show()
     }
 
     override fun buildUI() {
 
         val table = Table()
-        table.center()
         table.setFillParent(true)
+        table.center()
         table.defaults().pad(6f)
         addActor(table)
 
@@ -37,16 +32,14 @@ class LoginStage(
         val passwordField = TextField("", skin).apply {
             isPasswordMode = true
         }
+        val emailField = TextField("", skin)
 
-        val messageLabel = Label("", skin).apply {
-            setAlignment(Align.center)
-            wrap = true
-        }
+        val messageLabel = Label("", skin)
 
         table.center()
 
         table.row()
-        table.add(Label("Login", skin)).colspan(2).padBottom(16f)
+        table.add(Label("Register", skin)).colspan(2).padBottom(16f)
 
         table.row()
         table.add(Label("Username:", skin))
@@ -57,22 +50,27 @@ class LoginStage(
         table.add(passwordField).width(260f)
 
         table.row()
-        val loginButton = TextButton("Login", skin)
-        table.add(loginButton).colspan(2)
+        table.add(Label("Email:", skin))
+        table.add(emailField).width(260f)
 
         table.row()
-        val switchButton = TextButton("Register", skin)
+        val registerButton = TextButton("Sign up", skin)
+        table.add(registerButton).colspan(2)
+
+        table.row()
+        val switchButton = TextButton("Back to login", skin)
         table.add(switchButton).colspan(2)
 
         table.row()
         table.add(messageLabel).colspan(2).width(400f)
 
-        loginButton.addListener { event ->
+        registerButton.addListener { event ->
             if (event is InputEvent && event.type == InputEvent.Type.touchDown) {
                 val username = usernameField.text
                 val password = passwordField.text
+                val email = emailField.text
 
-                authSocket.login(username, password) { response ->
+                authSocket.register(username, password, email) { response ->
                     messageLabel.setText(if (response.success) "Success" else response.message ?: "Error")
                 }
                 true
@@ -83,7 +81,7 @@ class LoginStage(
 
         switchButton.addListener { event ->
             if (event is InputEvent && event.type == InputEvent.Type.touchDown) {
-                game.setScreen(RegisterScreen(game))
+                game.setScreen(LoginScreen(game))
                 true
             } else {
                 false

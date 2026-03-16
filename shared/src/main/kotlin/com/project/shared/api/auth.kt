@@ -26,5 +26,6 @@ data class LoginRequest(
 data class AuthResponse(
     val success: Boolean,
     val token: String? = null,
+    val playerId: Int? = -1,
     val message: String
 )

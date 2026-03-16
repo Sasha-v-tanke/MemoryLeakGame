@@ -1,33 +1,34 @@
-package com.project.client.stages
+package com.project.client.ui.stages
 
-import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.scenes.scene2d.InputEvent
 import com.badlogic.gdx.scenes.scene2d.ui.*
+import com.badlogic.gdx.utils.Align
 import com.badlogic.gdx.utils.viewport.Viewport
 import com.project.client.MyGame
-import com.project.client.api.AuthWebSocket
-import com.project.client.screens.LoginScreen
-import com.project.client.stages.BaseStage
-import kotlinx.coroutines.*
+import com.project.client.network.api.AuthWebSocket
+import com.project.client.ui.screens.MainScreen
+import com.project.client.ui.screens.MatchMakingScreen
+import com.project.client.ui.screens.RegisterScreen
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
-class RegisterStage(
+class LoginStage(
     viewport: Viewport,
     private val game: MyGame
 ) : BaseStage(viewport) {
-
     private val scope = CoroutineScope(Dispatchers.IO)
-    private val authSocket = AuthWebSocket("ws://localhost:8080/user/register")
+    private val authSocket = AuthWebSocket("/user/login")
 
     override fun show() {
-        super.show()
         scope.launch { authSocket.connect() }
     }
 
     override fun buildUI() {
 
         val table = Table()
-        table.setFillParent(true)
         table.center()
+        table.setFillParent(true)
         table.defaults().pad(6f)
         addActor(table)
 
@@ -35,14 +36,16 @@ class RegisterStage(
         val passwordField = TextField("", skin).apply {
             isPasswordMode = true
         }
-        val emailField = TextField("", skin)
 
-        val messageLabel = Label("", skin)
+        val messageLabel = Label("", skin).apply {
+            setAlignment(Align.center)
+            wrap = true
+        }
 
         table.center()
 
         table.row()
-        table.add(Label("Register", skin)).colspan(2).padBottom(16f)
+        table.add(Label("Login", skin)).colspan(2).padBottom(16f)
 
         table.row()
         table.add(Label("Username:", skin))
@@ -53,28 +56,30 @@ class RegisterStage(
         table.add(passwordField).width(260f)
 
         table.row()
-        table.add(Label("Email:", skin))
-        table.add(emailField).width(260f)
+        val loginButton = TextButton("Login", skin)
+        table.add(loginButton).colspan(2)
 
         table.row()
-        val registerButton = TextButton("Sign up", skin)
-        table.add(registerButton).colspan(2)
-
-        table.row()
-        val switchButton = TextButton("Back to login", skin)
+        val switchButton = TextButton("Register", skin)
         table.add(switchButton).colspan(2)
 
         table.row()
         table.add(messageLabel).colspan(2).width(400f)
 
-        registerButton.addListener { event ->
+        loginButton.addListener { event ->
             if (event is InputEvent && event.type == InputEvent.Type.touchDown) {
                 val username = usernameField.text
                 val password = passwordField.text
-                val email = emailField.text
 
-                authSocket.register(username, password, email) { response ->
-                    messageLabel.setText(if (response.success) "Success" else response.message ?: "Error")
+                authSocket.login(username, password) { response ->
+                    messageLabel.setText(
+                        if (response.success) {
+                            game.setPlayerId(response.playerId ?: -1)
+                            game.setScreen(MainScreen(game))
+                            "Success"
+                        } else response.message ?: "Error"
+                    )
+
                 }
                 true
             } else {
@@ -84,7 +89,7 @@ class RegisterStage(
 
         switchButton.addListener { event ->
             if (event is InputEvent && event.type == InputEvent.Type.touchDown) {
-                game.setScreen(LoginScreen(game))
+                game.setScreen(RegisterScreen(game))
                 true
             } else {
                 false

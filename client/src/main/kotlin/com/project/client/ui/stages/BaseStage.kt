@@ -1,4 +1,4 @@
-package com.project.client.stages
+package com.project.client.ui.stages
 
 import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.graphics.g2d.BitmapFont
