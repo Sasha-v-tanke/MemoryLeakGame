@@ -17,16 +17,14 @@ object GameManager {
             val message = MatchFound(
                 roomId = room.id,
                 opponentId = opponent.playerId,
+                index = if (player == room.players[0]) 1 else 2,
                 type = "MatchFound"
             )
-            println(message)
             sendToPlayer(player, message)
         }
     }
 
     private suspend fun sendToPlayer(player: PlayerSession, message: MatchFound) {
-        println(player.socket)
-        println(player.socket.isActive)
         player.socket.send(Frame.Text(json.encodeToString(message)))
     }
 }

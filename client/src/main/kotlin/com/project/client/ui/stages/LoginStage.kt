@@ -7,7 +7,6 @@ import com.badlogic.gdx.utils.viewport.Viewport
 import com.project.client.MyGame
 import com.project.client.network.api.AuthWebSocket
 import com.project.client.ui.screens.MainScreen
-import com.project.client.ui.screens.MatchMakingScreen
 import com.project.client.ui.screens.RegisterScreen
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -25,7 +24,6 @@ class LoginStage(
     }
 
     override fun buildUI() {
-
         val table = Table()
         table.center()
         table.setFillParent(true)

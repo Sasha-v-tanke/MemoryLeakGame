@@ -13,6 +13,7 @@ abstract class BaseScreen(protected val game: MyGame) : ScreenAdapter() {
 
     override fun show() {
         Gdx.input.inputProcessor = stage
+        stage.buildUI()
         stage.show()
     }
 
@@ -30,5 +31,9 @@ abstract class BaseScreen(protected val game: MyGame) : ScreenAdapter() {
 
     override fun dispose() {
         stage.dispose()
+    }
+
+    override fun hide() {
+        Gdx.input.inputProcessor = null
     }
 }

@@ -12,11 +12,7 @@ open class BaseStage(viewport: Viewport) : Stage(viewport) {
     protected val skin = Skin(Gdx.files.internal("uiskin.json"))
     protected val font = BitmapFont(Gdx.files.internal("default.fnt"))
 
-    init {
-        buildUI()
-    }
-
-    protected open fun buildUI() {}
+    open fun buildUI() {}
 
     override fun dispose() {
         super.dispose()

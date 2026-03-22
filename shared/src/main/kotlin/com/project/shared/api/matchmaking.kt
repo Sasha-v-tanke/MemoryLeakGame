@@ -12,7 +12,7 @@ data class FindMatchResponse(val success: Boolean, val type: String = "Error_fin
 data class CancelMatchResponse(val success: Boolean, val type: String = "Error_cancel")
 
 @Serializable
-data class MatchFound(val roomId: String, val opponentId: Int, val type: String = "Error")
+data class MatchFound(val roomId: String, val opponentId: Int, val index: Int, val type: String = "Error")
 
 @Serializable
 data class ErrorResponse(val success: Boolean, val type: String = "error")

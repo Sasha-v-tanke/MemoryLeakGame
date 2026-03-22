@@ -61,7 +61,6 @@ class MatchMakingSocket(endpoint: String, private val playerId: Int) : WebSocket
 
     private fun dispatchMessage(text: String) {
         try {
-            println(text)
             when {
                 text.contains("FindMatchResponse") -> {
                     val resp = Json.decodeFromString<FindMatchResponse>(text)

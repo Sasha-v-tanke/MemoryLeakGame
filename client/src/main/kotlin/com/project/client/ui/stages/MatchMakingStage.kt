@@ -23,13 +23,13 @@ class MatchMakingStage(viewport: Viewport, private val game: MyGame) : BaseStage
         table.top().center()
         addActor(table)
 
-        statusLabel = Label("Идет поиск противника…", skin)
+        statusLabel = Label("Searching opponents…", skin)
         table.add(statusLabel).padTop(50f).row()
 
         timerLabel = Label("00:00", skin)
         table.add(timerLabel).padTop(20f).row()
 
-        cancelButton = TextButton("Отмена", skin)
+        cancelButton = TextButton("Cancel", skin)
         table.add(cancelButton).padTop(40f)
     }
 

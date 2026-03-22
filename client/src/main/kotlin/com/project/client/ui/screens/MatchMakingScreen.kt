@@ -31,7 +31,8 @@ class MatchMakingScreen(game: MyGame) : BaseScreen(game) {
 
         socket.onMatchFound = { found ->
             stage.stopTimer()
-            game.setScreen(GameScreen(game, found.roomId, found.opponentId))
+            game.matchHandler.setMatch(found)
+            game.setScreen(GameScreen(game))
         }
 
         socket.onCancelMatchResponse = { cancelResp ->
