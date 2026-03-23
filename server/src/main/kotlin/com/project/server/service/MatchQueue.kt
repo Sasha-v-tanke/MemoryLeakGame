@@ -1,6 +1,7 @@
-package com.project.server.models
+package com.project.server.service
 
-import com.project.server.service.GameManager
+import com.project.server.models.GameRoomData
+import com.project.server.models.PlayerSession
 import java.util.UUID
 import java.util.concurrent.ConcurrentLinkedQueue
 
@@ -18,10 +19,15 @@ object MatchQueue {
 
     private suspend fun tryMatch() {
         while (queue.size >= 2) {
-            val player1 = queue.poll()!!
-            val player2 = queue.poll()!!
-            val room = GameRoom(UUID.randomUUID().toString(), listOf(player1, player2))
-            GameManager.startGame(room)
+            val player1 = queue.poll() ?: break
+            val player2 = queue.poll() ?: break
+
+            val roomData = GameRoomData(
+                id = UUID.randomUUID().toString(),
+                players = listOf(player1, player2)
+            )
+
+            GameManager.loadGame(roomData)
         }
     }
 }

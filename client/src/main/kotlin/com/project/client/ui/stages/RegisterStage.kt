@@ -4,7 +4,7 @@ import com.badlogic.gdx.scenes.scene2d.InputEvent
 import com.badlogic.gdx.scenes.scene2d.ui.*
 import com.badlogic.gdx.utils.viewport.Viewport
 import com.project.client.MyGame
-import com.project.client.network.api.AuthWebSocket
+import com.project.client.network.api.AuthSocket
 import com.project.client.ui.screens.LoginScreen
 import kotlinx.coroutines.*
 
@@ -14,7 +14,7 @@ class RegisterStage(
 ) : BaseStage(viewport) {
 
     private val scope = CoroutineScope(Dispatchers.IO)
-    private val authSocket = AuthWebSocket("/user/register")
+    private val authSocket = AuthSocket()
 
     override fun show() {
         scope.launch { authSocket.connect() }

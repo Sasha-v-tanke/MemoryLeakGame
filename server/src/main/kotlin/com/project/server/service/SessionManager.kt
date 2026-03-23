@@ -1,5 +1,6 @@
-package com.project.server.models
+package com.project.server.service
 
+import com.project.server.models.PlayerSession
 import java.util.concurrent.ConcurrentHashMap
 
 object SessionManager {

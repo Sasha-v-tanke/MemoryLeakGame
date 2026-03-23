@@ -7,18 +7,20 @@ import com.badlogic.gdx.graphics.GL20
 import com.badlogic.gdx.utils.viewport.ExtendViewport
 import com.badlogic.gdx.utils.viewport.ScreenViewport
 import com.project.client.MyGame
+import com.project.client.network.api.GameSocket
 import com.project.client.ui.managers.GameCamera
 import com.project.client.ui.stages.UIStage
 import com.project.client.ui.stages.WorldStage
+import com.project.shared.api.game.PlayerReadyResponse
 
 class GameScreen(private val game: MyGame) : ScreenAdapter() {
     private val worldViewport = ExtendViewport(800f, 600f)
     private val uiViewport = ScreenViewport()
-
     private val camera = GameCamera(game)
-
     private val worldStage = WorldStage(worldViewport, game)
     private val uiStage = UIStage(uiViewport, game)
+    private val socket = GameSocket("/game/user/ready")
+    private var gameStarted = false
 
     override fun show() {
         worldStage.buildUI()
@@ -30,6 +32,7 @@ class GameScreen(private val game: MyGame) : ScreenAdapter() {
 
         worldStage.show()
         uiStage.show()
+        socket.sendPlayerReady(game.getPlayerId(), game.matchHandler.getRoomId()) { response -> onResult(response) }
     }
 
     override fun render(delta: Float) {
@@ -57,5 +60,14 @@ class GameScreen(private val game: MyGame) : ScreenAdapter() {
 
     override fun hide() {
         Gdx.input.inputProcessor = null
+    }
+
+    fun startGame() {
+        gameStarted = true
+        uiStage.startGame()
+    }
+
+    fun onResult(response: PlayerReadyResponse) {
+
     }
 }

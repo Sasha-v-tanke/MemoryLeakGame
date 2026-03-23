@@ -7,7 +7,7 @@ import com.project.client.ui.stages.MatchMakingStage
 
 class MatchMakingScreen(game: MyGame) : BaseScreen(game) {
 
-    private val socket = MatchMakingSocket("/create_match", game.getPlayerId())
+    private val socket = MatchMakingSocket("/match/create", game.getPlayerId())
     override val stage = MatchMakingStage(viewport, game)
 
     override fun show() {

@@ -1,4 +1,4 @@
-package com.project.server.database
+package com.project.server.database.tables
 
 import org.jetbrains.exposed.sql.Table
 

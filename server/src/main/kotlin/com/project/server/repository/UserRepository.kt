@@ -1,19 +1,11 @@
 package com.project.server.repository
 
-import com.project.server.database.Users
+import com.project.server.database.tables.Users
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.transactions.transaction
 import com.project.server.models.User
 import org.jetbrains.exposed.sql.ResultRow
 
-fun toUser(row: ResultRow): User {
-    return User(
-        id = row[Users.id],
-        name = row[Users.name],
-        email = row[Users.email],
-        password = row[Users.password]
-    )
-}
 
 object UserRepository {
     fun findByUsername(username: String): User? {
@@ -32,5 +24,14 @@ object UserRepository {
             } get Users.id
         }
         return user.copy(id = generatedId)
+    }
+
+    fun toUser(row: ResultRow): User {
+        return User(
+            id = row[Users.id],
+            name = row[Users.name],
+            email = row[Users.email],
+            password = row[Users.password]
+        )
     }
 }

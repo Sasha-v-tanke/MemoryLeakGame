@@ -5,23 +5,15 @@ import com.badlogic.gdx.scenes.scene2d.ui.*
 import com.badlogic.gdx.utils.Align
 import com.badlogic.gdx.utils.viewport.Viewport
 import com.project.client.MyGame
-import com.project.client.network.api.AuthWebSocket
+import com.project.client.network.api.AuthSocket
 import com.project.client.ui.screens.MainScreen
 import com.project.client.ui.screens.RegisterScreen
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 
 class LoginStage(
     viewport: Viewport,
     private val game: MyGame
 ) : BaseStage(viewport) {
-    private val scope = CoroutineScope(Dispatchers.IO)
-    private val authSocket = AuthWebSocket("/user/login")
-
-    override fun show() {
-        scope.launch { authSocket.connect() }
-    }
+    private val authSocket = AuthSocket()
 
     override fun buildUI() {
         val table = Table()
@@ -75,9 +67,8 @@ class LoginStage(
                             game.setPlayerId(response.playerId ?: -1)
                             game.setScreen(MainScreen(game))
                             "Success"
-                        } else response.message ?: "Error"
+                        } else response.message
                     )
-
                 }
                 true
             } else {

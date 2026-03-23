@@ -10,11 +10,3 @@ data class PlayerSession(
     val socket: DefaultWebSocketSession,
     var initialized: Boolean = false
 )
-
-
-@Serializable
-data class GameRoom(
-    val id: String,
-    val players: List<PlayerSession>
-)
-
