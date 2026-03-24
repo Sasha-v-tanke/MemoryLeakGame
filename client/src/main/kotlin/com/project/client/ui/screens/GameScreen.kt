@@ -11,6 +11,7 @@ import com.project.client.network.api.GameSocket
 import com.project.client.ui.managers.GameCamera
 import com.project.client.ui.stages.UIStage
 import com.project.client.ui.stages.WorldStage
+import com.project.shared.api.game.GameResponse
 import com.project.shared.api.game.PlayerReadyResponse
 
 class GameScreen(private val game: MyGame) : ScreenAdapter() {
@@ -19,7 +20,7 @@ class GameScreen(private val game: MyGame) : ScreenAdapter() {
     private val camera = GameCamera(game)
     private val worldStage = WorldStage(worldViewport, game)
     private val uiStage = UIStage(uiViewport, game)
-    private val socket = GameSocket("/game/user/ready")
+    private val socket = GameSocket()
     private var gameStarted = false
 
     override fun show() {
@@ -67,7 +68,8 @@ class GameScreen(private val game: MyGame) : ScreenAdapter() {
         uiStage.startGame()
     }
 
-    fun onResult(response: PlayerReadyResponse) {
+    fun onResult(response: GameResponse) {
+        println("Game Result: $response")
 
     }
 }

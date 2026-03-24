@@ -1,12 +1,12 @@
 package com.project.server.routing
 
 import com.project.server.service.MatchQueue
-import com.project.server.models.PlayerSession
 import com.project.server.service.SessionManager
+import com.project.shared.api.matchmaking.CancelMatchRequest
 import com.project.shared.api.matchmaking.CancelMatchResponse
-import com.project.shared.api.matchmaking.ErrorResponse
 import com.project.shared.api.matchmaking.FindMatchRequest
 import com.project.shared.api.matchmaking.FindMatchResponse
+import com.project.shared.api.matchmaking.MatchMakingRequest
 import io.ktor.server.application.Application
 import io.ktor.server.routing.routing
 import io.ktor.server.websocket.webSocket
@@ -21,28 +21,33 @@ fun Application.matchMakingModule() {
     val json = Json {
         ignoreUnknownKeys = true
         encodeDefaults = true
+        classDiscriminator = "type"
     }
-    routing {
-        webSocket("/match/create") {
-            try {
-                incoming.consumeEach { frame ->
-                    if (frame !is Frame.Text) return@consumeEach
-                    try {
-                        val req = json.decodeFromString<FindMatchRequest>(frame.readText())
-                        val playerSession = SessionManager.getSession(req.playerId) ?: return@consumeEach
 
-                        if (req.create) {
-                            outgoing.send(Frame.Text(json.encodeToString(FindMatchResponse(true, "FindMatchResponse"))))
-                        } else {
-                            MatchQueue.removePlayer(playerSession)
-                            outgoing.send(Frame.Text(json.encodeToString(CancelMatchResponse(true, "CancelMatchResponse"))))
+    routing {
+        webSocket("/matchmaking") {
+            incoming.consumeEach { frame ->
+                if (frame !is Frame.Text) return@consumeEach
+
+                try {
+                    val request = json.decodeFromString<MatchMakingRequest>(frame.readText())
+
+                    when (request) {
+                        is FindMatchRequest -> {
+                            val playerSession = SessionManager.getSession(request.playerId) ?: return@consumeEach
+                            MatchQueue.addPlayer(playerSession)
+                            outgoing.send(Frame.Text(json.encodeToString(FindMatchResponse(true))))
                         }
-                    } catch (e: Exception) {
-                        outgoing.send(Frame.Text(json.encodeToString(ErrorResponse(false, ("error: " + e.message)))))
+
+                        is CancelMatchRequest -> {
+                            val playerSession = SessionManager.getSession(request.playerId) ?: return@consumeEach
+                            MatchQueue.removePlayer(playerSession)
+                            outgoing.send(Frame.Text(json.encodeToString(CancelMatchResponse(true))))
+                        }
                     }
+                } catch (e: Exception) {
+                    println(e.message)
                 }
-            } catch (e: Exception) {
-                //todo
             }
         }
     }

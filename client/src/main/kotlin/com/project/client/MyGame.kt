@@ -5,8 +5,13 @@ import com.project.client.engine.MatchHandler
 import com.project.client.network.api.ListenSocket
 import com.project.client.ui.screens.GameScreen
 import com.project.client.ui.screens.LoginScreen
-import com.project.shared.api.Event
-import com.project.shared.api.game.GameStartEvent
+import com.project.client.ui.screens.MatchMakingScreen
+import com.project.shared.api.events.Event
+import com.project.shared.api.events.GameStartEvent
+import com.project.shared.api.events.MatchFoundEvent
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.launch
 
 class MyGame : Game() {
     private var playerID: Int? = null
@@ -23,7 +28,10 @@ class MyGame : Game() {
 
         listenSocket = ListenSocket(playerID)
         listenSocket.onEvent = { event -> onEvent(event) }
-        listenSocket.connect()
+
+        CoroutineScope(SupervisorJob()).launch {
+            listenSocket.makeHandshake()
+        }
     }
 
     fun getPlayerId(): Int {
@@ -31,22 +39,9 @@ class MyGame : Game() {
     }
 
     fun onEvent(event: Event) {
-        when (event::class.java) {
-            GameStartEvent::class.java -> (screen as? GameScreen)?.startGame()
+        when (event) {
+            is GameStartEvent -> (screen as? GameScreen)?.startGame()
+            is MatchFoundEvent -> (screen as? MatchMakingScreen)?.startGame(event)
         }
-//                text.contains("FindMatchResponse") -> {
-//                    val resp = Json.decodeFromString<FindMatchResponse>(text)
-//                    Gdx.app.postRunnable { onFindMatchResponse?.invoke(resp) }
-//                }
-//
-//                text.contains("CancelMatchResponse") -> {
-//                    val resp = Json.decodeFromString<CancelMatchResponse>(text)
-//                    Gdx.app.postRunnable { onCancelMatchResponse?.invoke(resp) }
-//                }
-//
-//                text.contains("MatchFound") -> {
-//                    val found = Json.decodeFromString<MatchFoundEvent>(text)
-//                    Gdx.app.postRunnable { onMatchFound?.invoke(found) }
-//                }
     }
 }

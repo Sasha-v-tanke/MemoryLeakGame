@@ -4,7 +4,4 @@ import com.project.shared.api.Request
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class PlayerReadyRequest(
-    val playerId: Int,
-    val roomId: String
-) : GameRequest
+sealed interface GameRequest : Request

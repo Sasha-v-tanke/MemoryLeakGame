@@ -1,6 +1,6 @@
 package com.project.client.engine
 
-import com.project.shared.api.matchmaking.MatchFoundEvent
+import com.project.shared.api.events.MatchFoundEvent
 
 class MatchHandler {
     private var opponentID: Int? = null

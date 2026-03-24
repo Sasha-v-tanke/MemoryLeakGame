@@ -1,9 +1,8 @@
-package com.project.shared.api.auth
+package com.project.shared.api
 
-import com.project.shared.api.Request
 import kotlinx.serialization.Serializable
 
 @Serializable
 data class ListenReadyRequest(
     val playerId: Int
-) : AuthRequest
+) : Request

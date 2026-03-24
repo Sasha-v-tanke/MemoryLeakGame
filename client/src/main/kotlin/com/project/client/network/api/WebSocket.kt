@@ -2,6 +2,7 @@ package com.project.client.network.api
 
 import com.project.shared.api.Message
 import com.project.shared.api.Request
+import com.project.shared.api.Response
 import io.ktor.client.HttpClient
 import io.ktor.client.plugins.websocket.DefaultClientWebSocketSession
 import io.ktor.client.plugins.websocket.WebSockets
@@ -12,6 +13,8 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withTimeoutOrNull
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -27,14 +30,15 @@ abstract class WebSocket(private val endpoint: String) {
         encodeDefaults = true
     }
     protected val timeout = 5_000L
+    private val sendMutex = Mutex()
 
-    open fun connect() {
-        if (session != null) return
-        val normalized = when {
-            endpoint.startsWith("/") -> endpoint
-            else -> "/$endpoint"
-        }
-        scope.launch {
+    open suspend fun connect() {
+        sendMutex.withLock {
+            if (session != null) return
+            val normalized = when {
+                endpoint.startsWith("/") -> endpoint
+                else -> "/$endpoint"
+            }
             session = client.webSocketSession(urlString = baseUrl + normalized)
         }
     }
@@ -47,7 +51,7 @@ abstract class WebSocket(private val endpoint: String) {
     }
 
 
-    protected suspend inline fun <reified T : Message> receiveMessage(): T? {
+    protected suspend inline fun <reified T : Response> receiveMessage(): T? {
         val s = session ?: return null
         val responseText: String = withTimeoutOrNull(timeout) {
             while (true) {

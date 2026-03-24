@@ -6,7 +6,7 @@ import com.project.server.repository.UserRepository
 import com.project.server.service.SessionManager
 import com.project.shared.api.auth.AuthRequest
 import com.project.shared.api.auth.AuthResponse
-import com.project.shared.api.auth.ListenReadyRequest
+import com.project.shared.api.ListenReadyRequest
 import com.project.shared.api.auth.LoginRequest
 import com.project.shared.api.auth.RegisterRequest
 import io.ktor.server.application.Application
@@ -41,14 +41,23 @@ fun Application.authModule() {
                             outgoing.send(Frame.Text(json.encodeToString(response)))
                         }
 
-                        is ListenReadyRequest -> {
-                            val sessionId = UUID.randomUUID().toString()
-                            val playerSession = PlayerSession(sessionId, request.playerId, this)
-                            SessionManager.addSession(playerSession)
-                        }
                     }
                 } catch (e: Exception) {
                     outgoing.send(Frame.Text(json.encodeToString(AuthResponse(false, null, -1, "Invalid request format"))))
+                }
+            }
+        }
+        webSocket("/listen") {
+            incoming.consumeEach { frame ->
+                if (frame !is Frame.Text) return@consumeEach
+
+                try {
+                    val request = json.decodeFromString<ListenReadyRequest>(frame.readText())
+                    val sessionId = UUID.randomUUID().toString()
+                    val playerSession = PlayerSession(sessionId, request.playerId, this)
+                    SessionManager.addSession(playerSession)
+                } catch (e: Exception) {
+                    //todo
                 }
             }
         }

@@ -1,6 +1,7 @@
 package com.project.server.routing
 
 import com.project.server.service.GameManager
+import com.project.shared.api.game.GameRequest
 import com.project.shared.api.game.PlayerReadyRequest
 import com.project.shared.api.game.PlayerReadyResponse
 import io.ktor.server.application.Application
@@ -13,25 +14,28 @@ import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
 fun Application.gameModule() {
-    val json = Json { ignoreUnknownKeys = true }
+    val json = Json {
+        ignoreUnknownKeys = true
+        classDiscriminator = "type"
+        encodeDefaults = true
+    }
     routing {
-        webSocket("/game/player/ready") {
+        webSocket("/game") {
             incoming.consumeEach { frame ->
                 if (frame !is Frame.Text) return@consumeEach
-
-                var request: PlayerReadyRequest? = null
                 try {
-                    request = json.decodeFromString<PlayerReadyRequest>(frame.readText())
-                    GameManager.setPlayerReady(request)
+                    val request = json.decodeFromString<GameRequest>(frame.readText())
+                    when (request) {
+                        is PlayerReadyRequest -> {
+                            GameManager.setPlayerReady(request)
+                            outgoing.send(Frame.Text(json.encodeToString(PlayerReadyResponse(success = true))))
+                        }
+                    }
                 } catch (e: Exception) {
-                    outgoing.send(Frame.Text(json.encodeToString(PlayerReadyResponse(success = false))))
+                    outgoing.send(Frame.Text(json.encodeToString(PlayerReadyResponse(success = false, "Error: ${e.message}"))))
                     return@consumeEach
                 }
-
-                outgoing.send(Frame.Text(json.encodeToString(PlayerReadyResponse(success = true))))
-
             }
         }
-
     }
 }

@@ -3,7 +3,7 @@ package com.project.server.service
 import com.project.server.engine.GameRoom
 import com.project.server.models.GameRoomData
 import com.project.shared.api.game.PlayerReadyRequest
-import com.project.shared.api.matchmaking.MatchFoundEvent
+import com.project.shared.api.events.MatchFoundEvent
 import java.util.concurrent.ConcurrentHashMap
 
 object GameManager {
@@ -16,14 +16,13 @@ object GameManager {
             val message = MatchFoundEvent(
                 roomId = room.id,
                 opponentId = opponent.playerId,
-                index = if (player == room.players[0]) 1 else 2,
-                type = "MatchFound"
+                index = if (player == room.players[0]) 1 else 2
             )
             GameDispatcher.sendToPlayer(player, message)
         }
     }
 
-    suspend fun setPlayerReady(playerReady: PlayerReadyRequest) {
+    fun setPlayerReady(playerReady: PlayerReadyRequest) {
         val room = rooms[playerReady.roomId] ?: throw IllegalArgumentException("Room not found")
         room.setPlayerReady(playerReady)
     }

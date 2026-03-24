@@ -1,18 +1,12 @@
 package com.project.client.network.api
 
 import com.badlogic.gdx.Gdx
-import com.project.shared.api.Message
-import com.project.shared.api.Request
-import io.ktor.websocket.Frame
-import io.ktor.websocket.readText
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withTimeoutOrNull
-import kotlinx.serialization.encodeToString
 
 import com.project.shared.api.auth.*
 
 
-class AuthSocket(endpoint: String = "auth") : WebSocket(endpoint) {
+class AuthSocket : WebSocket("auth") {
     private suspend fun sendRequest(request: AuthRequest): AuthResponse {
         return try {
             send(request)
@@ -27,9 +21,7 @@ class AuthSocket(endpoint: String = "auth") : WebSocket(endpoint) {
     fun login(username: String, password: String, onResult: (AuthResponse) -> Unit) {
         scope.launch {
             val request = LoginRequest(username, password)
-            println(request)
             val response = sendRequest(request)
-            println(response)
             Gdx.app.postRunnable { onResult(response) }
         }
     }

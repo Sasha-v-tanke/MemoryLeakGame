@@ -1,40 +1,40 @@
 package com.project.client.network.api
 
 import com.badlogic.gdx.Gdx
-import com.project.shared.api.matchmaking.CancelMatchResponse
-import com.project.shared.api.matchmaking.FindMatchRequest
-import com.project.shared.api.matchmaking.FindMatchResponse
-import com.project.shared.api.matchmaking.MatchFoundEvent
-import io.ktor.websocket.*
+import com.project.shared.api.matchmaking.*
 import kotlinx.coroutines.*
-import kotlinx.coroutines.channels.consumeEach
-import kotlinx.serialization.*
-import kotlinx.serialization.json.Json
 
-class MatchMakingSocket(endpoint: String, private val playerId: Int) : WebSocket(endpoint) {
+class MatchMakingSocket(private val playerId: Int) : WebSocket("matchmaking") {
+    var onFindError: ((Exception) -> Unit)? = null
+    var onCancelError: ((Exception) -> Unit)? = null
 
-    var onFindMatchResponse: ((FindMatchResponse) -> Unit)? = null
-    var onMatchFound: ((MatchFoundEvent) -> Unit)? = null
-    var onCancelMatchResponse: ((CancelMatchResponse) -> Unit)? = null
-    var onError: ((Throwable) -> Unit)? = null
-
-    fun findMatch() {
+    fun findMatch(callback: (FindMatchResponse) -> Unit) {
         scope.launch {
-            connect()
             try {
-                session?.send(Json.encodeToString(FindMatchRequest(playerId, true)))
+                send<MatchMakingRequest>(FindMatchRequest(playerId))
+                val response = receiveMessage<FindMatchResponse>()
+                    ?: FindMatchResponse(false, "No response is found")
+                callback(response)
             } catch (e: Exception) {
-                Gdx.app.postRunnable { onError?.invoke(e) }
+                Gdx.app.postRunnable { onFindError?.invoke(e) }
+                callback(FindMatchResponse(false, "Error: ${e.message}"))
             }
         }
     }
 
-    fun cancelMatch() {
+    fun cancelMatch(callback: (CancelMatchResponse) -> Unit) {
         scope.launch {
             try {
-                session?.send(Json.encodeToString(FindMatchRequest(playerId, false)))
+                send<MatchMakingRequest>(CancelMatchRequest(playerId))
+                val response = receiveMessage<CancelMatchResponse>()
+                if (response != null) {
+                    callback(response)
+                } else {
+                    callback(CancelMatchResponse(false, "No response is found"))
+                }
             } catch (e: Exception) {
-                Gdx.app.postRunnable { onError?.invoke(e) }
+                Gdx.app.postRunnable { onCancelError?.invoke(e) }
+                callback(CancelMatchResponse(false, "Error: ${e.message}"))
             }
         }
     }

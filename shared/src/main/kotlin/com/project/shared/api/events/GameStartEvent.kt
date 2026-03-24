@@ -1,6 +1,5 @@
-package com.project.shared.api.game
+package com.project.shared.api.events
 
-import com.project.shared.api.Event
 import kotlinx.serialization.Serializable
 
 @Serializable

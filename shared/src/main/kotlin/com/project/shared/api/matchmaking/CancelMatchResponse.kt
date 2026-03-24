@@ -4,4 +4,7 @@ import kotlinx.serialization.Serializable
 
 
 @Serializable
-data class CancelMatchResponse(val success: Boolean, val type: String = "Error_cancel")
+data class CancelMatchResponse(
+    val success: Boolean,
+    val description: String = ""
+) : MatchMakingResponse

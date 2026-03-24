@@ -12,13 +12,7 @@ class RegisterStage(
     viewport: Viewport,
     private val game: MyGame
 ) : BaseStage(viewport) {
-
-    private val scope = CoroutineScope(Dispatchers.IO)
     private val authSocket = AuthSocket()
-
-    override fun show() {
-        scope.launch { authSocket.connect() }
-    }
 
     override fun buildUI() {
 
@@ -71,7 +65,7 @@ class RegisterStage(
                 val email = emailField.text
 
                 authSocket.register(username, password, email) { response ->
-                    messageLabel.setText(if (response.success) "Success" else response.message ?: "Error")
+                    messageLabel.setText(if (response.success) "Success" else response.message)
                 }
                 true
             } else {
