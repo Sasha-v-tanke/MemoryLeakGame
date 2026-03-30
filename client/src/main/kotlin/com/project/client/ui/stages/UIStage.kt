@@ -17,15 +17,21 @@ class UIStage(
 
     private lateinit var waitingMessage: Label
     private lateinit var waitingBox: Table
+    private lateinit var centerTable: Table
+    private lateinit var leftTopTable: Table
+    private lateinit var hoverInfoBox: Table
+    private lateinit var hoverInfoLabel: Label
 
     override fun buildUI() {
-        val table = Table()
-        table.setFillParent(true)
-        table.top().left()
-        addActor(table)
+        leftTopTable = Table().apply {
+            setFillParent(true)
+            top()
+            left()
+        }
+        addActor(leftTopTable)
 
         val backButton = TextButton("Back", skin)
-        table.add(backButton).pad(10f)
+        leftTopTable.add(backButton).pad(10f)
 
         backButton.addListener { event ->
             if (event is InputEvent && event.type == InputEvent.Type.touchDown) {
@@ -34,7 +40,21 @@ class UIStage(
             } else false
         }
 
-        val centerTable = Table().apply {
+        hoverInfoBox = Table().apply {
+            setFillParent(true)
+            top()
+            left()
+            pad(20f)
+        }
+        leftTopTable.add(hoverInfoBox)
+        hoverInfoLabel = Label("", skin).apply {
+            setAlignment(Align.left)
+        }
+        hoverInfoBox.add(hoverInfoLabel)
+        hoverInfoBox.isVisible = false
+        addActor(hoverInfoBox)
+
+        centerTable = Table().apply {
             setFillParent(true)
             center()
         }
@@ -54,5 +74,15 @@ class UIStage(
 
     fun startGame() {
         waitingBox.isVisible = false
+    }
+
+
+    fun showHoverInfo(text: String) {
+        hoverInfoLabel.setText(text)
+        hoverInfoBox.isVisible = true
+    }
+
+    fun hideHoverInfo() {
+        hoverInfoBox.isVisible = false
     }
 }

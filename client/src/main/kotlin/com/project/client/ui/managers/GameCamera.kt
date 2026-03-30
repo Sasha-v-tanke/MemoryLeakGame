@@ -9,12 +9,10 @@ import com.project.shared.engine.GameConfig
 class GameCamera(private val game: MyGame) : OrthographicCamera() {
 
     fun initialize() {
-        println("Index = ${game.matchHandler.getPlayerIndex()}")
         position.x = if (game.matchHandler.getPlayerIndex() == 1) viewportWidth / 2 else GameConfig.worldWidth - viewportWidth / 2
         position.y = if (game.matchHandler.getPlayerIndex() == 1) viewportHeight / 2 else GameConfig.worldHeight - viewportHeight / 2
-        println("Position: ${position.x}, ${position.y}")
+
         update()
-        println("Position: ${position.x}, ${position.y}")
     }
 
     fun update(delta: Float) {

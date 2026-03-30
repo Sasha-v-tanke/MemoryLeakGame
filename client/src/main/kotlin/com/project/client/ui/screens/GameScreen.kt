@@ -14,6 +14,8 @@ import com.project.client.ui.stages.WorldStage
 import com.project.shared.api.events.GameStateSnapshotEvent
 import com.project.shared.api.game.GameResponse
 import com.project.shared.api.game.PlayerReadyResponse
+import com.project.shared.engine.gameobjects.components.Sprite
+import com.project.shared.engine.gameobjects.components.Transform
 
 class GameScreen(private val game: MyGame) : ScreenAdapter() {
     private val worldViewport = ExtendViewport(800f, 600f)
@@ -48,6 +50,23 @@ class GameScreen(private val game: MyGame) : ScreenAdapter() {
 
         uiStage.act(delta)
         uiStage.draw()
+
+        val hovered = worldStage.getHoveredEntity(Gdx.input.x, Gdx.input.y)
+        if (hovered != null) {
+            val transform = hovered.components.filterIsInstance<Transform>().firstOrNull()
+            val sprite = hovered.components.filterIsInstance<Sprite>().firstOrNull()
+
+            uiStage.showHoverInfo(
+                buildString {
+                    appendLine("ID: ${hovered.id}")
+                    appendLine("Owner: ${hovered.owner}")
+                    if (transform != null) appendLine("Pos: %.1f, %.1f".format(transform.x, transform.y))
+                    if (sprite != null) appendLine("Sprite: ${sprite.textureId} x${sprite.scale}")
+                }
+            )
+        } else {
+            uiStage.hideHoverInfo()
+        }
     }
 
     override fun resize(width: Int, height: Int) {
