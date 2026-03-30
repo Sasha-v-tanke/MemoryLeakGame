@@ -17,4 +17,8 @@ object SessionManager {
     fun getSession(playerId: Int): PlayerSession? {
         return sessions.filter { it.value.playerId == playerId }.values.firstOrNull()
     }
+
+    fun getSessionById(sessionId: String): PlayerSession? {
+        return sessions[sessionId]
+    }
 }

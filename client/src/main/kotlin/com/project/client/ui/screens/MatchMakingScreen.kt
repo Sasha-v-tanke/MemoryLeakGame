@@ -60,5 +60,11 @@ class MatchMakingScreen(game: MyGame) : BaseScreen(game) {
     override fun hide() {
         super.hide()
         stage.stopTimer()
+        socket.close()
+    }
+
+    override fun dispose() {
+        socket.close()
+        super.dispose()
     }
 }

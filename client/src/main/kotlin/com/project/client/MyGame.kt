@@ -46,4 +46,11 @@ class MyGame : Game() {
             is GameStateSnapshotEvent -> (screen as? GameScreen)?.updateGameState(event)
         }
     }
+
+    override fun dispose() {
+        if (::listenSocket.isInitialized) {
+            listenSocket.close()
+        }
+        super.dispose()
+    }
 }

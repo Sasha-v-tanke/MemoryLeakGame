@@ -75,12 +75,14 @@ class GameScreen(private val game: MyGame) : ScreenAdapter() {
     }
 
     override fun dispose() {
+        socket.close()
         worldStage.dispose()
         uiStage.dispose()
     }
 
     override fun hide() {
         Gdx.input.inputProcessor = null
+        socket.close()
     }
 
     fun startGame() {

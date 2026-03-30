@@ -3,6 +3,7 @@ package com.project.server.routing
 import com.project.server.models.PlayerSession
 import com.project.server.models.User
 import com.project.server.repository.UserRepository
+import com.project.server.service.MatchQueue
 import com.project.server.service.SessionManager
 import com.project.shared.api.auth.AuthRequest
 import com.project.shared.api.auth.AuthResponse
@@ -48,16 +49,26 @@ fun Application.authModule() {
             }
         }
         webSocket("/listen") {
-            incoming.consumeEach { frame ->
-                if (frame !is Frame.Text) return@consumeEach
+            var playerSession: PlayerSession? = null
+            try {
+                incoming.consumeEach { frame ->
+                    if (frame !is Frame.Text) return@consumeEach
 
-                try {
-                    val request = json.decodeFromString<ListenReadyRequest>(frame.readText())
-                    val sessionId = UUID.randomUUID().toString()
-                    val playerSession = PlayerSession(sessionId, request.playerId, this)
-                    SessionManager.addSession(playerSession)
-                } catch (e: Exception) {
-                    //todo
+                    try {
+                        val request = json.decodeFromString<ListenReadyRequest>(frame.readText())
+                        val sessionId = UUID.randomUUID().toString()
+                        playerSession = PlayerSession(sessionId, request.playerId, this)
+                        SessionManager.addSession(playerSession!!)
+                        println("Player ${request.playerId} connected to listen socket")
+                    } catch (e: Exception) {
+                        println("Listen socket error: ${e.message}")
+                    }
+                }
+            } finally {
+                if (playerSession != null) {
+                    println("Player ${playerSession!!.playerId} disconnected from listen socket")
+                    MatchQueue.removePlayer(playerSession!!)
+                    SessionManager.removeSession(playerSession!!.sessionId)
                 }
             }
         }

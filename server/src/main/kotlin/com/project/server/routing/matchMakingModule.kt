@@ -34,19 +34,40 @@ fun Application.matchMakingModule() {
 
                     when (request) {
                         is FindMatchRequest -> {
-                            val playerSession = SessionManager.getSession(request.playerId) ?: return@consumeEach
-                            MatchQueue.addPlayer(playerSession)
-                            outgoing.send(Frame.Text(json.encodeToString(FindMatchResponse(true))))
+                            val playerSession = SessionManager.getSession(request.playerId)
+                            if (playerSession != null) {
+                                MatchQueue.addPlayer(playerSession)
+                                outgoing.send(Frame.Text(json.encodeToString(FindMatchResponse(true))))
+                            } else {
+                                outgoing.send(
+                                    Frame.Text(
+                                        json.encodeToString(
+                                            FindMatchResponse(false, "Session not found")
+                                        )
+                                    )
+                                )
+                            }
                         }
 
                         is CancelMatchRequest -> {
-                            val playerSession = SessionManager.getSession(request.playerId) ?: return@consumeEach
-                            MatchQueue.removePlayer(playerSession)
-                            outgoing.send(Frame.Text(json.encodeToString(CancelMatchResponse(true))))
+                            val playerSession = SessionManager.getSession(request.playerId)
+                            if (playerSession != null) {
+                                MatchQueue.removePlayer(playerSession)
+                                outgoing.send(Frame.Text(json.encodeToString(CancelMatchResponse(true))))
+                            } else {
+                                outgoing.send(
+                                    Frame.Text(
+                                        json.encodeToString(
+                                            CancelMatchResponse(false, "Session not found")
+                                        )
+                                    )
+                                )
+                            }
                         }
                     }
                 } catch (e: Exception) {
-                    println(e.message)
+                    println("Matchmaking error: ${e.message}")
+                    e.printStackTrace()
                 }
             }
         }
