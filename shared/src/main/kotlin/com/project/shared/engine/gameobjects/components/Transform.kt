@@ -3,10 +3,4 @@ package com.project.shared.engine.gameobjects.components
 import kotlinx.serialization.Serializable
 
 @Serializable
-sealed interface Component
-
-
-
-
-
-
+data class Transform(var x: Float, var y: Float) : Component

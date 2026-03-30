@@ -11,6 +11,7 @@ import com.project.client.network.api.GameSocket
 import com.project.client.ui.managers.GameCamera
 import com.project.client.ui.stages.UIStage
 import com.project.client.ui.stages.WorldStage
+import com.project.shared.api.events.GameStateSnapshotEvent
 import com.project.shared.api.game.GameResponse
 import com.project.shared.api.game.PlayerReadyResponse
 
@@ -28,7 +29,7 @@ class GameScreen(private val game: MyGame) : ScreenAdapter() {
         uiStage.buildUI()
 
         worldViewport.camera = camera
-        camera.initialize(game)
+        camera.initialize()
         Gdx.input.inputProcessor = InputMultiplexer(uiStage, worldStage)
 
         worldStage.show()
@@ -50,7 +51,7 @@ class GameScreen(private val game: MyGame) : ScreenAdapter() {
     }
 
     override fun resize(width: Int, height: Int) {
-        worldViewport.update(width, height, true)
+        worldViewport.update(width, height, false)
         uiViewport.update(width, height, true)
     }
 
@@ -70,6 +71,9 @@ class GameScreen(private val game: MyGame) : ScreenAdapter() {
 
     fun onResult(response: GameResponse) {
         println("Game Result: $response")
+    }
 
+    fun updateGameState(snapshotEvent: GameStateSnapshotEvent) {
+        worldStage.applySnapshot(snapshotEvent)
     }
 }

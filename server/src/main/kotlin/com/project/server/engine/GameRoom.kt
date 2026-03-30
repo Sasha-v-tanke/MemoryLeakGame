@@ -2,10 +2,12 @@ package com.project.server.engine
 
 import com.project.server.models.PlayerSession
 import com.project.server.service.GameDispatcher
-import com.project.server.service.GameManager
+import com.project.shared.api.events.GameStateSnapshotEvent
 import com.project.shared.api.game.PlayerReadyRequest
+import com.project.shared.engine.GameConfig
 import com.project.shared.engine.OwnerType
 import com.project.shared.engine.commands.Command
+import com.project.shared.engine.gameobjects.Entity
 import com.project.shared.engine.gameobjects.components.*
 import kotlinx.coroutines.*
 import kotlin.collections.map
@@ -32,8 +34,8 @@ class GameRoom(
     }
 
     fun startGame() {
-        createEntity(OwnerType.PLAYER_1, 0f, 0f, "core.png")
-        createEntity(OwnerType.PLAYER_2, 10f, 10f, "core.png")
+        createEntity(OwnerType.PLAYER_1, GameConfig.worldWidth * 0.1f, GameConfig.worldHeight * 0.1f, "core.png")
+        createEntity(OwnerType.PLAYER_2, GameConfig.worldWidth * 0.9f, GameConfig.worldHeight * 0.9f, "core.png")
 
         startGameLoop()
     }
@@ -76,20 +78,12 @@ class GameRoom(
     }
 
     private suspend fun sendSnapshot() {
-//        val snapshot = GameStateSnapshot(
-//            entities = world.getEntities().map { it.toState() },
-//            timestamp = System.currentTimeMillis()
-//        )
-//
-//        val text = json.encodeToString(GameStateSnapshot.serializer(), snapshot)
-//
-//        players.forEach { session ->
-//            try {
-//                session.socket.send(Frame.Text(text))
-//            } catch (e: Exception) {
-//                println("Failed to send snapshot to player ${session.playerId}: ${e.message}")
-//            }
-//        }
+        val snapshot = GameStateSnapshotEvent(
+            entities = world.getEntities().map { it.toState() },
+            timestamp = System.currentTimeMillis()
+        )
+
+        GameDispatcher.sendToAllPlayers(players, snapshot)
     }
 
     fun stop() {

@@ -1,4 +1,4 @@
-package com.project.client.engine
+package com.project.shared.engine
 
 object GameConfig {
     val worldWidth = 1600f

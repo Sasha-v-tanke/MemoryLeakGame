@@ -1,6 +1,6 @@
 package com.project.server.engine
 
-import com.project.shared.engine.gameobjects.components.Entity
+import com.project.shared.engine.gameobjects.Entity
 
 class GameWorld {
     private var entityIdCounter = 0L

@@ -4,15 +4,17 @@ import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.Input
 import com.badlogic.gdx.graphics.OrthographicCamera
 import com.project.client.MyGame
-import com.project.client.engine.GameConfig
+import com.project.shared.engine.GameConfig
 
-class GameCamera(game: MyGame) : OrthographicCamera() {
+class GameCamera(private val game: MyGame) : OrthographicCamera() {
 
-    fun initialize(game: MyGame) {
+    fun initialize() {
+        println("Index = ${game.matchHandler.getPlayerIndex()}")
         position.x = if (game.matchHandler.getPlayerIndex() == 1) viewportWidth / 2 else GameConfig.worldWidth - viewportWidth / 2
         position.y = if (game.matchHandler.getPlayerIndex() == 1) viewportHeight / 2 else GameConfig.worldHeight - viewportHeight / 2
-
+        println("Position: ${position.x}, ${position.y}")
         update()
+        println("Position: ${position.x}, ${position.y}")
     }
 
     fun update(delta: Float) {
@@ -25,7 +27,7 @@ class GameCamera(game: MyGame) : OrthographicCamera() {
 
         position.x = position.x.coerceIn(viewportWidth / 2, GameConfig.worldWidth - viewportWidth / 2)
         position.y = position.y.coerceIn(viewportHeight / 2, GameConfig.worldHeight - viewportHeight / 2)
-        
+
         update()
     }
 }

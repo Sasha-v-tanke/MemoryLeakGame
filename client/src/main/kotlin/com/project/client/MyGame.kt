@@ -8,6 +8,7 @@ import com.project.client.ui.screens.LoginScreen
 import com.project.client.ui.screens.MatchMakingScreen
 import com.project.shared.api.events.Event
 import com.project.shared.api.events.GameStartEvent
+import com.project.shared.api.events.GameStateSnapshotEvent
 import com.project.shared.api.events.MatchFoundEvent
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
@@ -42,6 +43,7 @@ class MyGame : Game() {
         when (event) {
             is GameStartEvent -> (screen as? GameScreen)?.startGame()
             is MatchFoundEvent -> (screen as? MatchMakingScreen)?.startGame(event)
+            is GameStateSnapshotEvent -> (screen as? GameScreen)?.updateGameState(event)
         }
     }
 }
