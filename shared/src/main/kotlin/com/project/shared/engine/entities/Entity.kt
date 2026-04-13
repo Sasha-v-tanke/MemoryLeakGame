@@ -1,9 +1,8 @@
-package com.project.shared.engine.gameobjects
+package com.project.shared.engine.entities
 
 import com.project.shared.engine.EntityState
-import com.project.shared.engine.OwnerType
-import com.project.shared.engine.gameobjects.components.Component
-import com.project.shared.engine.gameobjects.components.Owner
+import com.project.shared.engine.entities.components.Component
+import com.project.shared.engine.entities.components.Owner
 
 data class Entity(
     var id: Long,

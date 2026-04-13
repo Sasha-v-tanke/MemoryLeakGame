@@ -1,6 +1,6 @@
-package com.project.shared.engine.gameobjects.components
+package com.project.shared.engine.entities.components
 
-import com.project.shared.engine.OwnerType
+import com.project.shared.engine.entities.OwnerType
 import kotlinx.serialization.Serializable
 
 @Serializable

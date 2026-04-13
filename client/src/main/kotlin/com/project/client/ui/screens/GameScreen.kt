@@ -13,9 +13,8 @@ import com.project.client.ui.stages.UIStage
 import com.project.client.ui.stages.WorldStage
 import com.project.shared.api.events.GameStateSnapshotEvent
 import com.project.shared.api.game.GameResponse
-import com.project.shared.api.game.PlayerReadyResponse
-import com.project.shared.engine.gameobjects.components.Sprite
-import com.project.shared.engine.gameobjects.components.Transform
+import com.project.shared.engine.entities.components.Sprite
+import com.project.shared.engine.entities.components.Transform
 
 class GameScreen(private val game: MyGame) : ScreenAdapter() {
     private val worldViewport = ExtendViewport(800f, 600f)

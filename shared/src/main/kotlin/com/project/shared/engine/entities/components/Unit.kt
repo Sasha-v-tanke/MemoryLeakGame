@@ -1,7 +1,7 @@
-package com.project.shared.engine.gameobjects.components
+package com.project.shared.engine.entities.components
 
-import com.project.shared.engine.units.UnitRole
-import com.project.shared.engine.units.UnitType
+import com.project.shared.engine.entities.units.UnitRole
+import com.project.shared.engine.entities.units.UnitType
 import kotlinx.serialization.Serializable
 
 @Serializable

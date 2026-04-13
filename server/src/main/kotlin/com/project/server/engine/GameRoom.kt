@@ -4,13 +4,14 @@ import com.project.server.models.PlayerSession
 import com.project.server.service.GameDispatcher
 import com.project.shared.api.events.GameStateSnapshotEvent
 import com.project.shared.api.game.PlayerReadyRequest
-import com.project.shared.engine.GameConfig
-import com.project.shared.engine.gameobjects.ObjectConfig
-import com.project.shared.engine.OwnerType
-import com.project.shared.engine.WorldConfig
+import com.project.shared.engine.config.GameConfig
+import com.project.shared.engine.config.EntityConfig
+import com.project.shared.engine.entities.OwnerType
+import com.project.shared.engine.config.WorldConfig
 import com.project.shared.engine.commands.Command
-import com.project.shared.engine.gameobjects.Entity
-import com.project.shared.engine.gameobjects.components.*
+import com.project.shared.engine.commands.PlayUnitCommand
+import com.project.shared.engine.entities.Entity
+import com.project.shared.engine.entities.components.*
 import kotlinx.coroutines.*
 import kotlin.collections.map
 
@@ -61,7 +62,7 @@ class GameRoom(
         }
     }
 
-    fun createEntity(objectConfig: ObjectConfig): Entity {
+    fun createEntity(objectConfig: EntityConfig): Entity {
         val entity = world.createEntity()
         entity.add(Transform(objectConfig.x * GameConfig.worldWidth, objectConfig.y * GameConfig.worldHeight))
         entity.add(Owner(objectConfig.owner))
@@ -77,6 +78,28 @@ class GameRoom(
     private fun processCommands() {
         while (true) {
             val cmd = commandQueue.poll() ?: break
+
+            when (cmd) {
+                is PlayUnitCommand -> {
+                    val owner = if (cmd.playerId == players[0].playerId) {
+                        OwnerType.PLAYER_1
+                    } else {
+                        OwnerType.PLAYER_2
+                    }
+
+                    UnitFactory.create(
+                        world = world,
+                        unitType = cmd.unitType,
+                        owner = owner,
+                        x = cmd.targetX,
+                        y = cmd.targetY
+                    )
+                }
+
+                else -> {
+                    // todo
+                }
+            }
         }
     }
 

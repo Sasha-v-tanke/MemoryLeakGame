@@ -2,7 +2,7 @@ package com.project.client.ui.widgets
 
 import com.badlogic.gdx.scenes.scene2d.ui.Skin
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton
-import com.project.shared.engine.gameobjects.UnitConfig
+import com.project.shared.engine.entities.units.UnitConfig
 
 class UnitCardButton(
     private val config: UnitConfig,

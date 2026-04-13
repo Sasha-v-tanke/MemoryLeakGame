@@ -1,4 +1,4 @@
-package com.project.shared.engine
+package com.project.shared.engine.entities
 
 import kotlinx.serialization.Serializable
 

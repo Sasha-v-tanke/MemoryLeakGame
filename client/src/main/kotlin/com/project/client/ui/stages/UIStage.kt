@@ -10,7 +10,7 @@ import com.badlogic.gdx.utils.viewport.Viewport
 import com.project.client.MyGame
 import com.project.client.ui.screens.MainScreen
 import com.project.client.ui.widgets.DeckPanel
-import com.project.shared.engine.gameobjects.UnitType
+import com.project.shared.engine.entities.units.UnitType
 
 class UIStage(
     viewport: Viewport,
@@ -59,11 +59,11 @@ class UIStage(
         centerTable.add(waitingBox)
 
         val playerDeck = listOf(
-            UnitType.POINTER,
-            UnitType.POINTER,
-            UnitType.BUFFER,
             UnitType.ALLOCATOR,
-            UnitType.THREAD_POOL
+            UnitType.DEADLOCK,
+            UnitType.GARBAGE_COLLECTOR,
+            UnitType.ALLOCATOR,
+            UnitType.INJECTOR
         )
 
         val deckPanel = DeckPanel(skin, playerDeck) { unitType ->

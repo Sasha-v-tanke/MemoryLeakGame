@@ -1,4 +1,4 @@
-package com.project.shared.engine.gameobjects.components
+package com.project.shared.engine.entities.components
 
 import kotlinx.serialization.Serializable
 

@@ -5,8 +5,8 @@ import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.graphics.Texture
 import com.badlogic.gdx.scenes.scene2d.ui.Image
 import com.project.shared.engine.EntityState
-import com.project.shared.engine.gameobjects.components.Sprite
-import com.project.shared.engine.gameobjects.components.Transform
+import com.project.shared.engine.entities.components.Sprite
+import com.project.shared.engine.entities.components.Transform
 import kotlin.collections.remove
 
 class EntityHandler(private val addActor: (Image) -> Unit) {

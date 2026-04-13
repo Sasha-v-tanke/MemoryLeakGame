@@ -5,15 +5,12 @@ import com.badlogic.gdx.graphics.Texture
 import com.badlogic.gdx.math.Vector2
 import com.badlogic.gdx.scenes.scene2d.Touchable
 import com.badlogic.gdx.scenes.scene2d.ui.Image
-import com.badlogic.gdx.scenes.scene2d.ui.Table
 import com.badlogic.gdx.utils.viewport.Viewport
 import com.project.client.MyGame
 import com.project.client.engine.EntityHandler
-import com.project.client.ui.widgets.DeckPanel
-import com.project.shared.engine.GameConfig
+import com.project.shared.engine.config.GameConfig
 import com.project.shared.api.events.GameStateSnapshotEvent
 import com.project.shared.engine.EntityState
-import com.project.shared.engine.gameobjects.UnitType
 
 
 class WorldStage(
