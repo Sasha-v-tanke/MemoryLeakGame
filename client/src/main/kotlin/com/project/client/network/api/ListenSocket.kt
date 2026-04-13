@@ -17,13 +17,6 @@ import kotlinx.serialization.modules.subclass
 class ListenSocket(private val playerId: Int) : WebSocket("/listen") {
     var onEvent: (Event) -> Unit = {}
 
-//    private val module = SerializersModule {
-//        polymorphic(Event::class) {
-//            subclass(GameStartEvent::class)
-//            subclass(MatchFoundEvent::class)
-//        }
-//    }
-
     private fun listenIncoming() {
         scope.launch {
             try {

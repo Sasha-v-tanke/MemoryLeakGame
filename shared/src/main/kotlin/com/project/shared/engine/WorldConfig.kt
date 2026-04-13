@@ -1,12 +1,6 @@
 package com.project.shared.engine
 
-data class ObjectConfig(
-    val owner: OwnerType,
-    val x: Float,
-    val y: Float,
-    val scale: Float,
-    val sprite: String
-)
+import com.project.shared.engine.gameobjects.ObjectConfig
 
 object WorldConfig {
     val core1 = ObjectConfig(OwnerType.PLAYER_1, 0.1f, 0.1f, 0.5f, "core.png")

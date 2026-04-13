@@ -15,7 +15,6 @@ import io.ktor.websocket.readText
 import kotlinx.coroutines.channels.consumeEach
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
-import java.util.UUID
 
 fun Application.matchMakingModule() {
     val json = Json {

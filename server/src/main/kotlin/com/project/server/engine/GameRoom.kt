@@ -5,7 +5,7 @@ import com.project.server.service.GameDispatcher
 import com.project.shared.api.events.GameStateSnapshotEvent
 import com.project.shared.api.game.PlayerReadyRequest
 import com.project.shared.engine.GameConfig
-import com.project.shared.engine.ObjectConfig
+import com.project.shared.engine.gameobjects.ObjectConfig
 import com.project.shared.engine.OwnerType
 import com.project.shared.engine.WorldConfig
 import com.project.shared.engine.commands.Command
