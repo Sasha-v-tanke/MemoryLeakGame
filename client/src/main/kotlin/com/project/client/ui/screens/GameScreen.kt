@@ -11,6 +11,7 @@ import com.project.client.network.api.GameSocket
 import com.project.client.ui.managers.GameCamera
 import com.project.client.ui.stages.UIStage
 import com.project.client.ui.stages.WorldStage
+import com.project.client.ui.theme.UiTheme
 import com.project.shared.api.events.GameOverEvent
 import com.project.shared.api.events.GameStartEvent
 import com.project.shared.api.events.GameStateSnapshotEvent
@@ -81,7 +82,7 @@ class GameScreen(private val game: MyGame) : ScreenAdapter() {
     override fun render(delta: Float) {
         camera.update(delta)
 
-        Gdx.gl.glClearColor(0.012f, 0.014f, 0.024f, 1f)
+        Gdx.gl.glClearColor(UiTheme.background.r, UiTheme.background.g, UiTheme.background.b, UiTheme.background.a)
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT)
 
         worldStage.act(delta)
@@ -113,7 +114,7 @@ class GameScreen(private val game: MyGame) : ScreenAdapter() {
         gameStarted = true
         uiStage.startGame(event.message)
         uiStage.showToast("Game started. Select a card, then click the arena.")
-        println("[CLIENT][GAME_START] ${event.message}")
+        Gdx.app.log("GameScreen", "Game started: ${event.message}")
     }
 
     fun updateGameState(snapshotEvent: GameStateSnapshotEvent) {
@@ -130,6 +131,10 @@ class GameScreen(private val game: MyGame) : ScreenAdapter() {
         if (resources != null) {
             uiStage.updateResources(resources)
         }
+
+        val cooldowns = snapshotEvent.cardCooldownsMs[game.getPlayerId()].orEmpty()
+        val queues = snapshotEvent.factoryQueueSizes[game.getPlayerId()].orEmpty()
+        uiStage.updateCardRuntime(cooldowns, queues)
     }
 
     fun finishGame(event: GameOverEvent) {
@@ -143,12 +148,15 @@ class GameScreen(private val game: MyGame) : ScreenAdapter() {
         selectedCard = null
         uiStage.clearSelectedCard()
 
-        println("[CLIENT][GAME_OVER] winner=${event.winnerPlayerId} loser=${event.loserPlayerId} reason=${event.reason}")
+        Gdx.app.log(
+            "GameScreen",
+            "Game over: winner=${event.winnerPlayerId} loser=${event.loserPlayerId} reason=${event.reason}"
+        )
     }
 
     fun showSystemMessage(message: String) {
         uiStage.showToast(message)
-        println("[CLIENT][SYSTEM] $message")
+        Gdx.app.log("GameScreen", message)
     }
 
     private fun deploySelectedCard(worldX: Float, worldY: Float) {
@@ -181,7 +189,7 @@ class GameScreen(private val game: MyGame) : ScreenAdapter() {
         selectedCard = null
         uiStage.clearSelectedCard()
 
-        println("[CLIENT][CARD] sending card=$card x=$worldX y=$worldY")
+        Gdx.app.log("GameScreen", "Deploying card=$card x=$worldX y=$worldY")
         uiStage.showToast("Deploying ${config.displayName}...")
 
         socket.playCard(
@@ -193,7 +201,7 @@ class GameScreen(private val game: MyGame) : ScreenAdapter() {
         ) { response ->
             isDeployingCard = false
 
-            println("[CLIENT][CARD] response=$response")
+            Gdx.app.log("GameScreen", "Deploy response=$response")
 
             if (response.success) {
                 uiStage.showToast(response.description)
@@ -207,7 +215,7 @@ class GameScreen(private val game: MyGame) : ScreenAdapter() {
     }
 
     private fun onReadyResult(response: GameResponse) {
-        println("[CLIENT][READY] $response")
+        Gdx.app.log("GameScreen", "Ready response=$response")
     }
 
     private fun updateHoverInfo() {
@@ -317,6 +325,11 @@ class GameScreen(private val game: MyGame) : ScreenAdapter() {
             FactoryType.SUPPORT -> "Infrastructure focused on support and advanced system tools."
         }
 
+        val cards = when (factory.factoryType) {
+            FactoryType.BASIC -> "Cards: Allocator, Injector, Cache Runner, Coroutine Archer"
+            FactoryType.SUPPORT -> "Cards: Garbage Collector, Thread Guard, Firewall, Patch Healer, Deadlock, Overclock"
+        }
+
         val tech = when (factory.factoryType) {
             FactoryType.BASIC -> "IT: a basic build pipeline that produces system processes."
             FactoryType.SUPPORT -> "IT: auxiliary services that keep the system stable and extensible."
@@ -333,6 +346,7 @@ class GameScreen(private val game: MyGame) : ScreenAdapter() {
             appendLine("Production: x${"%.1f".format(factory.productionMultiplier)}")
             appendLine()
             appendLine(description)
+            appendLine(cards)
             appendLine()
             appendLine(tech)
         }

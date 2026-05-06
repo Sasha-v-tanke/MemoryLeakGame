@@ -9,5 +9,9 @@ enum class UnitType {
     THREAD_GUARD,
     INJECTOR,
     DEADLOCK,
-    OVERCLOCK
+    OVERCLOCK,
+    CACHE_RUNNER,
+    FIREWALL,
+    COROUTINE_ARCHER,
+    PATCH_HEALER
 }

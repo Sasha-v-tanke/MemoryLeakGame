@@ -1,10 +1,11 @@
 package com.project.server.engine
 
 object DebugLog {
-    var enabled: Boolean = true
+    var enabled: Boolean = System.getenv("MEMORY_LEAK_DEBUG") == "true" ||
+            System.getenv("MEMORY_LEAK_DEBUG") == "1"
 
-    var logTicks: Boolean = true
-    var logSnapshots: Boolean = true
+    var logTicks: Boolean = false
+    var logSnapshots: Boolean = false
     var logIncome: Boolean = true
     var logCards: Boolean = true
     var logSpawns: Boolean = true

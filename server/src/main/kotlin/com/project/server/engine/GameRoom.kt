@@ -13,9 +13,14 @@ import com.project.shared.engine.config.GameConfig
 import com.project.shared.engine.config.WorldConfig
 import com.project.shared.engine.entities.Entity
 import com.project.shared.engine.entities.OwnerType
+import com.project.shared.engine.entities.components.AttackBehavior
+import com.project.shared.engine.entities.components.Behavior
 import com.project.shared.engine.entities.components.CaptureBehavior
 import com.project.shared.engine.entities.components.CombatStats
 import com.project.shared.engine.entities.components.Core
+import com.project.shared.engine.entities.components.DefenseBehavior
+import com.project.shared.engine.entities.components.Factory
+import com.project.shared.engine.entities.components.FactoryType
 import com.project.shared.engine.entities.components.Health
 import com.project.shared.engine.entities.components.ResourceNode
 import com.project.shared.engine.entities.components.ResourceNodeType
@@ -25,6 +30,7 @@ import com.project.shared.engine.entities.components.Target
 import com.project.shared.engine.entities.components.Transform
 import com.project.shared.engine.entities.components.Unit as UnitComponent
 import com.project.shared.engine.entities.units.UnitRegistry
+import com.project.shared.engine.entities.units.UnitRole
 import com.project.shared.engine.entities.units.UnitType
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -35,13 +41,28 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import java.util.concurrent.atomic.AtomicBoolean
-import kotlin.math.max
+import kotlin.math.ceil
 
 class GameRoom(
     private val roomId: String,
     private val players: List<PlayerSession>,
     private val onRoomFinished: (String) -> kotlin.Unit
 ) {
+    private data class ProductionOrder(
+        val unitType: UnitType,
+        val rallyX: Float,
+        val rallyY: Float,
+        val buildMillis: Long
+    )
+
+    private data class FactoryQueueState(
+        val factoryId: Long,
+        val owner: OwnerType,
+        val type: FactoryType,
+        val queue: ArrayDeque<ProductionOrder> = ArrayDeque(),
+        var readyAt: Long = 0L
+    )
+
     private val world = GameWorld()
     private val scope = CoroutineScope(Dispatchers.Default + SupervisorJob())
     private val playerStatus = PlayerStatusHandler(players.map { it.playerId })
@@ -51,6 +72,8 @@ class GameRoom(
     private var gameLoopJob: Job? = null
     private var tick: Long = 0L
     private var lastIncomeAt: Long = System.currentTimeMillis()
+    private val factoryQueues = mutableMapOf<Long, FactoryQueueState>()
+    private val playerCardCooldowns = mutableMapOf<Int, MutableMap<UnitType, Long>>()
 
     private val playerRuntimes: Map<Int, PlayerRuntime> = players.mapIndexed { index, session ->
         session.playerId to PlayerRuntime(
@@ -103,6 +126,37 @@ class GameRoom(
         }
 
         val config = UnitRegistry.getConfig(request.unitType)
+        val owner = OwnerType.fromPlayerIndex(runtime.playerIndex)
+        val targetX = request.targetX.coerceIn(0f, GameConfig.worldWidth)
+        val targetY = request.targetY.coerceIn(0f, GameConfig.worldHeight)
+        val now = System.currentTimeMillis()
+
+        val nextAvailableAt = playerCardCooldowns
+            .getOrPut(request.playerId) { mutableMapOf() }
+            .getOrDefault(request.unitType, 0L)
+
+        if (now < nextAvailableAt) {
+            val seconds = ((nextAvailableAt - now) / 100L).coerceAtLeast(1) / 10f
+            return PlayCardResponse(false, "${config.displayName} cooldown: ${"%.1f".format(seconds)}s")
+        }
+
+        if (request.unitType == UnitType.DEADLOCK || request.unitType == UnitType.OVERCLOCK) {
+            val supportFactory = findActiveFactory(owner, FactoryType.SUPPORT)
+            if (supportFactory == null) {
+                return PlayCardResponse(false, "Support Factory is required to cast this card")
+            }
+        }
+
+        val spawnFactory = when (request.unitType) {
+            UnitType.DEADLOCK,
+            UnitType.OVERCLOCK -> null
+
+            else -> {
+                val requiredFactoryType = requiredFactoryFor(request.unitType)
+                findFactoryQueue(owner, requiredFactoryType)
+                    ?: return PlayCardResponse(false, "${requiredFactoryType.name.lowercase().replaceFirstChar { it.uppercase() }} Factory is destroyed")
+            }
+        }
 
         DebugLog.card(
             "resources before player=${request.playerId} memory=${runtime.memory} cpu=${runtime.cpu} " +
@@ -121,19 +175,37 @@ class GameRoom(
 
         runtime.memory -= config.costMemory
         runtime.cpu -= config.costCpu
-
-        val owner = OwnerType.fromPlayerIndex(runtime.playerIndex)
-        val targetX = request.targetX.coerceIn(0f, GameConfig.worldWidth)
-        val targetY = request.targetY.coerceIn(0f, GameConfig.worldHeight)
+        playerCardCooldowns
+            .getOrPut(request.playerId) { mutableMapOf() }[request.unitType] =
+            now + cooldownMillisFor(request.unitType)
 
         when (request.unitType) {
             UnitType.DEADLOCK -> castDeadlock(owner, targetX, targetY)
             UnitType.OVERCLOCK -> castOverclock(owner, targetX, targetY)
             else -> {
-                val entity = UnitFactory.createUnit(world, request.unitType, owner, targetX, targetY)
+                val queueState = spawnFactory!!
+                if (queueState.queue.size >= 5) {
+                    runtime.memory += config.costMemory
+                    runtime.cpu += config.costCpu
+                    playerCardCooldowns[request.playerId]?.remove(request.unitType)
+                    return PlayCardResponse(false, "Factory queue is full")
+                }
+
+                queueState.queue.addLast(
+                    ProductionOrder(
+                        unitType = request.unitType,
+                        rallyX = targetX,
+                        rallyY = targetY,
+                        buildMillis = buildMillisFor(request.unitType, queueState)
+                    )
+                )
+
+                if (queueState.readyAt <= now) {
+                    queueState.readyAt = now + queueState.queue.first().buildMillis
+                }
+
                 DebugLog.spawn(
-                    "unit created id=${entity.id} type=${request.unitType} owner=$owner x=$targetX y=$targetY " +
-                            "entities=${world.getEntities().size}"
+                    "queued unit type=${request.unitType} factory=${queueState.factoryId} queue=${queueState.queue.size} readyAt=${queueState.readyAt}"
                 )
             }
         }
@@ -142,7 +214,15 @@ class GameRoom(
             "accepted player=${request.playerId} memory=${runtime.memory} cpu=${runtime.cpu} entities=${world.getEntities().size}"
         )
 
-        return PlayCardResponse(true, "${config.displayName} deployed")
+        return when (request.unitType) {
+            UnitType.DEADLOCK,
+            UnitType.OVERCLOCK -> PlayCardResponse(true, "${config.displayName} cast")
+
+            else -> {
+                val queueSize = spawnFactory?.queue?.size ?: 0
+                PlayCardResponse(true, "${config.displayName} queued (queue: $queueSize)")
+            }
+        }
     }
 
     private suspend fun startGame() {
@@ -162,6 +242,15 @@ class GameRoom(
         WorldConfig.objects.forEach { config ->
             val entity = EntityFactory.createWorldObject(world, config)
             val transform = entity.get(Transform::class.java)
+            val factory = entity.get(Factory::class.java)
+
+            if (factory != null) {
+                factoryQueues[entity.id] = FactoryQueueState(
+                    factoryId = entity.id,
+                    owner = entity.owner(),
+                    type = factory.factoryType
+                )
+            }
 
             DebugLog.spawn(
                 "world object id=${entity.id} kind=${config.kind} owner=${config.owner} " +
@@ -198,10 +287,18 @@ class GameRoom(
     }
 
     private suspend fun sendSnapshot() {
+        val now = System.currentTimeMillis()
+
         val snapshot = GameStateSnapshotEvent(
             entities = world.getEntities().map { it.toState() },
             resources = playerRuntimes.values.associate { it.playerId to it.toResources() },
-            timestamp = System.currentTimeMillis(),
+            cardCooldownsMs = playerCardCooldowns.mapValues { (playerId, cooldowns) ->
+                cooldowns.mapValues { (_, nextAt) ->
+                    (nextAt - now).coerceAtLeast(0L)
+                }
+            },
+            factoryQueueSizes = factoryQueueSnapshot(),
+            timestamp = now,
             tick = tick
         )
 
@@ -212,6 +309,7 @@ class GameRoom(
         val now = System.currentTimeMillis()
 
         updateResourceIncome(now)
+        processFactoryQueues(now)
         updateNodeCapture(deltaSeconds)
         updateUnitTargets()
         updateMovement(deltaSeconds, now)
@@ -250,6 +348,20 @@ class GameRoom(
             runtime.cpuIncome = GameConfig.baseCpuIncome
         }
 
+        world.entitiesWithComponent(Factory::class.java).forEach { factoryEntity ->
+            val factory = factoryEntity.get(Factory::class.java) ?: return@forEach
+            val health = factoryEntity.get(Health::class.java) ?: return@forEach
+            if (health.isDead) return@forEach
+
+            val playerIndex = factoryEntity.owner().playerIndexOrNull() ?: return@forEach
+            val runtime = playerRuntimes.values.firstOrNull { it.playerIndex == playerIndex } ?: return@forEach
+
+            when (factory.factoryType) {
+                FactoryType.BASIC -> runtime.memoryIncome += GameConfig.basicFactoryMemoryIncomeBonus
+                FactoryType.SUPPORT -> runtime.cpuIncome += GameConfig.supportFactoryCpuIncomeBonus
+            }
+        }
+
         world.entitiesWithComponent(ResourceNode::class.java).forEach { entity ->
             val node = entity.get(ResourceNode::class.java) ?: return@forEach
             val capturedBy = node.capturedBy ?: return@forEach
@@ -260,6 +372,64 @@ class GameRoom(
                 ResourceNodeType.CPU -> runtime.cpuIncome += node.incomePerSecond
             }
         }
+    }
+
+    private fun processFactoryQueues(now: Long) {
+        factoryQueues.values.forEach { queueState ->
+            val factoryEntity = world.getEntity(queueState.factoryId)
+            val factoryAlive = factoryEntity
+                ?.get(Health::class.java)
+                ?.isDead == false
+
+            if (!factoryAlive) {
+                if (queueState.queue.isNotEmpty()) {
+                    queueState.queue.clear()
+                    queueState.readyAt = 0L
+                }
+                return@forEach
+            }
+
+            if (queueState.queue.isEmpty() || now < queueState.readyAt) return@forEach
+
+            val order = queueState.queue.removeFirst()
+            val spawnPoint = spawnPointNearFactory(factoryEntity!!, queueState.owner)
+
+            val entity = UnitFactory.createUnit(
+                world = world,
+                unitType = order.unitType,
+                owner = queueState.owner,
+                spawnX = spawnPoint.first,
+                spawnY = spawnPoint.second,
+                rallyX = order.rallyX,
+                rallyY = order.rallyY
+            )
+
+            DebugLog.spawn(
+                "produced id=${entity.id} type=${order.unitType} factory=${queueState.factoryId} remaining=${queueState.queue.size}"
+            )
+
+            queueState.readyAt = if (queueState.queue.isEmpty()) {
+                0L
+            } else {
+                now + queueState.queue.first().buildMillis
+            }
+        }
+    }
+
+    private fun findBestNodeToCapture(unit: Entity, unitTransform: Transform): Entity? {
+        val playerIndex = unit.owner().playerIndexOrNull() ?: return null
+
+        return world.entitiesWithComponent(ResourceNode::class.java)
+            .filter { nodeEntity ->
+                val node = nodeEntity.get(ResourceNode::class.java) ?: return@filter false
+                // берём ноды, которые либо нейтральны, либо захвачены врагом
+                node.capturedBy != playerIndex
+            }
+            .minByOrNull { nodeEntity ->
+                val nodeTransform = nodeEntity.get(Transform::class.java)
+                    ?: return@minByOrNull Float.MAX_VALUE
+                GameMath.distance(unitTransform, nodeTransform)
+            }
     }
 
     private fun updateNodeCapture(deltaSeconds: Float) {
@@ -332,34 +502,210 @@ class GameRoom(
             val target = unit.get(Target::class.java) ?: return@forEach
             val unitTransform = unit.get(Transform::class.java) ?: return@forEach
             val combat = unit.get(CombatStats::class.java) ?: return@forEach
+            val unitComponent = unit.get(UnitComponent::class.java) ?: return@forEach
 
             val currentTarget = target.targetEntityId?.let { world.getEntity(it) }
             val currentTargetAlive = currentTarget?.get(Health::class.java)?.isDead == false
+            val shouldDropCurrent = currentTargetAlive &&
+                    shouldClearTarget(unit, unitComponent, currentTarget, unitTransform, combat)
+            val enemy = findBestTarget(
+                attacker = unitComponent,
+                source = unit,
+                sourceTransform = unitTransform,
+                combat = combat,
+                candidates = alive
+            )
 
-            if (currentTargetAlive) return@forEach
-
-            val enemy = alive
-                .filter { candidate ->
-                    candidate.owner().isPlayer() &&
-                            candidate.owner() != unit.owner() &&
-                            candidate.has(Health::class.java)
+            if (enemy == null) {
+                if (!currentTargetAlive || shouldDropCurrent) {
+                    if (unit.has(CaptureBehavior::class.java)) {
+                        val node = findBestNodeToCapture(unit, unitTransform)
+                        if (node != null) {
+                            setEntityTarget(target, node)
+                            return@forEach
+                        }
+                    }
+                    restoreRallyTarget(unit, target, unitTransform)
                 }
-                .minByOrNull { candidate ->
-                    val candidateTransform = candidate.get(Transform::class.java)
-                        ?: return@minByOrNull Float.MAX_VALUE
-                    GameMath.distance(unitTransform, candidateTransform)
-                }
-
-            if (enemy != null) {
-                val enemyTransform = enemy.get(Transform::class.java) ?: return@forEach
-                val distance = GameMath.distance(unitTransform, enemyTransform)
-
-                if (distance <= max(380f, combat.attackRange * 4f)) {
-                    target.targetEntityId = enemy.id
-                    target.targetX = enemyTransform.x
-                    target.targetY = enemyTransform.y
-                }
+                return@forEach
             }
+
+            if (!currentTargetAlive || shouldDropCurrent || shouldReplaceTarget(unitComponent, unitTransform, combat, currentTarget, enemy)) {
+                setEntityTarget(target, enemy)
+            }
+        }
+    }
+
+    private fun findBestTarget(
+        attacker: UnitComponent,
+        source: Entity,
+        sourceTransform: Transform,
+        combat: CombatStats,
+        candidates: List<Entity>
+    ): Entity? {
+        return candidates
+            .filter { candidate ->
+                candidate.owner().isPlayer() &&
+                        candidate.owner() != source.owner() &&
+                        candidate.has(Health::class.java) &&
+                        isValidTargetFor(attacker, source, sourceTransform, combat, candidate)
+            }
+            .minByOrNull { candidate ->
+                val candidateTransform = candidate.get(Transform::class.java)
+                    ?: return@minByOrNull Float.MAX_VALUE
+                targetScore(attacker, candidate, GameMath.distance(sourceTransform, candidateTransform))
+            }
+    }
+
+    private fun setEntityTarget(target: Target, enemy: Entity) {
+        val enemyTransform = enemy.get(Transform::class.java) ?: return
+        target.targetEntityId = enemy.id
+        target.targetX = enemyTransform.x
+        target.targetY = enemyTransform.y
+    }
+
+    private fun shouldReplaceTarget(
+        attacker: UnitComponent,
+        unitTransform: Transform,
+        combat: CombatStats,
+        currentTarget: Entity?,
+        newTarget: Entity
+    ): Boolean {
+        if (currentTarget == null) return true
+        if (!isValidTargetFor(attacker, null, unitTransform, combat, currentTarget)) return true
+
+        val currentTransform = currentTarget.get(Transform::class.java) ?: return true
+        val newTransform = newTarget.get(Transform::class.java) ?: return false
+        val currentScore = targetScore(attacker, currentTarget, GameMath.distance(unitTransform, currentTransform))
+        val newScore = targetScore(attacker, newTarget, GameMath.distance(unitTransform, newTransform))
+
+        return newScore + 12f < currentScore
+    }
+
+    private fun shouldClearTarget(
+        unit: Entity,
+        attacker: UnitComponent,
+        currentTarget: Entity?,
+        unitTransform: Transform,
+        combat: CombatStats
+    ): Boolean {
+        if (currentTarget == null) return false
+        if (!isValidTargetFor(attacker, unit, unitTransform, combat, currentTarget)) return true
+
+        if (attacker.role == UnitRole.DEFENSE || attacker.role == UnitRole.SUPPORT) {
+            val rally = rallyPointFor(unit, unitTransform)
+            val targetTransform = currentTarget.get(Transform::class.java) ?: return true
+            return GameMath.distance(targetTransform.x, targetTransform.y, rally.first, rally.second) > guardRadius(attacker)
+        }
+
+        return false
+    }
+
+    private fun restoreRallyTarget(unit: Entity, target: Target, unitTransform: Transform) {
+        val rally = rallyPointFor(unit, unitTransform)
+        target.targetEntityId = null
+        target.targetX = rally.first
+        target.targetY = rally.second
+    }
+
+    private fun rallyPointFor(unit: Entity, fallbackTransform: Transform): Pair<Float, Float> {
+        val behavior: Behavior? = unit.get(CaptureBehavior::class.java)
+            ?: unit.get(SupportBehavior::class.java)
+            ?: unit.get(DefenseBehavior::class.java)
+            ?: unit.get(AttackBehavior::class.java)
+
+        return (behavior?.targetX ?: fallbackTransform.x) to (behavior?.targetY ?: fallbackTransform.y)
+    }
+
+    private fun isValidTargetFor(
+        attacker: UnitComponent,
+        source: Entity?,
+        sourceTransform: Transform,
+        combat: CombatStats,
+        candidate: Entity
+    ): Boolean {
+        val candidateTransform = candidate.get(Transform::class.java) ?: return false
+        val distance = GameMath.distance(sourceTransform, candidateTransform)
+        val assignedAreaOk = if (source != null && (attacker.role == UnitRole.DEFENSE || attacker.role == UnitRole.SUPPORT)) {
+            val rally = rallyPointFor(source, sourceTransform)
+            GameMath.distance(candidateTransform.x, candidateTransform.y, rally.first, rally.second) <= guardRadius(attacker)
+        } else {
+            true
+        }
+
+        return when (attacker.typeName) {
+            UnitType.ALLOCATOR,
+            UnitType.CACHE_RUNNER -> candidate.has(UnitComponent::class.java) && distance <= combat.attackRange * 1.65f
+
+            UnitType.GARBAGE_COLLECTOR,
+            UnitType.PATCH_HEALER -> candidate.has(UnitComponent::class.java) &&
+                    distance <= combat.attackRange * 1.35f &&
+                    assignedAreaOk
+
+            UnitType.THREAD_GUARD,
+            UnitType.FIREWALL -> candidate.has(UnitComponent::class.java) &&
+                    distance <= guardRadius(attacker) &&
+                    assignedAreaOk
+
+            UnitType.INJECTOR -> candidate.has(Factory::class.java) ||
+                    candidate.has(Core::class.java) ||
+                    candidate.has(UnitComponent::class.java)
+
+            UnitType.COROUTINE_ARCHER -> candidate.has(UnitComponent::class.java) ||
+                    candidate.has(Factory::class.java) ||
+                    candidate.has(Core::class.java)
+
+            UnitType.DEADLOCK,
+            UnitType.OVERCLOCK -> false
+        }
+    }
+
+    private fun targetScore(attacker: UnitComponent, candidate: Entity, distance: Float): Float {
+        val base = when (attacker.typeName) {
+            UnitType.ALLOCATOR,
+            UnitType.CACHE_RUNNER -> when {
+                candidate.has(UnitComponent::class.java) -> 20f
+                else -> Float.MAX_VALUE
+            }
+
+            UnitType.GARBAGE_COLLECTOR,
+            UnitType.PATCH_HEALER -> when {
+                candidate.has(UnitComponent::class.java) -> 25f
+                else -> Float.MAX_VALUE
+            }
+
+            UnitType.THREAD_GUARD,
+            UnitType.FIREWALL -> when {
+                candidate.has(UnitComponent::class.java) -> 10f
+                else -> Float.MAX_VALUE
+            }
+
+            UnitType.INJECTOR -> when {
+                candidate.has(Factory::class.java) -> 5f
+                candidate.has(Core::class.java) -> 8f
+                candidate.has(UnitComponent::class.java) -> 35f
+                else -> Float.MAX_VALUE
+            }
+
+            UnitType.COROUTINE_ARCHER -> when {
+                candidate.has(UnitComponent::class.java) -> 0f
+                candidate.has(Factory::class.java) -> 35f
+                candidate.has(Core::class.java) -> 45f
+                else -> Float.MAX_VALUE
+            }
+
+            UnitType.DEADLOCK,
+            UnitType.OVERCLOCK -> Float.MAX_VALUE
+        }
+
+        return base + distance / 10f
+    }
+
+    private fun guardRadius(attacker: UnitComponent): Float {
+        return when (attacker.typeName) {
+            UnitType.FIREWALL -> 280f
+            UnitType.THREAD_GUARD -> 230f
+            else -> 170f
         }
     }
 
@@ -466,6 +812,7 @@ class GameRoom(
             .forEach { support ->
                 val transform = support.get(Transform::class.java) ?: return@forEach
                 val combat = support.get(CombatStats::class.java) ?: return@forEach
+                val unit = support.get(UnitComponent::class.java) ?: return@forEach
 
                 if (now - combat.lastAttackAt < 1200L) return@forEach
 
@@ -489,7 +836,13 @@ class GameRoom(
                 if (allyToHeal != null) {
                     val before = allyToHeal.second.current
                     combat.lastAttackAt = now
-                    allyToHeal.second.heal(10)
+                    val healAmount = when (unit.typeName) {
+                        UnitType.PATCH_HEALER -> 14
+                        UnitType.GARBAGE_COLLECTOR -> 11
+                        else -> 10
+                    }
+
+                    allyToHeal.second.heal(healAmount)
 
                     DebugLog.combat(
                         "support=${support.id} healed=${allyToHeal.first.id} hp $before -> ${allyToHeal.second.current}"
@@ -603,6 +956,98 @@ class GameRoom(
     private fun isInside(entity: Entity, target: Transform, radius: Float): Boolean {
         val transform = entity.get(Transform::class.java) ?: return false
         return GameMath.distance(transform, target) <= radius
+    }
+
+    private fun cooldownMillisFor(unitType: UnitType): Long {
+        return when (unitType) {
+            UnitType.ALLOCATOR -> 3500L
+            UnitType.CACHE_RUNNER -> 3000L
+            UnitType.GARBAGE_COLLECTOR -> 5200L
+            UnitType.PATCH_HEALER -> 4500L
+            UnitType.THREAD_GUARD -> 6300L
+            UnitType.FIREWALL -> 7600L
+            UnitType.INJECTOR -> 6800L
+            UnitType.COROUTINE_ARCHER -> 6400L
+            UnitType.DEADLOCK -> 10000L
+            UnitType.OVERCLOCK -> 8500L
+        }
+    }
+
+    private fun buildMillisFor(unitType: UnitType, queueState: FactoryQueueState): Long {
+        val config = UnitRegistry.getConfig(unitType)
+        val factoryEntity = world.getEntity(queueState.factoryId)
+        val multiplier = factoryEntity
+            ?.get(Factory::class.java)
+            ?.productionMultiplier
+            ?: 1f
+
+        val raw = (config.buildTime * 1000f) / multiplier.coerceAtLeast(0.1f)
+        return ceil(raw.toDouble()).toLong().coerceAtLeast(900L)
+    }
+
+    private fun findFactoryQueue(owner: OwnerType, type: FactoryType): FactoryQueueState? {
+        return factoryQueues.values.firstOrNull { queueState ->
+            if (queueState.owner != owner || queueState.type != type) return@firstOrNull false
+            val entity = world.getEntity(queueState.factoryId) ?: return@firstOrNull false
+            val health = entity.get(Health::class.java) ?: return@firstOrNull false
+            !health.isDead
+        }
+    }
+
+    private fun factoryQueueSnapshot(): Map<Int, Map<FactoryType, Int>> {
+        return playerRuntimes.values.associate { runtime ->
+            val owner = OwnerType.fromPlayerIndex(runtime.playerIndex)
+
+            val byFactory = FactoryType.entries.associateWith { factoryType ->
+                factoryQueues.values
+                    .firstOrNull { it.owner == owner && it.type == factoryType }
+                    ?.queue
+                    ?.size
+                    ?: 0
+            }
+
+            runtime.playerId to byFactory
+        }
+    }
+
+    private fun requiredFactoryFor(unitType: UnitType): FactoryType {
+        return when (unitType) {
+            UnitType.ALLOCATOR,
+            UnitType.INJECTOR,
+            UnitType.CACHE_RUNNER,
+            UnitType.COROUTINE_ARCHER -> FactoryType.BASIC
+
+            UnitType.GARBAGE_COLLECTOR,
+            UnitType.THREAD_GUARD,
+            UnitType.FIREWALL,
+            UnitType.PATCH_HEALER -> FactoryType.SUPPORT
+
+            UnitType.DEADLOCK,
+            UnitType.OVERCLOCK -> FactoryType.SUPPORT
+        }
+    }
+
+    private fun findActiveFactory(owner: OwnerType, type: FactoryType): Entity? {
+        return world.getAliveEntities()
+            .filter { entity ->
+                entity.owner() == owner &&
+                        entity.has(Factory::class.java)
+            }
+            .firstOrNull { entity ->
+                entity.get(Factory::class.java)?.factoryType == type
+            }
+    }
+
+    private fun spawnPointNearFactory(factory: Entity, owner: OwnerType): Pair<Float, Float> {
+        val transform = factory.get(Transform::class.java)
+            ?: return GameConfig.worldWidth / 2f to GameConfig.worldHeight / 2f
+
+        val lateral = ((tick % 5L) - 2L).toFloat() * 12f
+        val forward = if (owner == OwnerType.PLAYER_1) 58f else -58f
+
+        val spawnX = (transform.x + lateral).coerceIn(16f, GameConfig.worldWidth - 16f)
+        val spawnY = (transform.y + forward).coerceIn(16f, GameConfig.worldHeight - 16f)
+        return spawnX to spawnY
     }
 
     fun stop() {

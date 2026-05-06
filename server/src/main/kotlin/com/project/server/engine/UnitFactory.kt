@@ -24,13 +24,15 @@ object UnitFactory {
         world: GameWorld,
         unitType: UnitType,
         owner: OwnerType,
-        x: Float,
-        y: Float
+        spawnX: Float,
+        spawnY: Float,
+        rallyX: Float,
+        rallyY: Float
     ): Entity {
         val config = UnitRegistry.getConfig(unitType)
         val entity = world.createEntity()
 
-        entity.add(Transform(x, y))
+        entity.add(Transform(spawnX, spawnY))
         entity.add(Owner(owner))
         entity.add(Sprite(config.sprite, getVisualScale(unitType)))
         entity.add(
@@ -51,14 +53,14 @@ object UnitFactory {
             )
         )
         entity.add(Velocity(0f, 0f))
-        entity.add(Target(targetX = x, targetY = y))
+        entity.add(Target(targetX = rallyX, targetY = rallyY))
         entity.add(StatusEffects())
 
         when (config.role) {
-            UnitRole.CAPTURE -> entity.add(CaptureBehavior(x, y))
-            UnitRole.SUPPORT -> entity.add(SupportBehavior(x, y))
-            UnitRole.DEFENSE -> entity.add(DefenseBehavior(x, y))
-            UnitRole.ATTACK -> entity.add(AttackBehavior(x, y))
+            UnitRole.CAPTURE -> entity.add(CaptureBehavior(rallyX, rallyY))
+            UnitRole.SUPPORT -> entity.add(SupportBehavior(rallyX, rallyY))
+            UnitRole.DEFENSE -> entity.add(DefenseBehavior(rallyX, rallyY))
+            UnitRole.ATTACK -> entity.add(AttackBehavior(rallyX, rallyY))
             UnitRole.SPELL -> {
             }
         }
@@ -67,7 +69,8 @@ object UnitFactory {
 
         DebugLog.spawn(
             "UnitFactory created id=${entity.id} type=$unitType role=${config.role} owner=$owner " +
-                    "x=$x y=$y hp=${config.health} speed=${config.speed} sprite=${config.sprite} scale=${getVisualScale(unitType)}"
+                    "spawn=$spawnX,$spawnY rally=$rallyX,$rallyY hp=${config.health} speed=${config.speed} " +
+                    "sprite=${config.sprite} scale=${getVisualScale(unitType)}"
         )
 
         return entity
@@ -81,6 +84,10 @@ object UnitFactory {
             UnitType.INJECTOR -> 1.08f
             UnitType.DEADLOCK -> 1.0f
             UnitType.OVERCLOCK -> 1.0f
+            UnitType.CACHE_RUNNER -> 0.82f
+            UnitType.FIREWALL -> 1.34f
+            UnitType.COROUTINE_ARCHER -> 0.98f
+            UnitType.PATCH_HEALER -> 0.96f
         }
     }
 }
