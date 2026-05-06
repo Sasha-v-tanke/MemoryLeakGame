@@ -7,7 +7,7 @@ class PlayerStatusHandler(private val playerIds: List<Int>) {
     private val statuses = ConcurrentHashMap<Int, Boolean>()
 
     init {
-        for (playerId in playerIds) {
+        playerIds.forEach { playerId ->
             statuses[playerId] = false
         }
     }
@@ -18,8 +18,9 @@ class PlayerStatusHandler(private val playerIds: List<Int>) {
 
     fun setPlayerReady(playerReady: PlayerReadyRequest) {
         if (playerReady.playerId !in playerIds) {
-            throw IllegalArgumentException("Player ID does not match player ID")
+            throw IllegalArgumentException("Player ID does not belong to this room")
         }
+
         statuses[playerReady.playerId] = true
     }
 }

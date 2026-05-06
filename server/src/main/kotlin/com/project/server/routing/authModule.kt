@@ -5,51 +5,52 @@ import com.project.server.models.User
 import com.project.server.repository.UserRepository
 import com.project.server.service.MatchQueue
 import com.project.server.service.SessionManager
+import com.project.shared.api.JsonFormats
+import com.project.shared.api.ListenReadyRequest
 import com.project.shared.api.auth.AuthRequest
 import com.project.shared.api.auth.AuthResponse
-import com.project.shared.api.ListenReadyRequest
 import com.project.shared.api.auth.LoginRequest
 import com.project.shared.api.auth.RegisterRequest
 import io.ktor.server.application.Application
+import io.ktor.server.application.log
 import io.ktor.server.routing.routing
+import io.ktor.server.websocket.application
 import io.ktor.server.websocket.webSocket
 import io.ktor.websocket.Frame
 import io.ktor.websocket.readText
 import kotlinx.coroutines.channels.consumeEach
 import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.Json
 import java.util.UUID
 
-
 fun Application.authModule() {
-    val json = Json { ignoreUnknownKeys = true }
+    val json = JsonFormats.default
+
     routing {
         webSocket("/auth") {
             incoming.consumeEach { frame ->
                 if (frame !is Frame.Text) return@consumeEach
 
-                try {
-                    val request = json.decodeFromString<AuthRequest>(frame.readText())
-
-                    when (request) {
-                        is RegisterRequest -> {
-                            val response = register(request)
-                            outgoing.send(Frame.Text(json.encodeToString(response)))
-                        }
-
-                        is LoginRequest -> {
-                            val response = login(request)
-                            outgoing.send(Frame.Text(json.encodeToString(response)))
-                        }
-
+                val response = try {
+                    when (val request = json.decodeFromString<AuthRequest>(frame.readText())) {
+                        is RegisterRequest -> register(request)
+                        is LoginRequest -> login(request)
                     }
                 } catch (e: Exception) {
-                    outgoing.send(Frame.Text(json.encodeToString(AuthResponse(false, null, -1, "Invalid request format"))))
+                    AuthResponse(
+                        success = false,
+                        token = null,
+                        playerId = null,
+                        message = "Invalid auth request: ${e.message}"
+                    )
                 }
+
+                outgoing.send(Frame.Text(json.encodeToString(response)))
             }
         }
+
         webSocket("/listen") {
             var playerSession: PlayerSession? = null
+
             try {
                 incoming.consumeEach { frame ->
                     if (frame !is Frame.Text) return@consumeEach
@@ -57,18 +58,24 @@ fun Application.authModule() {
                     try {
                         val request = json.decodeFromString<ListenReadyRequest>(frame.readText())
                         val sessionId = UUID.randomUUID().toString()
-                        playerSession = PlayerSession(sessionId, request.playerId, this)
+
+                        playerSession = PlayerSession(
+                            sessionId = sessionId,
+                            playerId = request.playerId,
+                            socket = this
+                        )
+
                         SessionManager.addSession(playerSession!!)
-                        println("Player ${request.playerId} connected to listen socket")
+                        application.log.info("Player ${request.playerId} connected to listen socket")
                     } catch (e: Exception) {
-                        println("Listen socket error: ${e.message}")
+                        application.log.error("Listen socket error", e)
                     }
                 }
             } finally {
-                if (playerSession != null) {
-                    println("Player ${playerSession!!.playerId} disconnected from listen socket")
-                    MatchQueue.removePlayer(playerSession!!)
-                    SessionManager.removeSession(playerSession!!.sessionId)
+                playerSession?.let { session ->
+                    application.log.info("Player ${session.playerId} disconnected from listen socket")
+                    MatchQueue.removePlayer(session.playerId)
+                    SessionManager.removeSession(session.sessionId)
                 }
             }
         }
@@ -76,21 +83,55 @@ fun Application.authModule() {
 }
 
 fun register(request: RegisterRequest): AuthResponse {
-    return if (UserRepository.findByUsername(request.username) != null) {
-        AuthResponse(false, null, -1, "Username already exists")
-    } else {
-        val newUser = UserRepository.addUser(
-            User(id = null, name = request.username, email = request.email, password = request.password)
-        )
-        AuthResponse(true, "dummy-token-${newUser.id}", -1, "User registered successfully")
+    val username = request.username.trim()
+    val email = request.email.trim()
+    val password = request.password
+
+    if (username.length < 3) {
+        return AuthResponse(false, null, null, "Username must contain at least 3 characters")
     }
+
+    if (password.length < 4) {
+        return AuthResponse(false, null, null, "Password must contain at least 4 characters")
+    }
+
+    if (!email.contains("@")) {
+        return AuthResponse(false, null, null, "Invalid email")
+    }
+
+    if (UserRepository.findByUsername(username) != null) {
+        return AuthResponse(false, null, null, "Username already exists")
+    }
+
+    val newUser = UserRepository.addUser(
+        User(
+            id = null,
+            name = username,
+            email = email,
+            password = password
+        )
+    )
+
+    return AuthResponse(
+        success = true,
+        token = "dummy-token-${newUser.id}",
+        playerId = newUser.id,
+        message = "User registered successfully"
+    )
 }
 
 fun login(request: LoginRequest): AuthResponse {
-    val user = UserRepository.findByUsername(request.username)
-    return if (user == null || user.password != request.password) {
-        AuthResponse(false, null, -1, "Invalid username or password")
-    } else {
-        AuthResponse(true, "dummy-token-${user.id}", user.id, "Login successful")
+    val username = request.username.trim()
+    val user = UserRepository.findByUsername(username)
+
+    if (user == null || user.password != request.password) {
+        return AuthResponse(false, null, null, "Invalid username or password")
     }
+
+    return AuthResponse(
+        success = true,
+        token = "dummy-token-${user.id}",
+        playerId = user.id,
+        message = "Login successful"
+    )
 }

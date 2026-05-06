@@ -7,6 +7,7 @@ import org.jetbrains.exposed.sql.transactions.transaction
 
 fun Application.initDatabase() {
     DatabaseFactory.init(this)
+
     transaction {
         SchemaUtils.create(Users)
     }
