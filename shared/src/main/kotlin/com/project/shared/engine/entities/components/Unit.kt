@@ -8,7 +8,7 @@ import kotlinx.serialization.Serializable
 @Serializable
 @SerialName("unit")
 data class Unit(
-    val type: UnitType,
+    val typeName: UnitType,
     val role: UnitRole,
     val costMemory: Int,
     val costCpu: Int

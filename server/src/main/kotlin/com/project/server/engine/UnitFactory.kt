@@ -35,7 +35,7 @@ object UnitFactory {
         entity.add(Sprite(config.sprite, getVisualScale(unitType)))
         entity.add(
             Unit(
-                type = config.unitType,
+                typeName = config.unitType,
                 role = config.role,
                 costMemory = config.costMemory,
                 costCpu = config.costCpu
@@ -60,11 +60,17 @@ object UnitFactory {
             UnitRole.DEFENSE -> entity.add(DefenseBehavior(x, y))
             UnitRole.ATTACK -> entity.add(AttackBehavior(x, y))
             UnitRole.SPELL -> {
-                // Spells are handled before unit creation.
             }
         }
 
-        return world.addEntity(entity)
+        world.addEntity(entity)
+
+        DebugLog.spawn(
+            "UnitFactory created id=${entity.id} type=$unitType role=${config.role} owner=$owner " +
+                    "x=$x y=$y hp=${config.health} speed=${config.speed} sprite=${config.sprite} scale=${getVisualScale(unitType)}"
+        )
+
+        return entity
     }
 
     private fun getVisualScale(unitType: UnitType): Float {

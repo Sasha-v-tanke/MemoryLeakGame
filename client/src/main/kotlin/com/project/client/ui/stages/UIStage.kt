@@ -16,7 +16,7 @@ class UIStage(
     viewport: Viewport,
     private val game: MyGame
 ) : BaseStage(viewport) {
-    var onCardSelected: (UnitType) -> Unit = {}
+    var onCardSelected: (UnitType) -> kotlin.Unit = {}
 
     private lateinit var topBar: Table
     private lateinit var bottomBar: Table
@@ -28,6 +28,7 @@ class UIStage(
     private lateinit var selectedCardLabel: Label
     private lateinit var statusLabel: Label
     private lateinit var resourcesLabel: Label
+    private lateinit var debugLabel: Label
     private lateinit var toastLabel: Label
     private lateinit var gameOverBox: Table
 
@@ -92,15 +93,12 @@ class UIStage(
     }
 
     private fun buildHoverInfo() {
-        // hoverRoot — прозрачный контейнер на весь экран.
-        // Важно: без background, иначе он затемняет всю арену.
         hoverRoot = Table()
         hoverRoot.setFillParent(true)
         hoverRoot.top().right()
         hoverRoot.pad(10f)
         hoverRoot.isVisible = false
 
-        // Фон есть только у маленькой панели.
         hoverPanel = Table(skin).apply {
             background = skin.newDrawable(
                 "default-round",
@@ -137,7 +135,6 @@ class UIStage(
     }
 
     private fun buildGameOver() {
-        // gameOverBox специально полноэкранный, но он появляется только после конца матча.
         gameOverBox = Table()
         gameOverBox.setFillParent(true)
         gameOverBox.center()

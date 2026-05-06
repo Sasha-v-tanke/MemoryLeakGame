@@ -13,13 +13,10 @@ import com.project.shared.engine.config.GameConfig
 import com.project.shared.engine.config.WorldConfig
 import com.project.shared.engine.entities.Entity
 import com.project.shared.engine.entities.OwnerType
-import com.project.shared.engine.entities.components.AttackBehavior
 import com.project.shared.engine.entities.components.CaptureBehavior
 import com.project.shared.engine.entities.components.CombatStats
 import com.project.shared.engine.entities.components.Core
-import com.project.shared.engine.entities.components.Factory
 import com.project.shared.engine.entities.components.Health
-import com.project.shared.engine.entities.components.Owner
 import com.project.shared.engine.entities.components.ResourceNode
 import com.project.shared.engine.entities.components.ResourceNodeType
 import com.project.shared.engine.entities.components.StatusEffects
@@ -62,12 +59,21 @@ class GameRoom(
         )
     }.toMap()
 
+    init {
+        DebugLog.info(
+            "GameRoom created room=$roomId players=${players.map { it.playerId }}"
+        )
+    }
+
     fun setPlayerReady(playerReady: PlayerReadyRequest) {
         if (finished.get()) return
+
+        DebugLog.info("Ready received room=$roomId player=${playerReady.playerId}")
 
         playerStatus.setPlayerReady(playerReady)
 
         if (playerStatus.isAllReady() && started.compareAndSet(false, true)) {
+            DebugLog.info("All players ready room=$roomId. Starting game...")
             scope.launch {
                 startGame()
             }
@@ -75,24 +81,41 @@ class GameRoom(
     }
 
     fun playCard(request: PlayCardRequest): PlayCardResponse {
+        DebugLog.card(
+            "request room=$roomId started=${started.get()} finished=${finished.get()} " +
+                    "player=${request.playerId} card=${request.unitType} x=${request.targetX} y=${request.targetY}"
+        )
+
         if (!started.get()) {
+            DebugLog.card("rejected: game is not started")
             return PlayCardResponse(false, "Game is not started yet")
         }
 
         if (finished.get()) {
+            DebugLog.card("rejected: game is finished")
             return PlayCardResponse(false, "Game is already finished")
         }
 
         val runtime = playerRuntimes[request.playerId]
-            ?: return PlayCardResponse(false, "Player does not belong to this room")
+        if (runtime == null) {
+            DebugLog.card("rejected: player not in room")
+            return PlayCardResponse(false, "Player does not belong to this room")
+        }
 
         val config = UnitRegistry.getConfig(request.unitType)
 
+        DebugLog.card(
+            "resources before player=${request.playerId} memory=${runtime.memory} cpu=${runtime.cpu} " +
+                    "costMemory=${config.costMemory} costCpu=${config.costCpu}"
+        )
+
         if (runtime.memory < config.costMemory) {
+            DebugLog.card("rejected: not enough Memory")
             return PlayCardResponse(false, "Not enough Memory")
         }
 
         if (runtime.cpu < config.costCpu) {
+            DebugLog.card("rejected: not enough CPU")
             return PlayCardResponse(false, "Not enough CPU")
         }
 
@@ -106,26 +129,51 @@ class GameRoom(
         when (request.unitType) {
             UnitType.DEADLOCK -> castDeadlock(owner, targetX, targetY)
             UnitType.OVERCLOCK -> castOverclock(owner, targetX, targetY)
-            else -> UnitFactory.createUnit(world, request.unitType, owner, targetX, targetY)
+            else -> {
+                val entity = UnitFactory.createUnit(world, request.unitType, owner, targetX, targetY)
+                DebugLog.spawn(
+                    "unit created id=${entity.id} type=${request.unitType} owner=$owner x=$targetX y=$targetY " +
+                            "entities=${world.getEntities().size}"
+                )
+            }
         }
+
+        DebugLog.card(
+            "accepted player=${request.playerId} memory=${runtime.memory} cpu=${runtime.cpu} entities=${world.getEntities().size}"
+        )
 
         return PlayCardResponse(true, "${config.displayName} deployed")
     }
 
     private suspend fun startGame() {
         buildWorld()
+
+        DebugLog.info(
+            "World built room=$roomId entities=${world.getEntities().size} " +
+                    "resources=${playerRuntimes.values.map { "p${it.playerIndex}:${it.memory}/${it.cpu}" }}"
+        )
+
+        sendSnapshot()
         GameDispatcher.notifyPlayersGameStarted(players)
         startGameLoop()
     }
 
     private fun buildWorld() {
         WorldConfig.objects.forEach { config ->
-            EntityFactory.createWorldObject(world, config)
+            val entity = EntityFactory.createWorldObject(world, config)
+            val transform = entity.get(Transform::class.java)
+
+            DebugLog.spawn(
+                "world object id=${entity.id} kind=${config.kind} owner=${config.owner} " +
+                        "x=${transform?.x} y=${transform?.y} scale=${config.scale}"
+            )
         }
     }
 
     private fun startGameLoop() {
         gameLoopJob = scope.launch {
+            DebugLog.info("Game loop started room=$roomId")
+
             while (isActive && !finished.get()) {
                 val start = System.currentTimeMillis()
 
@@ -134,6 +182,11 @@ class GameRoom(
                 if (tick % GameConfig.snapshotEveryTicks == 0L) {
                     sendSnapshot()
                 }
+
+                DebugLog.tick(
+                    "room=$roomId tick=$tick entities=${world.getEntities().size} " +
+                            "resources=${playerRuntimes.values.joinToString { "player=${it.playerId} mem=${it.memory} cpu=${it.cpu} inc=${it.memoryIncome}/${it.cpuIncome}" }}"
+                )
 
                 tick++
 
@@ -144,6 +197,8 @@ class GameRoom(
                     delay(delayTime)
                 }
             }
+
+            DebugLog.info("Game loop stopped room=$roomId")
         }
     }
 
@@ -153,6 +208,11 @@ class GameRoom(
             resources = playerRuntimes.values.associate { it.playerId to it.toResources() },
             timestamp = System.currentTimeMillis(),
             tick = tick
+        )
+
+        DebugLog.snapshot(
+            "room=$roomId tick=$tick entities=${snapshot.entities.size} " +
+                    "resources=${snapshot.resources}"
         )
 
         GameDispatcher.sendToAllPlayers(players, snapshot)
@@ -180,8 +240,17 @@ class GameRoom(
         recalculateIncome()
 
         playerRuntimes.values.forEach { runtime ->
+            val beforeMemory = runtime.memory
+            val beforeCpu = runtime.cpu
+
             runtime.memory += runtime.memoryIncome
             runtime.cpu += runtime.cpuIncome
+
+            DebugLog.income(
+                "player=${runtime.playerId} index=${runtime.playerIndex} " +
+                        "memory $beforeMemory -> ${runtime.memory} (+${runtime.memoryIncome}) " +
+                        "cpu $beforeCpu -> ${runtime.cpu} (+${runtime.cpuIncome})"
+            )
         }
     }
 
@@ -210,6 +279,10 @@ class GameRoom(
         world.entitiesWithComponent(ResourceNode::class.java).forEach { nodeEntity ->
             val nodeTransform = nodeEntity.get(Transform::class.java) ?: return@forEach
             val node = nodeEntity.get(ResourceNode::class.java) ?: return@forEach
+
+            val oldOwner = node.capturedBy
+            val oldP1 = node.captureProgressPlayer1
+            val oldP2 = node.captureProgressPlayer2
 
             val player1Capturers = units.count { unit ->
                 unit.owner() == OwnerType.PLAYER_1 &&
@@ -245,6 +318,18 @@ class GameRoom(
                         node.capturedBy = 2
                     }
                 }
+            }
+
+            if (
+                oldOwner != node.capturedBy ||
+                kotlin.math.abs(oldP1 - node.captureProgressPlayer1) > 0.05f ||
+                kotlin.math.abs(oldP2 - node.captureProgressPlayer2) > 0.05f
+            ) {
+                DebugLog.capture(
+                    "node=${nodeEntity.id} type=${node.nodeType} owner ${oldOwner} -> ${node.capturedBy} " +
+                            "p1=${"%.2f".format(node.captureProgressPlayer1)} p2=${"%.2f".format(node.captureProgressPlayer2)} " +
+                            "capturers=$player1Capturers/$player2Capturers"
+                )
             }
         }
     }
@@ -299,6 +384,9 @@ class GameRoom(
 
                 if (effects?.isStunned(now) == true) return@forEach
 
+                val beforeX = transform.x
+                val beforeY = transform.y
+
                 val targetEntity = target.targetEntityId?.let { world.getEntity(it) }
 
                 if (targetEntity != null) {
@@ -327,6 +415,15 @@ class GameRoom(
                         targetY = ty,
                         speed = combat.moveSpeed * speedMultiplier,
                         deltaSeconds = deltaSeconds
+                    )
+                }
+
+                if (kotlin.math.abs(beforeX - transform.x) > 0.1f || kotlin.math.abs(beforeY - transform.y) > 0.1f) {
+                    DebugLog.movement(
+                        "entity=${entity.id} owner=${entity.owner()} " +
+                                "from=${"%.1f".format(beforeX)},${"%.1f".format(beforeY)} " +
+                                "to=${"%.1f".format(transform.x)},${"%.1f".format(transform.y)} " +
+                                "target=${target.targetEntityId ?: "${target.targetX},${target.targetY}"}"
                     )
                 }
             }
@@ -364,7 +461,12 @@ class GameRoom(
                 if (now - combat.lastAttackAt < cooldown) return@forEach
 
                 combat.lastAttackAt = now
+                val before = targetHealth.current
                 targetHealth.damage(combat.damage)
+
+                DebugLog.combat(
+                    "attacker=${entity.id} target=${targetEntity.id} damage=${combat.damage} hp $before -> ${targetHealth.current}"
+                )
             }
     }
 
@@ -395,8 +497,13 @@ class GameRoom(
                     .minByOrNull { it.second.current }
 
                 if (allyToHeal != null) {
+                    val before = allyToHeal.second.current
                     combat.lastAttackAt = now
                     allyToHeal.second.heal(10)
+
+                    DebugLog.combat(
+                        "support=${support.id} healed=${allyToHeal.first.id} hp $before -> ${allyToHeal.second.current}"
+                    )
                 }
             }
     }
@@ -416,6 +523,8 @@ class GameRoom(
         val now = System.currentTimeMillis()
         val radius = UnitRegistry.getConfig(UnitType.DEADLOCK).attackRange
 
+        var affected = 0
+
         world.getAliveEntities()
             .filter {
                 it.owner().isPlayer() &&
@@ -428,8 +537,11 @@ class GameRoom(
 
                 if (GameMath.distance(transform.x, transform.y, x, y) <= radius) {
                     effects.stunnedUntil = now + 2500L
+                    affected++
                 }
             }
+
+        DebugLog.card("Deadlock cast owner=$owner x=$x y=$y affected=$affected")
 
         scope.launch {
             GameDispatcher.sendToAllPlayers(
@@ -443,6 +555,8 @@ class GameRoom(
         val now = System.currentTimeMillis()
         val radius = UnitRegistry.getConfig(UnitType.OVERCLOCK).attackRange
 
+        var affected = 0
+
         world.getAliveEntities()
             .filter {
                 it.owner() == owner &&
@@ -454,8 +568,11 @@ class GameRoom(
 
                 if (GameMath.distance(transform.x, transform.y, x, y) <= radius) {
                     effects.overclockUntil = now + 4500L
+                    affected++
                 }
             }
+
+        DebugLog.card("Overclock cast owner=$owner x=$x y=$y affected=$affected")
 
         scope.launch {
             GameDispatcher.sendToAllPlayers(
@@ -472,6 +589,8 @@ class GameRoom(
 
         val loser = playerRuntimes.values.first { it.playerIndex == loserPlayerIndex }
         val winner = playerRuntimes.values.first { it.playerIndex == winnerPlayerIndex }
+
+        DebugLog.info("Game finished room=$roomId winner=${winner.playerId} loser=${loser.playerId}")
 
         scope.launch {
             sendSnapshot()
@@ -497,6 +616,7 @@ class GameRoom(
     }
 
     fun stop() {
+        DebugLog.info("Stopping room=$roomId")
         gameLoopJob?.cancel()
         scope.cancel()
     }
