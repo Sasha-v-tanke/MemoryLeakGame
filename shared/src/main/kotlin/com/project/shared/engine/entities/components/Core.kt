@@ -4,8 +4,7 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
-@SerialName("velocity")
-data class Velocity(
-    var dx: Float,
-    var dy: Float
+@SerialName("core")
+data class Core(
+    val playerIndex: Int
 ) : Component

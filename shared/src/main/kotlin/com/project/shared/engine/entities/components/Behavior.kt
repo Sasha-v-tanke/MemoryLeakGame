@@ -1,5 +1,6 @@
 package com.project.shared.engine.entities.components
 
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -9,22 +10,38 @@ sealed interface Behavior : Component {
 }
 
 @Serializable
-data class WorkerBehavior(
+@SerialName("capture_behavior")
+data class CaptureBehavior(
     override val targetX: Float?,
-    override val targetY: Float?,
-    val isCarrying: Boolean = false
+    override val targetY: Float?
 ) : Behavior
 
 @Serializable
-data class CarrierBehavior(
+@SerialName("support_behavior")
+data class SupportBehavior(
     override val targetX: Float?,
-    override val targetY: Float?,
-    val currentLoad: Int = 0
+    override val targetY: Float?
 ) : Behavior
 
 @Serializable
-data class FighterBehavior(
+@SerialName("defense_behavior")
+data class DefenseBehavior(
+    override val targetX: Float?,
+    override val targetY: Float?
+) : Behavior
+
+@Serializable
+@SerialName("attack_behavior")
+data class AttackBehavior(
     override val targetX: Float?,
     override val targetY: Float?,
     val targetEntityId: Long? = null
+) : Behavior
+
+@Serializable
+@SerialName("spell_behavior")
+data class SpellBehavior(
+    override val targetX: Float?,
+    override val targetY: Float?,
+    val durationMillis: Long
 ) : Behavior

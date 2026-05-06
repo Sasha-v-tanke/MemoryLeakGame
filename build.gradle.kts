@@ -1,14 +1,10 @@
 plugins {
-    kotlin("jvm") version "2.2.20"
-    kotlin("plugin.serialization") version "2.2.20"
+    kotlin("jvm") version "2.2.20" apply false
+    kotlin("plugin.serialization") version "2.2.20" apply false
 }
 
 allprojects {
     repositories {
         mavenCentral()
     }
-}
-
-dependencies {
-
 }

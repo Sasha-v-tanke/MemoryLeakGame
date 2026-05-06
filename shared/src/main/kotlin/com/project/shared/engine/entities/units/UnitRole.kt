@@ -8,5 +8,5 @@ enum class UnitRole {
     SUPPORT,
     DEFENSE,
     ATTACK,
-    SPECIAL
+    SPELL
 }

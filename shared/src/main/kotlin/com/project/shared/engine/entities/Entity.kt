@@ -8,8 +8,14 @@ data class Entity(
     var id: Long,
     val components: MutableMap<Class<out Component>, Component> = mutableMapOf()
 ) {
-    fun <T : Component> add(component: T) {
+    fun <T : Component> add(component: T): Entity {
         components[component.javaClass] = component
+        return this
+    }
+
+    fun remove(type: Class<out Component>): Entity {
+        components.remove(type)
+        return this
     }
 
     @Suppress("UNCHECKED_CAST")
@@ -17,13 +23,19 @@ data class Entity(
         return components[type] as? T
     }
 
-    fun toState(): EntityState {
-        val owner = get(Owner::class.java)
+    fun has(type: Class<out Component>): Boolean {
+        return components.containsKey(type)
+    }
 
+    fun owner(): OwnerType {
+        return get(Owner::class.java)?.ownerType ?: OwnerType.WORLD
+    }
+
+    fun toState(): EntityState {
         return EntityState(
             id = id,
-            owner = owner?.ownerType ?: OwnerType.WORLD,
-            components = components.values.map { it }
+            owner = owner(),
+            components = components.values.toList()
         )
     }
 }

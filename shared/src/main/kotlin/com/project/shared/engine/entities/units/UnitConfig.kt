@@ -5,12 +5,17 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class UnitConfig(
     val unitType: UnitType,
+    val displayName: String,
+    val role: UnitRole,
     val buildTime: Float,
-    val health: Float,
-    val capacity: Int,
+    val health: Int,
     val speed: Float,
-    val costCPU: Int,
-    val costRAM: Int,
+    val damage: Int,
+    val attackRange: Float,
+    val attackCooldownMillis: Long,
+    val costCpu: Int,
+    val costMemory: Int,
     val sprite: String,
-    val role: UnitRole
+    val gameDescription: String,
+    val techDescription: String
 )

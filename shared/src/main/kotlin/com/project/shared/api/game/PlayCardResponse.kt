@@ -4,8 +4,8 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
-@SerialName("player_ready_response")
-data class PlayerReadyResponse(
+@SerialName("play_card_response")
+data class PlayCardResponse(
     val success: Boolean,
     val description: String = ""
 ) : GameResponse

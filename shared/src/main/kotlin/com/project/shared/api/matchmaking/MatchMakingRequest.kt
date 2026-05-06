@@ -5,4 +5,3 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 sealed interface MatchMakingRequest : Request
-

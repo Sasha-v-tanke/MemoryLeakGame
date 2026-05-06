@@ -8,5 +8,6 @@ enum class UnitType {
     GARBAGE_COLLECTOR,
     THREAD_GUARD,
     INJECTOR,
-    DEADLOCK
+    DEADLOCK,
+    OVERCLOCK
 }
