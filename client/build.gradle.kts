@@ -1,6 +1,6 @@
 plugins {
-    kotlin("jvm") version "2.2.20"
-    kotlin("plugin.serialization") version "2.2.20"
+    kotlin("jvm")
+    kotlin("plugin.serialization")
     application
 }
 
@@ -11,13 +11,7 @@ val ktorVersion = "3.0.0"
 val gdxVersion = "1.12.0"
 val ktxVersion = "1.12.0-rc1"
 
-repositories {
-    mavenCentral()
-}
-
 dependencies {
-    testImplementation(kotlin("test"))
-
     implementation(project(":shared"))
 
     implementation("io.ktor:ktor-client-core:$ktorVersion")
@@ -38,6 +32,8 @@ dependencies {
     implementation("io.github.libktx:ktx-app:$ktxVersion")
     implementation("io.github.libktx:ktx-scene2d:$ktxVersion")
     implementation("io.github.libktx:ktx-style:$ktxVersion")
+
+    testImplementation(kotlin("test"))
 }
 
 tasks.test {

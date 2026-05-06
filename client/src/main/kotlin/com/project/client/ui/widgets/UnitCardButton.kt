@@ -8,16 +8,20 @@ class UnitCardButton(
     private val config: UnitConfig,
     skin: Skin
 ) : TextButton(buildButtonText(config), skin) {
-
     companion object {
-        private fun buildButtonText(config: UnitConfig) = """
-            ${config.unitType}
-            CPU: ${config.costCPU} | RAM: ${config.costRAM}
-            HP: ${config.health.toInt()} | Cap: ${config.capacity}
-        """.trimIndent()
+        private fun buildButtonText(config: UnitConfig): String {
+            return """
+                ${config.displayName}
+                ${config.role}
+                M:${config.costMemory} C:${config.costCpu}
+                HP:${config.health} DMG:${config.damage}
+            """.trimIndent()
+        }
     }
 
     init {
-//        pad(8f)
+        label.setFontScale(0.82f)
+        label.setWrap(true)
+        pad(5f)
     }
 }

@@ -32,7 +32,7 @@ object UnitFactory {
 
         entity.add(Transform(x, y))
         entity.add(Owner(owner))
-        entity.add(Sprite(config.sprite, 1f))
+        entity.add(Sprite(config.sprite, getVisualScale(unitType)))
         entity.add(
             Unit(
                 type = config.unitType,
@@ -60,10 +60,21 @@ object UnitFactory {
             UnitRole.DEFENSE -> entity.add(DefenseBehavior(x, y))
             UnitRole.ATTACK -> entity.add(AttackBehavior(x, y))
             UnitRole.SPELL -> {
-                // Spells are not persistent units and should be handled before this method.
+                // Spells are handled before unit creation.
             }
         }
 
         return world.addEntity(entity)
+    }
+
+    private fun getVisualScale(unitType: UnitType): Float {
+        return when (unitType) {
+            UnitType.ALLOCATOR -> 1.0f
+            UnitType.GARBAGE_COLLECTOR -> 1.08f
+            UnitType.THREAD_GUARD -> 1.22f
+            UnitType.INJECTOR -> 1.08f
+            UnitType.DEADLOCK -> 1.0f
+            UnitType.OVERCLOCK -> 1.0f
+        }
     }
 }

@@ -15,7 +15,7 @@ object GameManager {
         val gameRoom = GameRoom(
             roomId = room.id,
             players = room.players,
-            onFinished = { finishedRoomId ->
+            onRoomFinished = { finishedRoomId ->
                 rooms.remove(finishedRoomId)
             }
         )

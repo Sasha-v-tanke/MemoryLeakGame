@@ -6,8 +6,8 @@ import com.badlogic.gdx.scenes.scene2d.ui.ScrollPane
 import com.badlogic.gdx.scenes.scene2d.ui.Skin
 import com.badlogic.gdx.scenes.scene2d.ui.Table
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener
-import com.project.shared.engine.entities.units.UnitType
 import com.project.shared.engine.entities.units.UnitRegistry
+import com.project.shared.engine.entities.units.UnitType
 
 typealias OnCardSelected = (unitType: UnitType) -> Unit
 
@@ -16,16 +16,15 @@ class DeckPanel(
     private val playerDeck: List<UnitType>,
     private val onCardSelected: OnCardSelected
 ) : Table(skin) {
-
     init {
-        background = skin.newDrawable("default-round", Color(0.1f, 0.1f, 0.1f, 0.8f))
-        pad(10f)
+        background = skin.newDrawable("default-round", Color(0.025f, 0.035f, 0.065f, 0.92f))
+        pad(8f)
 
         val scrollTable = Table(skin).apply {
             left()
         }
 
-        for (unitType in playerDeck) {
+        playerDeck.forEach { unitType ->
             val config = UnitRegistry.getConfig(unitType)
             val cardButton = UnitCardButton(config, skin)
 
@@ -35,11 +34,13 @@ class DeckPanel(
                 }
             })
 
-            scrollTable.add(cardButton).fillY().padRight(5f)
+            scrollTable.add(cardButton).width(138f).height(106f).padRight(8f)
         }
 
         val scroll = ScrollPane(scrollTable, skin)
         scroll.setOverscroll(false, false)
+        scroll.setFadeScrollBars(false)
+
         add(scroll).grow()
     }
 }

@@ -9,48 +9,49 @@ import com.project.shared.api.events.MatchFoundEvent
 
 class MatchMakingScreen(game: MyGame) : BaseScreen(game) {
     private val socket = MatchMakingSocket(game.getPlayerId())
+
     override val stage = MatchMakingStage(viewport, game)
 
     override fun show() {
         super.show()
+
         stage.startTimer()
 
         stage.cancelButton.addListener { event ->
             if (event is InputEvent && event.type == InputEvent.Type.touchDown) {
-                socket.cancelMatch { resp ->
-                    if (!resp.success) println("Cancel failed")
-                    else Gdx.app.postRunnable {
+                socket.cancelMatch { response ->
+                    if (response.success) {
                         game.setScreen(MainScreen(game))
+                    } else {
+                        stage.setStatus("Cancel failed: ${response.description}")
                     }
                 }
                 true
-            } else false
+            } else {
+                false
+            }
         }
 
         socket.onFindError = { e ->
-            println("WebSocket error: ${e.message}")
             Gdx.app.postRunnable {
                 stage.stopTimer()
+                stage.setStatus("Search error: ${e.message}")
                 game.setScreen(MainScreen(game))
             }
         }
 
-        socket.onCancelError = { e ->
-            println("WebSocket error: ${e.message}")
-        }
-
-        socket.findMatch { resp ->
-            if (!resp.success) {
-                Gdx.app.postRunnable {
-                    stage.stopTimer()
-                    game.setScreen(MainScreen(game))
-                }
+        socket.findMatch { response ->
+            if (!response.success) {
+                stage.stopTimer()
+                stage.setStatus(response.description)
+                game.setScreen(MainScreen(game))
             }
         }
     }
 
     fun startGame(response: MatchFoundEvent) {
         stage.stopTimer()
+
         Gdx.app.postRunnable {
             game.matchHandler.setMatch(response)
             game.setScreen(GameScreen(game))
@@ -58,9 +59,9 @@ class MatchMakingScreen(game: MyGame) : BaseScreen(game) {
     }
 
     override fun hide() {
-        super.hide()
         stage.stopTimer()
         socket.close()
+        super.hide()
     }
 
     override fun dispose() {

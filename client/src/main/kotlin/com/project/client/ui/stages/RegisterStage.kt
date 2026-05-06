@@ -1,12 +1,15 @@
 package com.project.client.ui.stages
 
 import com.badlogic.gdx.scenes.scene2d.InputEvent
-import com.badlogic.gdx.scenes.scene2d.ui.*
+import com.badlogic.gdx.scenes.scene2d.ui.Label
+import com.badlogic.gdx.scenes.scene2d.ui.Table
+import com.badlogic.gdx.scenes.scene2d.ui.TextButton
+import com.badlogic.gdx.scenes.scene2d.ui.TextField
+import com.badlogic.gdx.utils.Align
 import com.badlogic.gdx.utils.viewport.Viewport
 import com.project.client.MyGame
 import com.project.client.network.api.AuthSocket
 import com.project.client.ui.screens.LoginScreen
-import kotlinx.coroutines.*
 
 class RegisterStage(
     viewport: Viewport,
@@ -15,65 +18,71 @@ class RegisterStage(
     private val authSocket = AuthSocket()
 
     override fun buildUI() {
+        val root = Table()
+        root.setFillParent(true)
+        root.center()
+        addActor(root)
 
-        val table = Table()
-        table.setFillParent(true)
-        table.center()
-        table.defaults().pad(6f)
-        addActor(table)
+        val box = panel()
+        root.add(box).width(540f)
 
-        val usernameField = TextField("", skin)
-        val passwordField = TextField("", skin).apply {
-            isPasswordMode = true
+        val title = Label("Create Instance Profile", skin).apply {
+            setAlignment(Align.center)
+            fontScaleX = 1.25f
+            fontScaleY = 1.25f
         }
-        val emailField = TextField("", skin)
 
-        val messageLabel = Label("", skin)
+        val usernameField = TextField("", skin).apply { messageText = "username" }
+        val emailField = TextField("", skin).apply { messageText = "email" }
+        val passwordField = TextField("", skin).apply {
+            messageText = "password"
+            isPasswordMode = true
+            setPasswordCharacter('*')
+        }
 
-        table.center()
+        val messageLabel = Label("", skin).apply {
+            setAlignment(Align.center)
+            wrap = true
+        }
 
-        table.row()
-        table.add(Label("Register", skin)).colspan(2).padBottom(16f)
-
-        table.row()
-        table.add(Label("Username:", skin))
-        table.add(usernameField).width(260f)
-
-        table.row()
-        table.add(Label("Password:", skin))
-        table.add(passwordField).width(260f)
-
-        table.row()
-        table.add(Label("Email:", skin))
-        table.add(emailField).width(260f)
-
-        table.row()
         val registerButton = TextButton("Sign up", skin)
-        table.add(registerButton).colspan(2)
+        val backButton = TextButton("Back to login", skin)
 
-        table.row()
-        val switchButton = TextButton("Back to login", skin)
-        table.add(switchButton).colspan(2)
-
-        table.row()
-        table.add(messageLabel).colspan(2).width(400f)
+        box.defaults().pad(7f)
+        box.add(title).growX().padBottom(16f).row()
+        box.add(Label("Username", skin)).left().growX().row()
+        box.add(usernameField).height(42f).growX().row()
+        box.add(Label("Email", skin)).left().growX().row()
+        box.add(emailField).height(42f).growX().row()
+        box.add(Label("Password", skin)).left().growX().row()
+        box.add(passwordField).height(42f).growX().row()
+        box.add(registerButton).height(44f).growX().padTop(12f).row()
+        box.add(backButton).height(38f).growX().row()
+        box.add(messageLabel).width(460f).padTop(10f).row()
 
         registerButton.addListener { event ->
             if (event is InputEvent && event.type == InputEvent.Type.touchDown) {
-                val username = usernameField.text
+                val username = usernameField.text.trim()
+                val email = emailField.text.trim()
                 val password = passwordField.text
-                val email = emailField.text
+
+                messageLabel.setText("Creating account...")
 
                 authSocket.register(username, password, email) { response ->
-                    messageLabel.setText(if (response.success) "Success" else response.message)
+                    if (response.success) {
+                        messageLabel.setText("Account created. You can login now.")
+                    } else {
+                        messageLabel.setText(response.message)
+                    }
                 }
+
                 true
             } else {
                 false
             }
         }
 
-        switchButton.addListener { event ->
+        backButton.addListener { event ->
             if (event is InputEvent && event.type == InputEvent.Type.touchDown) {
                 game.setScreen(LoginScreen(game))
                 true
@@ -81,5 +90,10 @@ class RegisterStage(
                 false
             }
         }
+    }
+
+    override fun dispose() {
+        authSocket.close()
+        super.dispose()
     }
 }

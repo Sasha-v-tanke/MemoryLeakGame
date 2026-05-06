@@ -8,17 +8,18 @@ import com.project.client.MyGame
 import com.project.client.ui.stages.BaseStage
 
 abstract class BaseScreen(protected val game: MyGame) : ScreenAdapter() {
-    protected val viewport = ExtendViewport(800f, 600f)
+    protected val viewport = ExtendViewport(1280f, 720f)
     protected abstract val stage: BaseStage
 
     override fun show() {
         Gdx.input.inputProcessor = stage
+        stage.clear()
         stage.buildUI()
         stage.show()
     }
 
     override fun render(delta: Float) {
-        Gdx.gl.glClearColor(0f, 0f, 0f, 1f)
+        Gdx.gl.glClearColor(0.015f, 0.018f, 0.028f, 1f)
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT)
 
         stage.act(delta)
@@ -29,11 +30,11 @@ abstract class BaseScreen(protected val game: MyGame) : ScreenAdapter() {
         viewport.update(width, height, true)
     }
 
-    override fun dispose() {
-        stage.dispose()
-    }
-
     override fun hide() {
         Gdx.input.inputProcessor = null
+    }
+
+    override fun dispose() {
+        stage.dispose()
     }
 }

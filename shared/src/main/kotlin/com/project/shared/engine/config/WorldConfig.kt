@@ -8,7 +8,7 @@ object WorldConfig {
         owner = OwnerType.PLAYER_1,
         x = 0.11f,
         y = 0.12f,
-        scale = 0.55f,
+        scale = 1.25f,
         sprite = "core.png",
         health = 900
     )
@@ -18,7 +18,7 @@ object WorldConfig {
         owner = OwnerType.PLAYER_2,
         x = 0.89f,
         y = 0.88f,
-        scale = 0.55f,
+        scale = 1.25f,
         sprite = "core.png",
         health = 900
     )
@@ -26,9 +26,9 @@ object WorldConfig {
     val player1BasicFactory = EntityConfig(
         kind = WorldObjectKind.BASIC_FACTORY,
         owner = OwnerType.PLAYER_1,
-        x = 0.19f,
+        x = 0.20f,
         y = 0.13f,
-        scale = 0.42f,
+        scale = 1.05f,
         sprite = "factory_basic.png",
         health = 500
     )
@@ -36,9 +36,9 @@ object WorldConfig {
     val player2BasicFactory = EntityConfig(
         kind = WorldObjectKind.BASIC_FACTORY,
         owner = OwnerType.PLAYER_2,
-        x = 0.81f,
+        x = 0.80f,
         y = 0.87f,
-        scale = 0.42f,
+        scale = 1.05f,
         sprite = "factory_basic.png",
         health = 500
     )
@@ -47,8 +47,8 @@ object WorldConfig {
         kind = WorldObjectKind.SUPPORT_FACTORY,
         owner = OwnerType.PLAYER_1,
         x = 0.12f,
-        y = 0.21f,
-        scale = 0.38f,
+        y = 0.22f,
+        scale = 1.0f,
         sprite = "factory_support.png",
         health = 430
     )
@@ -57,8 +57,8 @@ object WorldConfig {
         kind = WorldObjectKind.SUPPORT_FACTORY,
         owner = OwnerType.PLAYER_2,
         x = 0.88f,
-        y = 0.79f,
-        scale = 0.38f,
+        y = 0.78f,
+        scale = 1.0f,
         sprite = "factory_support.png",
         health = 430
     )
@@ -68,7 +68,7 @@ object WorldConfig {
         owner = OwnerType.WORLD,
         x = 0.26f,
         y = 0.77f,
-        scale = 0.42f,
+        scale = 1.0f,
         sprite = "cpu.png"
     )
 
@@ -77,7 +77,7 @@ object WorldConfig {
         owner = OwnerType.WORLD,
         x = 0.74f,
         y = 0.23f,
-        scale = 0.42f,
+        scale = 1.0f,
         sprite = "cpu.png"
     )
 
@@ -86,7 +86,7 @@ object WorldConfig {
         owner = OwnerType.WORLD,
         x = 0.40f,
         y = 0.55f,
-        scale = 0.42f,
+        scale = 1.0f,
         sprite = "memory.png"
     )
 
@@ -95,7 +95,7 @@ object WorldConfig {
         owner = OwnerType.WORLD,
         x = 0.60f,
         y = 0.45f,
-        scale = 0.42f,
+        scale = 1.0f,
         sprite = "memory.png"
     )
 
@@ -104,7 +104,7 @@ object WorldConfig {
         owner = OwnerType.WORLD,
         x = 0.50f,
         y = 0.50f,
-        scale = 0.48f,
+        scale = 1.12f,
         sprite = "memory.png"
     )
 

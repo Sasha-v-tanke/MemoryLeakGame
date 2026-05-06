@@ -1,8 +1,12 @@
 package com.project.client.network.api
 
 import com.badlogic.gdx.Gdx
-import com.project.shared.api.matchmaking.*
-import kotlinx.coroutines.*
+import com.project.shared.api.matchmaking.CancelMatchRequest
+import com.project.shared.api.matchmaking.CancelMatchResponse
+import com.project.shared.api.matchmaking.FindMatchRequest
+import com.project.shared.api.matchmaking.FindMatchResponse
+import com.project.shared.api.matchmaking.MatchMakingRequest
+import kotlinx.coroutines.launch
 
 class MatchMakingSocket(private val playerId: Int) : WebSocket("matchmaking") {
     var onFindError: ((Exception) -> Unit)? = null
@@ -12,12 +16,16 @@ class MatchMakingSocket(private val playerId: Int) : WebSocket("matchmaking") {
         scope.launch {
             try {
                 send<MatchMakingRequest>(FindMatchRequest(playerId))
+
                 val response = receiveMessage<FindMatchResponse>()
-                    ?: FindMatchResponse(false, "No response is found")
-                callback(response)
+                    ?: FindMatchResponse(false, "No response received")
+
+                Gdx.app.postRunnable { callback(response) }
             } catch (e: Exception) {
-                Gdx.app.postRunnable { onFindError?.invoke(e) }
-                callback(FindMatchResponse(false, "Error: ${e.message}"))
+                Gdx.app.postRunnable {
+                    onFindError?.invoke(e)
+                    callback(FindMatchResponse(false, "Error: ${e.message}"))
+                }
             }
         }
     }
@@ -26,15 +34,16 @@ class MatchMakingSocket(private val playerId: Int) : WebSocket("matchmaking") {
         scope.launch {
             try {
                 send<MatchMakingRequest>(CancelMatchRequest(playerId))
+
                 val response = receiveMessage<CancelMatchResponse>()
-                if (response != null) {
-                    callback(response)
-                } else {
-                    callback(CancelMatchResponse(false, "No response is found"))
-                }
+                    ?: CancelMatchResponse(false, "No response received")
+
+                Gdx.app.postRunnable { callback(response) }
             } catch (e: Exception) {
-                Gdx.app.postRunnable { onCancelError?.invoke(e) }
-                callback(CancelMatchResponse(false, "Error: ${e.message}"))
+                Gdx.app.postRunnable {
+                    onCancelError?.invoke(e)
+                    callback(CancelMatchResponse(false, "Error: ${e.message}"))
+                }
             }
         }
     }

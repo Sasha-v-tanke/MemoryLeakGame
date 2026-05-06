@@ -5,9 +5,14 @@ import com.badlogic.gdx.backends.lwjgl3.Lwjgl3ApplicationConfiguration
 import com.badlogic.gdx.graphics.glutils.HdpiMode
 
 fun main() {
-    val config = Lwjgl3ApplicationConfiguration()
-    config.setTitle("Game Client")
-    config.setWindowedMode(800, 600)
-    config.setHdpiMode(HdpiMode.Logical)
+    val config = Lwjgl3ApplicationConfiguration().apply {
+        setTitle("Memory Leak Arena")
+        setWindowedMode(1280, 720)
+        setHdpiMode(HdpiMode.Logical)
+        useVsync(true)
+        setForegroundFPS(60)
+        setIdleFPS(30)
+    }
+
     Lwjgl3Application(MyGame(), config)
 }

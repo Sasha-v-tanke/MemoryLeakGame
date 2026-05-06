@@ -26,9 +26,8 @@ import com.project.shared.engine.entities.components.StatusEffects
 import com.project.shared.engine.entities.components.SupportBehavior
 import com.project.shared.engine.entities.components.Target
 import com.project.shared.engine.entities.components.Transform
-import com.project.shared.engine.entities.components.Unit
+import com.project.shared.engine.entities.components.Unit as UnitComponent
 import com.project.shared.engine.entities.units.UnitRegistry
-import com.project.shared.engine.entities.units.UnitRole
 import com.project.shared.engine.entities.units.UnitType
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -44,7 +43,7 @@ import kotlin.math.max
 class GameRoom(
     private val roomId: String,
     private val players: List<PlayerSession>,
-    private val onFinished: (String) -> Unit
+    private val onRoomFinished: (String) -> kotlin.Unit
 ) {
     private val world = GameWorld()
     private val scope = CoroutineScope(Dispatchers.Default + SupervisorJob())
@@ -131,6 +130,7 @@ class GameRoom(
                 val start = System.currentTimeMillis()
 
                 update(GameConfig.tickMillis / 1000f)
+
                 if (tick % GameConfig.snapshotEveryTicks == 0L) {
                     sendSnapshot()
                 }
@@ -139,7 +139,10 @@ class GameRoom(
 
                 val elapsed = System.currentTimeMillis() - start
                 val delayTime = GameConfig.tickMillis - elapsed
-                if (delayTime > 0) delay(delayTime)
+
+                if (delayTime > 0) {
+                    delay(delayTime)
+                }
             }
         }
     }
@@ -171,6 +174,7 @@ class GameRoom(
 
     private fun updateResourceIncome(now: Long) {
         if (now - lastIncomeAt < GameConfig.resourceIncomeIntervalMillis) return
+
         lastIncomeAt = now
 
         recalculateIncome()
@@ -201,7 +205,7 @@ class GameRoom(
 
     private fun updateNodeCapture(deltaSeconds: Float) {
         val units = world.getAliveEntities()
-            .filter { it.has(Unit::class.java) && it.has(CaptureBehavior::class.java) }
+            .filter { it.has(UnitComponent::class.java) && it.has(CaptureBehavior::class.java) }
 
         world.entitiesWithComponent(ResourceNode::class.java).forEach { nodeEntity ->
             val nodeTransform = nodeEntity.get(Transform::class.java) ?: return@forEach
@@ -221,8 +225,10 @@ class GameRoom(
 
             when {
                 player1Capturers > 0 && player2Capturers == 0 -> {
-                    node.captureProgressPlayer1 = (node.captureProgressPlayer1 + captureSpeed * player1Capturers).coerceAtMost(1f)
-                    node.captureProgressPlayer2 = (node.captureProgressPlayer2 - captureSpeed).coerceAtLeast(0f)
+                    node.captureProgressPlayer1 =
+                        (node.captureProgressPlayer1 + captureSpeed * player1Capturers).coerceAtMost(1f)
+                    node.captureProgressPlayer2 =
+                        (node.captureProgressPlayer2 - captureSpeed).coerceAtLeast(0f)
 
                     if (node.captureProgressPlayer1 >= 1f) {
                         node.capturedBy = 1
@@ -230,8 +236,10 @@ class GameRoom(
                 }
 
                 player2Capturers > 0 && player1Capturers == 0 -> {
-                    node.captureProgressPlayer2 = (node.captureProgressPlayer2 + captureSpeed * player2Capturers).coerceAtMost(1f)
-                    node.captureProgressPlayer1 = (node.captureProgressPlayer1 - captureSpeed).coerceAtLeast(0f)
+                    node.captureProgressPlayer2 =
+                        (node.captureProgressPlayer2 + captureSpeed * player2Capturers).coerceAtMost(1f)
+                    node.captureProgressPlayer1 =
+                        (node.captureProgressPlayer1 - captureSpeed).coerceAtLeast(0f)
 
                     if (node.captureProgressPlayer2 >= 1f) {
                         node.capturedBy = 2
@@ -243,7 +251,7 @@ class GameRoom(
 
     private fun updateUnitTargets() {
         val alive = world.getAliveEntities()
-        val units = alive.filter { it.has(Unit::class.java) }
+        val units = alive.filter { it.has(UnitComponent::class.java) }
 
         units.forEach { unit ->
             val target = unit.get(Target::class.java) ?: return@forEach
@@ -262,7 +270,8 @@ class GameRoom(
                             candidate.has(Health::class.java)
                 }
                 .minByOrNull { candidate ->
-                    val candidateTransform = candidate.get(Transform::class.java) ?: return@minByOrNull Float.MAX_VALUE
+                    val candidateTransform = candidate.get(Transform::class.java)
+                        ?: return@minByOrNull Float.MAX_VALUE
                     GameMath.distance(unitTransform, candidateTransform)
                 }
 
@@ -281,7 +290,7 @@ class GameRoom(
 
     private fun updateMovement(deltaSeconds: Float, now: Long) {
         world.getAliveEntities()
-            .filter { it.has(Unit::class.java) }
+            .filter { it.has(UnitComponent::class.java) }
             .forEach { entity ->
                 val transform = entity.get(Transform::class.java) ?: return@forEach
                 val target = entity.get(Target::class.java) ?: return@forEach
@@ -298,6 +307,7 @@ class GameRoom(
 
                     if (distance > combat.attackRange * 0.85f) {
                         val speedMultiplier = if (effects?.isOverclocked(now) == true) 1.45f else 1f
+
                         GameMath.moveTowards(
                             transform = transform,
                             targetX = targetTransform.x,
@@ -309,8 +319,8 @@ class GameRoom(
                 } else {
                     val tx = target.targetX ?: return@forEach
                     val ty = target.targetY ?: return@forEach
-
                     val speedMultiplier = if (effects?.isOverclocked(now) == true) 1.45f else 1f
+
                     GameMath.moveTowards(
                         transform = transform,
                         targetX = tx,
@@ -324,7 +334,7 @@ class GameRoom(
 
     private fun updateCombat(now: Long) {
         world.getAliveEntities()
-            .filter { it.has(Unit::class.java) }
+            .filter { it.has(UnitComponent::class.java) }
             .forEach { entity ->
                 val transform = entity.get(Transform::class.java) ?: return@forEach
                 val target = entity.get(Target::class.java) ?: return@forEach
@@ -360,7 +370,7 @@ class GameRoom(
 
     private fun updateSupport(now: Long) {
         world.getAliveEntities()
-            .filter { it.has(Unit::class.java) && it.has(SupportBehavior::class.java) }
+            .filter { it.has(UnitComponent::class.java) && it.has(SupportBehavior::class.java) }
             .forEach { support ->
                 val transform = support.get(Transform::class.java) ?: return@forEach
                 val combat = support.get(CombatStats::class.java) ?: return@forEach
@@ -477,7 +487,7 @@ class GameRoom(
 
             delay(1000L)
             stop()
-            onFinished(roomId)
+            onRoomFinished(roomId)
         }
     }
 

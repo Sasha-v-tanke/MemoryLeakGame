@@ -1,6 +1,6 @@
 package com.project.client.network.api
 
-import com.project.shared.api.Message
+import com.project.shared.api.JsonFormats
 import com.project.shared.api.Request
 import com.project.shared.api.Response
 import io.ktor.client.HttpClient
@@ -14,69 +14,77 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withTimeoutOrNull
 import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.Json
 
 abstract class WebSocket(private val endpoint: String) {
-    private val baseUrl = "ws://localhost:8080"
-    private val client = HttpClient { install(WebSockets) }
+    private val baseUrl = System.getenv("MEMORY_LEAK_SERVER_WS")
+        ?: "ws://localhost:8080"
+
+    protected val client = HttpClient {
+        install(WebSockets)
+    }
+
     protected var session: DefaultClientWebSocketSession? = null
     protected val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
-    protected val json = Json {
-        ignoreUnknownKeys = true
-        classDiscriminator = "type"
-        encodeDefaults = true
-    }
+    protected val json = JsonFormats.default
     protected val timeout = 5_000L
-    private val sendMutex = Mutex()
+
+    protected val connectMutex = Mutex()
+    protected val sendMutex = Mutex()
 
     open suspend fun connect() {
-        sendMutex.withLock {
+        connectMutex.withLock {
             if (session != null) return
-            val normalized = when {
-                endpoint.startsWith("/") -> endpoint
-                else -> "/$endpoint"
-            }
-            session = client.webSocketSession(urlString = baseUrl + normalized)
+
+            val normalizedEndpoint = if (endpoint.startsWith("/")) endpoint else "/$endpoint"
+            session = client.webSocketSession(urlString = baseUrl + normalizedEndpoint)
         }
     }
 
-
     protected suspend inline fun <reified T : Request> send(request: T) {
         connect()
-        val s = session ?: error("WebSocket not connected")
-        s.send(Frame.Text(json.encodeToString(request)))
-    }
 
+        sendMutex.withLock {
+            val s = session ?: error("WebSocket is not connected")
+            s.send(Frame.Text(json.encodeToString<T>(request)))
+        }
+    }
 
     protected suspend inline fun <reified T : Response> receiveMessage(): T? {
         val s = session ?: return null
-        val responseText: String = withTimeoutOrNull(timeout) {
+
+        val responseText = withTimeoutOrNull(timeout) {
             while (true) {
                 val next = s.incoming.receive()
-                if (next is Frame.Text) return@withTimeoutOrNull next.readText()
+                if (next is Frame.Text) {
+                    return@withTimeoutOrNull next.readText()
+                }
             }
+
             @Suppress("UNREACHABLE_CODE")
             ""
         } ?: return null
 
         return try {
             json.decodeFromString<T>(responseText)
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             null
         }
     }
 
-    fun close() {
-        scope.launch {
-            session?.close()
-            session = null
-            client.close()
+    open fun close() {
+        try {
+            kotlinx.coroutines.runBlocking {
+                session?.close()
+            }
+        } catch (_: Exception) {
         }
+
+        session = null
+        client.close()
         scope.cancel()
     }
 }

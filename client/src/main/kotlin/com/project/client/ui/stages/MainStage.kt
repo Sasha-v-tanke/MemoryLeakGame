@@ -8,43 +8,52 @@ import com.badlogic.gdx.utils.Align
 import com.badlogic.gdx.utils.viewport.Viewport
 import com.project.client.MyGame
 import com.project.client.ui.screens.MatchMakingScreen
+import com.project.client.ui.screens.PackPickerScreen
+import com.project.client.ui.screens.SettingsScreen
 
 class MainStage(
     viewport: Viewport,
     private val game: MyGame
 ) : BaseStage(viewport) {
-    lateinit var backButton: TextButton
-    lateinit var playButton: TextButton
-
     override fun buildUI() {
-        val table = Table()
-        table.setFillParent(true)
-        table.top().left()
-        addActor(table)
+        val root = Table()
+        root.setFillParent(true)
+        root.center()
+        addActor(root)
 
-        backButton = TextButton("Back", skin)
-        table.add(backButton).pad(10f)
-        table.row()
+        val box = panel()
+        root.add(box).width(560f)
 
-
-        val centerTable = Table().apply {
-            setFillParent(true)
-            center()
-        }
-        addActor(centerTable)
-        centerTable.add(Label("Player: <todo>", skin).apply {
+        val title = Label("Memory Leak Arena", skin).apply {
             setAlignment(Align.center)
-        }).center()
-        centerTable.row()
-
-        val bottomCenter = Table().apply {
-            setFillParent(true)
-            center()
-            bottom()
+            fontScaleX = 1.35f
+            fontScaleY = 1.35f
         }
-        addActor(bottomCenter)
-        playButton = TextButton("Play", skin)
-        bottomCenter.add(playButton).center()
+
+        val playerLabel = Label("Instance owner: ${game.getUsername()} #${game.getPlayerId()}", skin).apply {
+            setAlignment(Align.center)
+        }
+
+        val concept = Label(
+            "Control Memory and CPU nodes, deploy cards from your deck, protect your Core and break the enemy system.",
+            skin
+        ).apply {
+            setAlignment(Align.center)
+            wrap = true
+        }
+
+        val playButton = TextButton("Find 1v1 Match", skin)
+        val deckButton = TextButton("Deck / Cards", skin)
+        val settingsButton = TextButton("Settings", skin)
+
+        box.defaults().pad(8f)
+        box.add(title).growX().row()
+        box.add(playerLabel).growX().padBottom(14f).row()
+        box.add(concept).width(500f).padBottom(18f).row()
+        box.add(playButton).height(48f).growX().row()
+        box.add(deckButton).height(42f).growX().row()
+        box.add(settingsButton).height(42f).growX().row()
+
         playButton.addListener { event ->
             if (event is InputEvent && event.type == InputEvent.Type.touchDown) {
                 game.setScreen(MatchMakingScreen(game))
@@ -53,10 +62,23 @@ class MainStage(
                 false
             }
         }
-        bottomCenter.row()
-    }
 
-    override fun show() {
+        deckButton.addListener { event ->
+            if (event is InputEvent && event.type == InputEvent.Type.touchDown) {
+                game.setScreen(PackPickerScreen(game))
+                true
+            } else {
+                false
+            }
+        }
 
+        settingsButton.addListener { event ->
+            if (event is InputEvent && event.type == InputEvent.Type.touchDown) {
+                game.setScreen(SettingsScreen(game))
+                true
+            } else {
+                false
+            }
+        }
     }
 }
