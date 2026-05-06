@@ -122,11 +122,6 @@ class GameScreen(private val game: MyGame) : ScreenAdapter() {
         // Логируем не каждый снапшот, а примерно раз в секунду.
         if (snapshotEvent.tick - lastLoggedTick >= 20L) {
             lastLoggedTick = snapshotEvent.tick
-            println(
-                "[CLIENT][STATE] tick=${snapshotEvent.tick} " +
-                        "entities=${snapshotEvent.entities.size} " +
-                        "myResources=${snapshotEvent.resources[game.getPlayerId()]}"
-            )
         }
 
         worldStage.applySnapshot(snapshotEvent)

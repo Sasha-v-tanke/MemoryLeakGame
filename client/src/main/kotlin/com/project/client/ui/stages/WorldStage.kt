@@ -47,8 +47,6 @@ class WorldStage(
     }
 
     fun applySnapshot(snapshot: GameStateSnapshotEvent) {
-        println("[CLIENT][SNAPSHOT] tick=${snapshot.tick} entities=${snapshot.entities.size} resources=${snapshot.resources}")
-
         entityHandler.beginSnapshot()
 
         snapshot.entities.forEach { state ->

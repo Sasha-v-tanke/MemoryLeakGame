@@ -183,11 +183,6 @@ class GameRoom(
                     sendSnapshot()
                 }
 
-                DebugLog.tick(
-                    "room=$roomId tick=$tick entities=${world.getEntities().size} " +
-                            "resources=${playerRuntimes.values.joinToString { "player=${it.playerId} mem=${it.memory} cpu=${it.cpu} inc=${it.memoryIncome}/${it.cpuIncome}" }}"
-                )
-
                 tick++
 
                 val elapsed = System.currentTimeMillis() - start
@@ -208,11 +203,6 @@ class GameRoom(
             resources = playerRuntimes.values.associate { it.playerId to it.toResources() },
             timestamp = System.currentTimeMillis(),
             tick = tick
-        )
-
-        DebugLog.snapshot(
-            "room=$roomId tick=$tick entities=${snapshot.entities.size} " +
-                    "resources=${snapshot.resources}"
         )
 
         GameDispatcher.sendToAllPlayers(players, snapshot)

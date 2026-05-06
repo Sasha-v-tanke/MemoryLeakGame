@@ -9,7 +9,7 @@ object WorldConfig {
         x = 0.11f,
         y = 0.12f,
         scale = 1.25f,
-        sprite = "core.png",
+        sprite = "objects/core.png",
         health = 900
     )
 
@@ -19,7 +19,7 @@ object WorldConfig {
         x = 0.89f,
         y = 0.88f,
         scale = 1.25f,
-        sprite = "core.png",
+        sprite = "objects/core.png",
         health = 900
     )
 
@@ -29,7 +29,7 @@ object WorldConfig {
         x = 0.20f,
         y = 0.13f,
         scale = 1.05f,
-        sprite = "factory_basic.png",
+        sprite = "objects/factory_basic.png",
         health = 500
     )
 
@@ -39,7 +39,7 @@ object WorldConfig {
         x = 0.80f,
         y = 0.87f,
         scale = 1.05f,
-        sprite = "factory_basic.png",
+        sprite = "objects/factory_basic.png",
         health = 500
     )
 
@@ -49,7 +49,7 @@ object WorldConfig {
         x = 0.12f,
         y = 0.22f,
         scale = 1.0f,
-        sprite = "factory_support.png",
+        sprite = "objects/factory_support.png",
         health = 430
     )
 
@@ -59,7 +59,7 @@ object WorldConfig {
         x = 0.88f,
         y = 0.78f,
         scale = 1.0f,
-        sprite = "factory_support.png",
+        sprite = "objects/factory_support.png",
         health = 430
     )
 
@@ -69,7 +69,7 @@ object WorldConfig {
         x = 0.26f,
         y = 0.77f,
         scale = 1.0f,
-        sprite = "cpu.png"
+        sprite = "objects/cpu.png"
     )
 
     val cpuBottomRight = EntityConfig(
@@ -78,7 +78,7 @@ object WorldConfig {
         x = 0.74f,
         y = 0.23f,
         scale = 1.0f,
-        sprite = "cpu.png"
+        sprite = "objects/cpu.png"
     )
 
     val memoryCenterLeft = EntityConfig(
@@ -87,7 +87,7 @@ object WorldConfig {
         x = 0.40f,
         y = 0.55f,
         scale = 1.0f,
-        sprite = "memory.png"
+        sprite = "objects/memory.png"
     )
 
     val memoryCenterRight = EntityConfig(
@@ -96,7 +96,7 @@ object WorldConfig {
         x = 0.60f,
         y = 0.45f,
         scale = 1.0f,
-        sprite = "memory.png"
+        sprite = "objects/memory.png"
     )
 
     val memoryCenter = EntityConfig(
@@ -105,7 +105,7 @@ object WorldConfig {
         x = 0.50f,
         y = 0.50f,
         scale = 1.12f,
-        sprite = "memory.png"
+        sprite = "objects/memory.png"
     )
 
     val objects = listOf(

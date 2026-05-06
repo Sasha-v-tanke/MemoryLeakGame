@@ -7,13 +7,14 @@ object TextureCache {
     private val textures = mutableMapOf<String, Texture>()
 
     fun get(path: String): Texture {
-        val normalizedPath = if (path.startsWith("objects/")) path else "objects/$path"
+        val normalizedPath = path
 
         return textures.getOrPut(normalizedPath) {
             val file = Gdx.files.internal(normalizedPath)
             if (file.exists()) {
                 Texture(file)
             } else {
+                println("file not found: $normalizedPath")
                 Texture(Gdx.files.internal("objects/default.png"))
             }
         }

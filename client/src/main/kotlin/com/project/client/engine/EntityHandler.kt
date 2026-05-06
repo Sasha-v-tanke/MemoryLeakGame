@@ -29,8 +29,8 @@ class EntityHandler(private val addActor: (Group) -> kotlin.Unit) {
         val transform = state.components.filterIsInstance<Transform>().firstOrNull() ?: return
         val sprite = state.components.filterIsInstance<Sprite>().firstOrNull()
         val health = state.components.filterIsInstance<Health>().firstOrNull()
-
-        val texturePath = sprite?.textureId ?: "default.png"
+        println("sprite path: ${sprite?.textureId}")
+        val texturePath = sprite?.textureId ?: "objects/default.png"
 
         Gdx.app.postRunnable {
             val group = entityViews.getOrPut(state.id) {
