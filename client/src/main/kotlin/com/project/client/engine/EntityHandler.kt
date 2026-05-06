@@ -29,7 +29,7 @@ class EntityHandler(private val addActor: (Group) -> kotlin.Unit) {
         val transform = state.components.filterIsInstance<Transform>().firstOrNull() ?: return
         val sprite = state.components.filterIsInstance<Sprite>().firstOrNull()
         val health = state.components.filterIsInstance<Health>().firstOrNull()
-        println("sprite path: ${sprite?.textureId}")
+
         val texturePath = sprite?.textureId ?: "objects/default.png"
 
         Gdx.app.postRunnable {
@@ -54,7 +54,6 @@ class EntityHandler(private val addActor: (Group) -> kotlin.Unit) {
 
             group.setPosition(transform.x, transform.y)
 
-            // Никакого затемнения/тинта на hover/owner.
             group.color = Color.WHITE
             group.color.a = if (health?.isDead == true) 0.35f else 1f
         }

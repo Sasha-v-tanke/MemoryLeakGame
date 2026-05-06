@@ -28,7 +28,6 @@ class UIStage(
     private lateinit var selectedCardLabel: Label
     private lateinit var statusLabel: Label
     private lateinit var resourcesLabel: Label
-    private lateinit var debugLabel: Label
     private lateinit var toastLabel: Label
     private lateinit var gameOverBox: Table
 

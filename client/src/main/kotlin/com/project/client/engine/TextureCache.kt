@@ -14,7 +14,6 @@ object TextureCache {
             if (file.exists()) {
                 Texture(file)
             } else {
-                println("file not found: $normalizedPath")
                 Texture(Gdx.files.internal("objects/default.png"))
             }
         }

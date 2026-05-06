@@ -41,7 +41,6 @@ class GameScreen(private val game: MyGame) : ScreenAdapter() {
     private var selectedCard: UnitType? = null
     private var isDeployingCard = false
     private var lastSnapshot: GameStateSnapshotEvent? = null
-    private var lastLoggedTick = -1L
 
     override fun show() {
         worldStage.buildUI()
@@ -113,16 +112,10 @@ class GameScreen(private val game: MyGame) : ScreenAdapter() {
         gameStarted = true
         uiStage.startGame(event.message)
         uiStage.showToast("Game started. Select a card, then click the arena.")
-        println("[CLIENT][GAME_START] ${event.message}")
     }
 
     fun updateGameState(snapshotEvent: GameStateSnapshotEvent) {
         lastSnapshot = snapshotEvent
-
-        // Логируем не каждый снапшот, а примерно раз в секунду.
-        if (snapshotEvent.tick - lastLoggedTick >= 20L) {
-            lastLoggedTick = snapshotEvent.tick
-        }
 
         worldStage.applySnapshot(snapshotEvent)
 
@@ -176,7 +169,6 @@ class GameScreen(private val game: MyGame) : ScreenAdapter() {
 
         val config = UnitRegistry.getConfig(card)
 
-        // ВАЖНО: блокируем повторный deploy сразу, до ответа сервера.
         isDeployingCard = true
         selectedCard = null
         uiStage.clearSelectedCard()
@@ -198,7 +190,6 @@ class GameScreen(private val game: MyGame) : ScreenAdapter() {
             if (response.success) {
                 uiStage.showToast(response.description)
             } else {
-                // Если не получилось — вернём выбранную карту, чтобы игрок мог повторить.
                 selectedCard = card
                 uiStage.setSelectedCard(card)
                 uiStage.showToast(response.description.ifBlank { "Cannot play card" })

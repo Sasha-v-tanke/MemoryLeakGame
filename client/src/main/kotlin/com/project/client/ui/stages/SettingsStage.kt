@@ -33,8 +33,7 @@ class SettingsStage(
                     "WASD / Arrows — move camera\n" +
                     "Q / E — zoom\n" +
                     "Click card — select card\n" +
-                    "Click arena — deploy selected card\n\n" +
-                    "Server URL can be changed with MEMORY_LEAK_SERVER_WS env variable.",
+                    "Click arena — deploy selected card\n\n",
             skin
         ).apply {
             wrap = true
