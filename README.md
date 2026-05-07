@@ -44,6 +44,28 @@ Additional selectable cards expand the same idea:
 - `Coroutine Archer` - asynchronous long-range work.
 - `Patch Healer` - operational repair and maintenance.
 
+## Puzzle Lab
+
+The project also includes a separate `Puzzle Lab` section. It is intentionally
+different from PvP: there is no opponent, matchmaking, arena push or real-time
+combat. Instead, the player receives a concrete debugging incident and must
+repair the system while preserving the important invariant.
+
+Levels unlock one by one, so the mode starts with beginner-friendly unit
+metaphors and then moves toward real engineering constraints:
+
+| Level | Unit basis | Puzzle mechanic | Learning meaning |
+| --- | --- | --- |
+| 1 | `Allocator` | Choose the correct unit-target pair for reserving workspace | Memory allocation is the first systems concept. |
+| 2 | `Garbage Collector` / `Patch Healer` | Mark roots, detach a stale listener, then sweep unreachable objects | GC cannot free objects that are still reachable from roots. |
+| 3 | `Firewall` / `Injector` / `Patch Healer` | Classify incoming requests as allow, block or trusted patch | Security is not "block everything"; it is correct filtering. |
+| 4 | `Thread Guard` / `Deadlock` | Inspect a wait-for graph and break circular wait safely | Deadlock is a dependency cycle between processes and resources. |
+| 5 | `Cache Runner` / `Coroutine Archer` / `Overclock` | Build a safe retried request pipeline in order | Speed, async work and cache need correctness rules. |
+
+The defense framing is still the same:
+
+`Educational problem -> operation -> system consequence -> IT meaning`
+
 ## Tech Stack
 
 - Kotlin 2.2
@@ -105,6 +127,9 @@ The server runs on `localhost:8080`. The client uses
 7. Select cards, click the arena to deploy them, capture `Memory`/`CPU` nodes.
 8. Push toward the enemy `Core`.
 9. Destroy the `Core` and show the victory/defeat screen.
+
+For the non-PvP educational demo, open `Puzzle Lab` from the main menu and solve
+one of the constrained system puzzles.
 
 ## Controls
 

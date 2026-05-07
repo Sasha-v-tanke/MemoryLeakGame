@@ -9,6 +9,7 @@ import com.badlogic.gdx.utils.viewport.Viewport
 import com.project.client.MyGame
 import com.project.client.ui.screens.MatchMakingScreen
 import com.project.client.ui.screens.PackPickerScreen
+import com.project.client.ui.screens.PuzzleScreen
 import com.project.client.ui.screens.SettingsScreen
 import com.project.client.ui.theme.UiTheme
 
@@ -46,9 +47,11 @@ class MainStage(
         }
 
         val playButton = TextButton("Find 1v1 Match", skin)
+        val puzzleButton = TextButton("Puzzle Lab", skin)
         val deckButton = TextButton("Deck / Cards", skin)
         val settingsButton = TextButton("Settings", skin)
         UiTheme.stylePrimaryButton(playButton)
+        UiTheme.styleSecondaryButton(puzzleButton)
         UiTheme.styleSecondaryButton(deckButton)
         UiTheme.styleSecondaryButton(settingsButton)
 
@@ -58,12 +61,22 @@ class MainStage(
         box.add(deckStatus).growX().padBottom(8f).row()
         box.add(concept).width(600f).padBottom(18f).row()
         box.add(playButton).height(48f).growX().row()
+        box.add(puzzleButton).height(42f).growX().row()
         box.add(deckButton).height(42f).growX().row()
         box.add(settingsButton).height(42f).growX().row()
 
         playButton.addListener { event ->
             if (event is InputEvent && event.type == InputEvent.Type.touchDown) {
                 game.setScreen(MatchMakingScreen(game))
+                true
+            } else {
+                false
+            }
+        }
+
+        puzzleButton.addListener { event ->
+            if (event is InputEvent && event.type == InputEvent.Type.touchDown) {
+                game.setScreen(PuzzleScreen(game))
                 true
             } else {
                 false

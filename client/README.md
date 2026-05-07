@@ -7,6 +7,7 @@ matchmaking, card selection, HUD, hover explanations and player commands.
 
 - Login and registration screens.
 - Main menu.
+- Puzzle Lab single-player educational mode.
 - Deck/card selection.
 - Matchmaking screen.
 - Arena rendering from server snapshots.
@@ -65,6 +66,28 @@ Available cards:
 - `Coroutine Archer`
 - `Patch Healer`
 
+## Puzzle Lab
+
+`Puzzle Lab` is a separate non-PvP mode. It does not use matchmaking, server
+rooms or real-time combat. Levels unlock in order, so beginners first learn the
+unit metaphor and then move toward concrete debugging incidents.
+
+Current progression:
+
+- `Allocator Basics` - choose the correct unit-target pair for memory
+  allocation.
+- `Garbage Collector` - mark roots, detach a stale listener and sweep
+  unreachable objects.
+- `Firewall Filter` - classify traffic as allow, block or trusted patch.
+- `Thread Guard` - break a wait-for deadlock without killing a critical thread.
+- `Async Pipeline` - order auth, idempotency, DB commit, coroutine event, cache
+  invalidation and response.
+
+The mode exists to show the same relevance from another angle: not every
+systems-programming concept is best explained through combat. Some ideas are
+clearer as focused tasks with different mechanics: target choice, mark/sweep,
+request filtering, wait-for graph repair and sequence building.
+
 ## Defense Talking Points
 
 - The client does not own match logic; it sends commands and renders server
@@ -73,3 +96,5 @@ Available cards:
   both what it does in game and what IT concept it represents.
 - Deck selection shows architecture trade-offs: fast capture, defense, attack,
   support and control.
+- Puzzle Lab shows the same IT concepts without PvP pressure, with levels that
+  increase in complexity and stay grounded in the unit metaphors.
