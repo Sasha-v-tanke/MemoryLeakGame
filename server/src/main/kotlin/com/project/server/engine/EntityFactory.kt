@@ -60,7 +60,7 @@ object EntityFactory {
                 entity.add(
                     ResourceNode(
                         nodeType = ResourceNodeType.MEMORY,
-                        incomePerSecond = 2
+                        incomePerSecond = 1
                     )
                 )
             }

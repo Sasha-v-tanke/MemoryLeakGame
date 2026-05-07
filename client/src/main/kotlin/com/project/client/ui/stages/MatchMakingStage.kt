@@ -1,12 +1,14 @@
 package com.project.client.ui.stages
 
 import com.badlogic.gdx.Gdx
+import com.badlogic.gdx.graphics.Color
 import com.badlogic.gdx.scenes.scene2d.ui.Label
 import com.badlogic.gdx.scenes.scene2d.ui.Table
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton
 import com.badlogic.gdx.utils.Align
 import com.badlogic.gdx.utils.viewport.Viewport
 import com.project.client.MyGame
+import com.project.client.ui.theme.UiTheme
 import kotlin.concurrent.fixedRateTimer
 
 class MatchMakingStage(
@@ -22,40 +24,45 @@ class MatchMakingStage(
     private var timerTask: java.util.Timer? = null
 
     override fun buildUI() {
-        val root = Table()
-        root.setFillParent(true)
+        val root = screenRoot()
         root.center()
         addActor(root)
 
         val box = panel()
-        root.add(box).width(520f)
+        root.add(box).width(620f)
 
-        val title = Label("Searching opponent...", skin).apply {
+        val title = titleLabel("Searching Opponent...", 1.24f).apply {
             setAlignment(Align.center)
-            fontScaleX = 1.2f
-            fontScaleY = 1.2f
         }
 
-        statusLabel = Label("Waiting for another system instance", skin).apply {
+        statusLabel = subtitleLabel("Waiting for another system instance").apply {
             setAlignment(Align.center)
             wrap = true
+            color = UiTheme.statusInfo
         }
 
         timerLabel = Label("00:00", skin).apply {
             setAlignment(Align.center)
+            color = Color(0.79f, 0.93f, 1f, 1f)
         }
 
         cancelButton = TextButton("Cancel", skin)
+        UiTheme.styleDangerButton(cancelButton)
 
         box.defaults().pad(8f)
         box.add(title).growX().row()
-        box.add(statusLabel).width(440f).padBottom(12f).row()
-        box.add(timerLabel).growX().row()
+        box.add(statusLabel).width(520f).padBottom(8f).row()
+        box.add(timerLabel).growX().padBottom(6f).row()
         box.add(cancelButton).height(42f).growX().padTop(20f).row()
     }
 
     fun setStatus(text: String) {
         statusLabel.setText(text)
+        statusLabel.color = if (text.contains("error", ignoreCase = true) || text.contains("failed", ignoreCase = true)) {
+            UiTheme.statusError
+        } else {
+            UiTheme.statusInfo
+        }
     }
 
     fun startTimer() {

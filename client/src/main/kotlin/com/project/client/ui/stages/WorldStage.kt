@@ -1,7 +1,9 @@
 package com.project.client.ui.stages
 
 import com.badlogic.gdx.Gdx
+import com.badlogic.gdx.graphics.Color
 import com.badlogic.gdx.graphics.Texture
+import com.badlogic.gdx.graphics.Texture.TextureFilter
 import com.badlogic.gdx.math.Vector2
 import com.badlogic.gdx.scenes.scene2d.Group
 import com.badlogic.gdx.scenes.scene2d.InputEvent
@@ -11,6 +13,7 @@ import com.badlogic.gdx.scenes.scene2d.utils.ClickListener
 import com.badlogic.gdx.utils.viewport.Viewport
 import com.project.client.MyGame
 import com.project.client.engine.EntityHandler
+import com.project.client.engine.TextureCache
 import com.project.shared.api.events.GameStateSnapshotEvent
 import com.project.shared.engine.EntityState
 import com.project.shared.engine.config.GameConfig
@@ -22,20 +25,38 @@ class WorldStage(
     var onWorldClicked: (Float, Float) -> Unit = { _, _ -> }
 
     private lateinit var background: Image
-    private val entityHandler = EntityHandler { addActor(it) }
+    private lateinit var backgroundTexture: Texture
+    private var ownsBackgroundTexture: Boolean = false
+    private val entityLayer = Group()
+    private val hpLayer = Group()
+    private val entityHandler = EntityHandler(
+        addEntityActor = { entityLayer.addActor(it) },
+        addHpActor = { hpLayer.addActor(it) }
+    )
 
     override fun buildUI() {
         val backgroundFile = Gdx.files.internal("background/back-game.png")
-        val texture = if (backgroundFile.exists()) {
-            Texture(backgroundFile)
+        ownsBackgroundTexture = backgroundFile.exists()
+        backgroundTexture = if (ownsBackgroundTexture) {
+            Texture(backgroundFile).apply {
+                setFilter(TextureFilter.Linear, TextureFilter.Linear)
+            }
         } else {
-            Texture(Gdx.files.internal("objects/default.png"))
+            TextureCache.battlefieldBackground(
+                GameConfig.worldWidth.toInt(),
+                GameConfig.worldHeight.toInt()
+            )
         }
 
-        background = Image(texture)
+        background = Image(backgroundTexture)
         background.setSize(GameConfig.worldWidth, GameConfig.worldHeight)
         background.touchable = Touchable.enabled
+        background.color = Color.WHITE
         addActor(background)
+
+        addWorldOverlay()
+        addActor(entityLayer)
+        addActor(hpLayer)
 
         background.addListener(object : ClickListener() {
             override fun clicked(event: InputEvent?, x: Float, y: Float) {
@@ -68,5 +89,57 @@ class WorldStage(
         } ?: return null
 
         return entityHandler.getEntity(group)
+    }
+
+    private fun addWorldOverlay() {
+        val lineTexture = TextureCache.solidWhite()
+
+        val gridSpacing = 120f
+        var x = 0f
+        while (x <= GameConfig.worldWidth) {
+            val line = Image(lineTexture).apply {
+                setSize(1f, GameConfig.worldHeight)
+                setPosition(x, 0f)
+                color = Color(0.42f, 0.58f, 0.76f, 0.10f)
+                touchable = Touchable.disabled
+            }
+            addActor(line)
+            x += gridSpacing
+        }
+
+        var y = 0f
+        while (y <= GameConfig.worldHeight) {
+            val line = Image(lineTexture).apply {
+                setSize(GameConfig.worldWidth, 1f)
+                setPosition(0f, y)
+                color = Color(0.42f, 0.58f, 0.76f, 0.10f)
+                touchable = Touchable.disabled
+            }
+            addActor(line)
+            y += gridSpacing
+        }
+
+        val horizontalBus = Image(lineTexture).apply {
+            setSize(GameConfig.worldWidth, 3f)
+            setPosition(0f, GameConfig.worldHeight / 2f - 1.5f)
+            color = Color(0.26f, 0.84f, 1f, 0.18f)
+            touchable = Touchable.disabled
+        }
+        addActor(horizontalBus)
+
+        val verticalBus = Image(lineTexture).apply {
+            setSize(3f, GameConfig.worldHeight)
+            setPosition(GameConfig.worldWidth / 2f - 1.5f, 0f)
+            color = Color(0.26f, 0.84f, 1f, 0.14f)
+            touchable = Touchable.disabled
+        }
+        addActor(verticalBus)
+    }
+
+    override fun dispose() {
+        if (::backgroundTexture.isInitialized && ownsBackgroundTexture) {
+            backgroundTexture.dispose()
+        }
+        super.dispose()
     }
 }

@@ -8,42 +8,41 @@ import com.badlogic.gdx.utils.Align
 import com.badlogic.gdx.utils.viewport.Viewport
 import com.project.client.MyGame
 import com.project.client.ui.screens.MainScreen
+import com.project.client.ui.theme.UiTheme
 
 class SettingsStage(
     viewport: Viewport,
     private val game: MyGame
 ) : BaseStage(viewport) {
     override fun buildUI() {
-        val root = Table()
-        root.setFillParent(true)
+        val root = screenRoot()
         root.center()
         addActor(root)
 
         val box = panel()
-        root.add(box).width(560f)
+        root.add(box).width(620f)
 
-        val title = Label("Settings", skin).apply {
+        val title = titleLabel("Settings", 1.30f).apply {
             setAlignment(Align.center)
-            fontScaleX = 1.25f
-            fontScaleY = 1.25f
         }
 
-        val text = Label(
+        val text = subtitleLabel(
             "Controls:\n" +
                     "WASD / Arrows — move camera\n" +
                     "Q / E — zoom\n" +
                     "Click card — select card\n" +
-                    "Click arena — deploy selected card\n\n",
-            skin
+                    "Click arena — deploy selected card\n\n" +
+                    "Server URL can be changed with MEMORY_LEAK_SERVER_WS env variable."
         ).apply {
             wrap = true
         }
 
         val backButton = TextButton("Back", skin)
+        UiTheme.styleSecondaryButton(backButton)
 
         box.defaults().pad(8f)
         box.add(title).growX().row()
-        box.add(text).width(500f).padBottom(18f).row()
+        box.add(text).width(560f).padBottom(18f).row()
         box.add(backButton).height(42f).growX().row()
 
         backButton.addListener { event ->

@@ -7,8 +7,10 @@ import com.badlogic.gdx.scenes.scene2d.ui.Table
 import com.badlogic.gdx.utils.Align
 import com.badlogic.gdx.utils.viewport.Viewport
 import com.project.client.MyGame
+import com.project.client.ui.theme.UiTheme
 import com.project.client.ui.widgets.DeckPanel
 import com.project.shared.engine.PlayerResources
+import com.project.shared.engine.entities.components.FactoryType
 import com.project.shared.engine.entities.units.UnitRegistry
 import com.project.shared.engine.entities.units.UnitType
 
@@ -27,9 +29,12 @@ class UIStage(
 
     private lateinit var selectedCardLabel: Label
     private lateinit var statusLabel: Label
+    private lateinit var objectiveLabel: Label
     private lateinit var resourcesLabel: Label
     private lateinit var toastLabel: Label
+    private lateinit var toastPanel: Table
     private lateinit var gameOverBox: Table
+    private lateinit var deckPanel: DeckPanel
 
     override fun buildUI() {
         buildTopBar()
@@ -45,19 +50,24 @@ class UIStage(
         topBar = Table()
         topBar.setFillParent(true)
         topBar.top().left()
-        topBar.pad(10f)
+        topBar.pad(12f)
         addActor(topBar)
 
-        val panel = panel()
+        val panel = panel(Color(0.03f, 0.06f, 0.12f, 0.90f), 12f)
 
         statusLabel = Label(
             "Room: ${game.matchHandler.getRoomId().take(8)} · You: P${game.matchHandler.getPlayerIndex()} · Opponent: ${game.matchHandler.getOpponentId()}",
             skin
-        )
+        ).apply { color = Color(0.84f, 0.92f, 1f, 1f) }
+        objectiveLabel = Label("Objective: Capture nodes, break enemy Core", skin).apply {
+            color = Color(0.68f, 0.84f, 1f, 1f)
+        }
 
         resourcesLabel = Label("Memory: - | CPU: -", skin)
+        resourcesLabel.color = UiTheme.statusOk
 
-        panel.add(statusLabel).left().padRight(18f)
+        panel.add(statusLabel).left().padRight(18f).padBottom(2f).row()
+        panel.add(objectiveLabel).left().padBottom(6f).row()
         panel.add(resourcesLabel).left()
 
         topBar.add(panel).left()
@@ -70,23 +80,24 @@ class UIStage(
         bottomBar.pad(12f)
         addActor(bottomBar)
 
-        val panel = panel()
+        val panel = panel(Color(0.03f, 0.05f, 0.10f, 0.92f), 12f)
         panel.defaults().pad(4f)
 
         selectedCardLabel = Label("Selected: none · click card, then click arena", skin).apply {
             setAlignment(Align.center)
+            color = Color(0.85f, 0.92f, 1f, 1f)
         }
 
-        val deckPanel = DeckPanel(
+        deckPanel = DeckPanel(
             skin = skin,
-            playerDeck = UnitRegistry.defaultDeck,
+            playerDeck = game.getSelectedDeck(),
             onCardSelected = { unitType ->
                 onCardSelected(unitType)
             }
         )
 
-        panel.add(selectedCardLabel).growX().height(28f).row()
-        panel.add(deckPanel).width(900f).height(128f)
+        panel.add(selectedCardLabel).growX().height(30f).row()
+        panel.add(deckPanel).width(940f).height(150f)
 
         bottomBar.add(panel)
     }
@@ -101,17 +112,18 @@ class UIStage(
         hoverPanel = Table(skin).apply {
             background = skin.newDrawable(
                 "default-round",
-                Color(0.035f, 0.045f, 0.075f, 0.92f)
+                Color(0.030f, 0.045f, 0.080f, 0.94f)
             )
-            pad(10f)
+            pad(12f)
         }
 
         hoverInfoLabel = Label("", skin).apply {
             setAlignment(Align.left)
             wrap = true
+            color = Color(0.86f, 0.94f, 1f, 1f)
         }
 
-        hoverPanel.add(hoverInfoLabel).width(320f)
+        hoverPanel.add(hoverInfoLabel).width(350f)
         hoverRoot.add(hoverPanel).top().right()
 
         addActor(hoverRoot)
@@ -120,15 +132,19 @@ class UIStage(
     private fun buildToast() {
         toastLabel = Label("", skin).apply {
             setAlignment(Align.center)
-            color = Color(0.75f, 0.95f, 1f, 1f)
+            color = Color(0.82f, 0.94f, 1f, 1f)
             isVisible = false
+        }
+        toastPanel = panel(Color(0.04f, 0.09f, 0.15f, 0.92f), 8f).apply {
+            isVisible = false
+            add(toastLabel).width(720f).height(28f).center()
         }
 
         val root = Table()
         root.setFillParent(true)
         root.top()
-        root.padTop(78f)
-        root.add(toastLabel).width(640f).height(34f)
+        root.padTop(82f)
+        root.add(toastPanel).width(760f).height(44f)
 
         addActor(root)
     }
@@ -143,13 +159,26 @@ class UIStage(
 
     fun startGame(message: String) {
         statusLabel.setText("Game started · Protect your Core · Destroy enemy Core")
+        objectiveLabel.setText("Objective: Control Memory/CPU tempo and finish the Core")
         showToast(message)
     }
 
     fun updateResources(resources: PlayerResources) {
+        resourcesLabel.color = when {
+            resources.memory <= 2 || resources.cpu <= 1 -> UiTheme.statusError
+            resources.memory <= 6 || resources.cpu <= 3 -> UiTheme.statusWarn
+            else -> UiTheme.statusOk
+        }
         resourcesLabel.setText(
             "Memory: ${resources.memory} (+${resources.memoryIncome}/s)  |  CPU: ${resources.cpu} (+${resources.cpuIncome}/s)"
         )
+    }
+
+    fun updateCardRuntime(
+        cooldownByCardMs: Map<UnitType, Long>,
+        queueSizesByFactory: Map<FactoryType, Int>
+    ) {
+        deckPanel.updateRuntime(cooldownByCardMs, queueSizesByFactory)
     }
 
     fun setSelectedCard(unitType: UnitType) {
@@ -159,11 +188,13 @@ class UIStage(
             "Selected: ${config.displayName} · ${config.costMemory} Memory / ${config.costCpu} CPU · click arena to deploy"
         )
 
+        deckPanel.setSelectedCard(unitType)
         showToast("${config.displayName}: ${config.gameDescription}")
     }
 
     fun clearSelectedCard() {
         selectedCardLabel.setText("Selected: none · click card, then click arena")
+        deckPanel.setSelectedCard(null)
     }
 
     fun showHoverInfo(text: String) {
@@ -177,17 +208,22 @@ class UIStage(
 
     fun showToast(text: String) {
         toastLabel.clearActions()
+        toastPanel.clearActions()
         toastLabel.setText(text)
         toastLabel.color.a = 1f
         toastLabel.isVisible = true
+        toastPanel.color.a = 1f
+        toastPanel.isVisible = true
 
-        toastLabel.addAction(
+        toastPanel.addAction(
             Actions.sequence(
                 Actions.delay(2.25f),
                 Actions.fadeOut(0.55f),
                 Actions.run {
                     toastLabel.isVisible = false
+                    toastPanel.isVisible = false
                     toastLabel.color.a = 1f
+                    toastPanel.color.a = 1f
                 }
             )
         )
@@ -200,16 +236,14 @@ class UIStage(
         val panel = Table(skin).apply {
             background = skin.newDrawable(
                 "default-round",
-                Color(0.025f, 0.035f, 0.055f, 0.96f)
+                Color(0.02f, 0.04f, 0.07f, 0.96f)
             )
-            pad(22f)
+            pad(24f)
         }
 
         val title = Label(if (isWin) "SYSTEM ONLINE" else "CORE DUMPED", skin).apply {
             setAlignment(Align.center)
-            fontScaleX = 1.45f
-            fontScaleY = 1.45f
-            color = if (isWin) Color(0.3f, 1f, 0.65f, 1f) else Color(1f, 0.35f, 0.35f, 1f)
+            color = if (isWin) Color(0.34f, 1f, 0.72f, 1f) else Color(1f, 0.40f, 0.40f, 1f)
         }
 
         val details = Label(

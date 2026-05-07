@@ -6,6 +6,7 @@ import com.badlogic.gdx.graphics.GL20
 import com.badlogic.gdx.utils.viewport.ExtendViewport
 import com.project.client.MyGame
 import com.project.client.ui.stages.BaseStage
+import com.project.client.ui.theme.UiTheme
 
 abstract class BaseScreen(protected val game: MyGame) : ScreenAdapter() {
     protected val viewport = ExtendViewport(1280f, 720f)
@@ -19,7 +20,7 @@ abstract class BaseScreen(protected val game: MyGame) : ScreenAdapter() {
     }
 
     override fun render(delta: Float) {
-        Gdx.gl.glClearColor(0.015f, 0.018f, 0.028f, 1f)
+        Gdx.gl.glClearColor(UiTheme.background.r, UiTheme.background.g, UiTheme.background.b, UiTheme.background.a)
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT)
 
         stage.act(delta)
