@@ -4,6 +4,7 @@ import com.project.shared.engine.config.EntityConfig
 import com.project.shared.engine.config.GameConfig
 import com.project.shared.engine.config.WorldObjectKind
 import com.project.shared.engine.entities.Entity
+import com.project.shared.engine.entities.OwnerType
 import com.project.shared.engine.entities.components.Core
 import com.project.shared.engine.entities.components.Factory
 import com.project.shared.engine.entities.components.FactoryType
@@ -60,11 +61,33 @@ object EntityFactory {
                 entity.add(
                     ResourceNode(
                         nodeType = ResourceNodeType.MEMORY,
-                        incomePerSecond = 1
+                        incomePerSecond = 0
                     )
                 )
             }
         }
+
+        return world.addEntity(entity)
+    }
+
+    fun createBuiltFactory(
+        world: GameWorld,
+        owner: OwnerType,
+        factoryType: FactoryType,
+        x: Float,
+        y: Float
+    ): Entity {
+        val entity = world.createEntity()
+        val sprite = when (factoryType) {
+            FactoryType.BASIC -> "objects/factory_basic.png"
+            FactoryType.SUPPORT -> "objects/factory_support.png"
+        }
+
+        entity.add(Transform(x, y))
+        entity.add(Owner(owner))
+        entity.add(Sprite(sprite, 0.95f))
+        entity.add(Factory(factoryType, productionMultiplier = 1f, builtByPlayer = true))
+        entity.add(Health(GameConfig.factoryBuildHealth, GameConfig.factoryBuildHealth))
 
         return world.addEntity(entity)
     }

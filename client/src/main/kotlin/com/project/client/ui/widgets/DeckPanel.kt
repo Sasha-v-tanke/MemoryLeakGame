@@ -3,6 +3,7 @@ package com.project.client.ui.widgets
 import com.badlogic.gdx.graphics.Color
 import com.badlogic.gdx.scenes.scene2d.InputEvent
 import com.badlogic.gdx.scenes.scene2d.ui.Label
+import com.badlogic.gdx.scenes.scene2d.ui.ScrollPane
 import com.badlogic.gdx.scenes.scene2d.ui.Skin
 import com.badlogic.gdx.scenes.scene2d.ui.Table
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener
@@ -50,35 +51,28 @@ class DeckPanel(
             cardsTable.add(cardButton).width(144f).height(112f)
         }
 
+        val scroll = ScrollPane(cardsTable, skin)
+        scroll.setFadeScrollBars(false)
+        scroll.setScrollingDisabled(false, true)
+
         add(header).left().growX().padBottom(6f).row()
-        add(cardsTable).grow()
+        add(scroll).grow()
     }
 
     fun setSelectedCard(unitType: UnitType?) {
-        cardButtons.values.flatten().forEach { button ->
-            button.setSelected(false)
-        }
-
+        cardButtons.values.flatten().forEach { button -> button.setSelected(false) }
         if (unitType != null) {
-            cardButtons[unitType]?.forEach { button ->
-                button.setSelected(true)
-            }
+            cardButtons[unitType]?.forEach { it.setSelected(true) }
         }
     }
 
-    fun updateRuntime(
-        cooldownByCardMs: Map<UnitType, Long>,
-        queueSizesByFactory: Map<FactoryType, Int>
-    ) {
+    fun updateRuntime(cooldownByCardMs: Map<UnitType, Long>, queueSizesByFactory: Map<FactoryType, Int>) {
         cardButtons.forEach { (unitType, buttons) ->
             val config = UnitRegistry.getConfig(unitType)
             val cooldown = cooldownByCardMs[unitType] ?: 0L
             val queueSize = when (config.role) {
                 UnitRole.SPELL -> 0
-                else -> {
-                    val factoryType = requiredFactoryFor(unitType)
-                    queueSizesByFactory[factoryType] ?: 0
-                }
+                else -> queueSizesByFactory[requiredFactoryFor(unitType)] ?: 0
             }
 
             buttons.forEach { it.updateRuntime(cooldown, queueSize) }
@@ -88,16 +82,32 @@ class DeckPanel(
     private fun requiredFactoryFor(unitType: UnitType): FactoryType {
         return when (unitType) {
             UnitType.ALLOCATOR,
+            UnitType.BUFFER,
+            UnitType.MEMORY_POOL,
+            UnitType.DMA_CONTROLLER,
+            UnitType.CPU_SCHEDULER,
+            UnitType.LOAD_BALANCER,
+            UnitType.INTERRUPT_HANDLER,
             UnitType.INJECTOR,
             UnitType.CACHE_RUNNER,
-            UnitType.COROUTINE_ARCHER -> FactoryType.BASIC
+            UnitType.COROUTINE_ARCHER,
+            UnitType.STACK_FRAME,
+            UnitType.HEAP_BLOCK,
+            UnitType.POINTER,
+            UnitType.LOOP,
+            UnitType.RECURSIVE_CALL -> FactoryType.BASIC
 
             UnitType.GARBAGE_COLLECTOR,
             UnitType.THREAD_GUARD,
             UnitType.FIREWALL,
             UnitType.PATCH_HEALER,
+            UnitType.EXCEPTION_HANDLER,
+            UnitType.MUTEX,
+            UnitType.SEMAPHORE,
+            UnitType.OBSERVER,
             UnitType.DEADLOCK,
-            UnitType.OVERCLOCK -> FactoryType.SUPPORT
+            UnitType.OVERCLOCK,
+            UnitType.NULL_POINTER -> FactoryType.SUPPORT
         }
     }
 }

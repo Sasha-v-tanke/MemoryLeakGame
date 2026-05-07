@@ -2,6 +2,10 @@ package com.project.server.routing
 
 import com.project.server.service.GameManager
 import com.project.shared.api.JsonFormats
+import com.project.shared.api.game.BuildFactoryRequest
+import com.project.shared.api.game.BuildFactoryResponse
+import com.project.shared.api.game.ForfeitMatchRequest
+import com.project.shared.api.game.ForfeitMatchResponse
 import com.project.shared.api.game.GameRequest
 import com.project.shared.api.game.PlayCardRequest
 import com.project.shared.api.game.PlayCardResponse
@@ -29,18 +33,19 @@ fun Application.gameModule() {
                     when (val request = json.decodeFromString<GameRequest>(frame.readText())) {
                         is PlayerReadyRequest -> {
                             GameManager.setPlayerReady(request)
-                            outgoing.send(
-                                Frame.Text(
-                                    json.encodeToString(
-                                        PlayerReadyResponse(success = true)
-                                    )
-                                )
-                            )
+                            outgoing.send(Frame.Text(json.encodeToString(PlayerReadyResponse(success = true))))
                         }
 
                         is PlayCardRequest -> {
-                            val result = GameManager.playCard(request)
-                            outgoing.send(Frame.Text(json.encodeToString(result)))
+                            outgoing.send(Frame.Text(json.encodeToString(GameManager.playCard(request))))
+                        }
+
+                        is BuildFactoryRequest -> {
+                            outgoing.send(Frame.Text(json.encodeToString(GameManager.buildFactory(request))))
+                        }
+
+                        is ForfeitMatchRequest -> {
+                            outgoing.send(Frame.Text(json.encodeToString(GameManager.forfeit(request))))
                         }
                     }
                 } catch (e: Exception) {

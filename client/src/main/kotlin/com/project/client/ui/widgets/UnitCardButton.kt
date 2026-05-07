@@ -26,7 +26,7 @@ class UnitCardButton(
                 ${config.displayName}
                 ${formatRole(config.role)} · ${factoryTag(config.role)}
                 Cost ${config.costMemory}M / ${config.costCpu}C
-                HP:${config.health} DMG:${config.damage}
+                Mem held ${config.allocatedMemory}
                 $status
             """.trimIndent()
         }
@@ -46,7 +46,7 @@ class UnitCardButton(
 
         private fun formatRole(role: UnitRole): String {
             return when (role) {
-                UnitRole.CAPTURE -> "Capture"
+                UnitRole.CAPTURE -> "Resource"
                 UnitRole.SUPPORT -> "Support"
                 UnitRole.DEFENSE -> "Defense"
                 UnitRole.ATTACK -> "Attack"
@@ -71,11 +71,7 @@ class UnitCardButton(
 
     fun setSelected(isSelected: Boolean) {
         selected = isSelected
-        color = if (selected) {
-            Color(0.29f, 0.52f, 0.95f, 1f)
-        } else {
-            roleColor(config.role)
-        }
+        color = if (selected) Color(0.29f, 0.52f, 0.95f, 1f) else roleColor(config.role)
     }
 
     private fun refreshText() {

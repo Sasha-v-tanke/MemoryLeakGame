@@ -3,6 +3,10 @@ package com.project.server.service
 import com.project.server.engine.GameRoom
 import com.project.server.models.GameRoomData
 import com.project.shared.api.events.MatchFoundEvent
+import com.project.shared.api.game.BuildFactoryRequest
+import com.project.shared.api.game.BuildFactoryResponse
+import com.project.shared.api.game.ForfeitMatchRequest
+import com.project.shared.api.game.ForfeitMatchResponse
 import com.project.shared.api.game.PlayCardRequest
 import com.project.shared.api.game.PlayCardResponse
 import com.project.shared.api.game.PlayerReadyRequest
@@ -48,5 +52,19 @@ object GameManager {
             ?: return PlayCardResponse(false, "Room not found")
 
         return room.playCard(request)
+    }
+
+    fun buildFactory(request: BuildFactoryRequest): BuildFactoryResponse {
+        val room = rooms[request.roomId]
+            ?: return BuildFactoryResponse(false, "Room not found")
+
+        return room.buildFactory(request)
+    }
+
+    fun forfeit(request: ForfeitMatchRequest): ForfeitMatchResponse {
+        val room = rooms[request.roomId]
+            ?: return ForfeitMatchResponse(false, "Room not found")
+
+        return room.forfeit(request)
     }
 }

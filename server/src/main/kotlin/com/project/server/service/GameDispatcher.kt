@@ -11,7 +11,7 @@ object GameDispatcher {
     private val json = JsonFormats.default
 
     suspend fun sendToPlayer(player: PlayerSession, message: Event) {
-        player.socket.send(Frame.Text(json.encodeToString(message)))
+        player.socket.send(Frame.Text(json.encodeToString<Event>(message)))
     }
 
     suspend fun sendToAllPlayers(players: List<PlayerSession>, message: Event) {

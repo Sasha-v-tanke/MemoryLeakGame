@@ -13,5 +13,6 @@ enum class FactoryType {
 @SerialName("factory")
 data class Factory(
     val factoryType: FactoryType,
-    var productionMultiplier: Float = 1f
+    var productionMultiplier: Float = 1f,
+    val builtByPlayer: Boolean = false
 ) : Component

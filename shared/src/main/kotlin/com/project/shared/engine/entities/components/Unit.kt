@@ -11,5 +11,8 @@ data class Unit(
     val typeName: UnitType,
     val role: UnitRole,
     val costMemory: Int,
-    val costCpu: Int
+    val costCpu: Int,
+    val allocatedMemory: Int,
+    val memoryWorkPower: Float,
+    val cpuRedirectPower: Float
 ) : Component

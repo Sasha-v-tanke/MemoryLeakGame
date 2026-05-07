@@ -7,16 +7,31 @@ object GameConfig {
     const val tickMillis = 50L
     const val snapshotEveryTicks = 2L
 
-    const val startingMemory = 8
-    const val startingCpu = 4
+    const val startingMemory = 4
+    const val startingCpu = 6
 
-    const val baseMemoryIncome = 1
-    const val baseCpuIncome = 0
-    const val basicFactoryMemoryIncomeBonus = 1
+    const val baseMemoryIncome = 0
+    const val baseCpuIncome = 1
+    const val basicFactoryMemoryIncomeBonus = 0
     const val supportFactoryCpuIncomeBonus = 1
 
     const val resourceIncomeIntervalMillis = 1000L
 
     const val captureRadius = 105f
     const val coreAttackPriorityRange = 260f
+
+    const val memoryWorkRequired = 100f
+    const val allocatorMemoryBatch = 8
+    const val bufferMemoryBatch = 12
+    const val memoryPoolBatch = 18
+    const val dmaMemoryBatch = 10
+    const val allocatorCpuCaptureWorkMillis = 2500L
+    const val garbageCollectorWorkMillis = 1800L
+
+    const val basicFactoryBuildMemoryCost = 14
+    const val basicFactoryBuildCpuCost = 8
+    const val supportFactoryBuildMemoryCost = 16
+    const val supportFactoryBuildCpuCost = 10
+    const val factoryBuildHealth = 360
+    const val factoryProductionMultiplierBonus = 0.12f
 }

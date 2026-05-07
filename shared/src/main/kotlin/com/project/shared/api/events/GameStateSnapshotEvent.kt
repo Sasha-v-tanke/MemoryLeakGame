@@ -1,7 +1,9 @@
 package com.project.shared.api.events
 
 import com.project.shared.engine.EntityState
+import com.project.shared.engine.MatchStats
 import com.project.shared.engine.PlayerResources
+import com.project.shared.engine.WorldTextEvent
 import com.project.shared.engine.entities.components.FactoryType
 import com.project.shared.engine.entities.units.UnitType
 import kotlinx.serialization.SerialName
@@ -14,6 +16,8 @@ data class GameStateSnapshotEvent(
     val resources: Map<Int, PlayerResources>,
     val cardCooldownsMs: Map<Int, Map<UnitType, Long>>,
     val factoryQueueSizes: Map<Int, Map<FactoryType, Int>>,
+    val stats: MatchStats,
+    val textEvents: List<WorldTextEvent>,
     val timestamp: Long,
     val tick: Long
 ) : Event

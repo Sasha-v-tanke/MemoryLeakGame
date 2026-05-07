@@ -15,7 +15,13 @@ data class UnitConfig(
     val attackCooldownMillis: Long,
     val costCpu: Int,
     val costMemory: Int,
+    val allocatedMemory: Int,
+    val memoryWorkPower: Float,
+    val cpuRedirectPower: Float,
     val sprite: String,
     val gameDescription: String,
-    val techDescription: String
+    val techDescription: String,
+    val strengths: String,
+    val weaknesses: String,
+    val realFeature: String
 )

@@ -40,16 +40,10 @@ class GameWorld {
         }
     }
 
-    fun removeDeadNonCoreEntities() {
-        val toRemove = entities.values
-            .filter {
-                val health = it.get(Health::class.java)
-                health != null && health.isDead && !it.has(com.project.shared.engine.entities.components.Core::class.java)
-            }
-            .map { it.id }
-
-        toRemove.forEach { id ->
-            entities.remove(id)
+    fun getDeadEntities(): List<Entity> {
+        return entities.values.filter {
+            val health = it.get(Health::class.java)
+            health != null && health.isDead
         }
     }
 

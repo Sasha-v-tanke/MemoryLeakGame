@@ -1,9 +1,6 @@
 # Memory Leak Arena
 
-`Memory Leak Arena` is a desktop 1v1 real-time strategy game with an educational
-systems-programming layer. Players control digital systems, capture `Memory` and
-`CPU` nodes, deploy process-themed cards, protect their own `Core`, and destroy
-the opponent's `Core`.
+`Memory Leak Arena` is a desktop 1v1 real-time strategy game with an educational systems-programming layer. Players control digital systems, allocate memory, reclaim dead objects, scale factories, protect their own Core, and destroy the opponent's Core.
 
 The project is built as a Kotlin multi-module application:
 
@@ -11,151 +8,151 @@ The project is built as a Kotlin multi-module application:
 - `server` - Ktor WebSocket authoritative game server.
 - `shared` - shared DTOs, events, ECS components, commands and game configs.
 
-## Relevance
+## Core Learning Model
 
-The project is relevant because many systems and architecture concepts are hard
-to understand from lectures and source code alone. Memory, CPU, resource
-contention, deadlocks, process roles and central failure points are abstract
-until students can see actions, consequences and feedback.
+The game explains programming concepts through match consequences:
 
-The main defense formula is:
+`Programming concept -> visible game behavior -> player decision -> system consequence`
 
-`Educational problem -> game mechanic -> IT meaning -> project demo`
+## Current Mechanics
 
-## Relevance To Mechanics
-
-| Concept | Game mechanic | Learning meaning |
+| Concept | Game behavior | Learning meaning |
 | --- | --- | --- |
-| `Memory` | Resource spent on cards | Memory becomes a limited working space, not just a number. |
-| `CPU` | Resource needed for stronger and faster actions | Compute capacity limits system throughput. |
-| `Resource Nodes` | Capturable Memory/CPU nodes | Infrastructure control creates technical advantage. |
-| `Core` | Destroying Core ends the match | A central runtime/kernel failure terminates the system. |
-| `Allocator` | Cheap node capturer | Allocation reserves working memory for active work. |
-| `Garbage Collector` | Support and repair | Cleanup keeps the system stable over time. |
-| `Thread Guard` | Defensive unit | Synchronization protects critical resources. |
-| `Injector` | Aggressive attacker | Injection is powerful, direct and risky. |
-| `Deadlock` | Area stun | Processes stop acting when execution is blocked. |
-| `Overclock` | Temporary speed boost | Throughput can be raised, but only for a limited time. |
+| Memory allocation | `Allocator` works at a Memory Source, creates usable Memory, then exits | Memory capacity is not automatically usable; it must be allocated. |
+| Garbage collection | `Garbage Collector` sweeps dead allied units and restores their held Memory | GC reclaims dead/unreachable allocations; it does not heal living objects. |
+| Memory leak | Dead units remain dimmed on the map until GC removes them | Dead objects still occupy memory if not collected. |
+| CPU throughput | CPU grows over time and from CPU nodes | CPU limits how many operations the system can run. |
+| Factory scaling | Building extra factories increases production parallelism and queue capacity | More build pipelines improve throughput but cost resources. |
+| Core failure | Destroying Core ends the match | Central runtime/kernel failure terminates the system. |
+| Deadlock | Area stun | Processes stop making progress when circular waiting blocks execution. |
+| Overclock | Temporary speed boost | Throughput can be raised temporarily at compute cost. |
 
-Additional selectable cards expand the same idea:
+## Units
 
-- `Cache Runner` - fast capture through cache-like locality.
-- `Firewall` - defensive boundary around critical parts.
-- `Coroutine Archer` - asynchronous long-range work.
-- `Patch Healer` - operational repair and maintenance.
+### Allocator
 
-## Puzzle Lab
+Creates Memory from Memory Sources or binds CPU nodes. It costs CPU but no Memory. After successful work it disappears.
 
-The project also includes a separate `Puzzle Lab` section. It is intentionally
-different from PvP: there is no opponent, matchmaking, arena push or real-time
-combat. Instead, the player receives a concrete debugging incident and must
-repair the system while preserving the important invariant.
+- Strong: early resource setup.
+- Weak: no combat value.
+- IT meaning: allocation is a short-lived operation that reserves usable workspace.
 
-Levels unlock one by one, so the mode starts with beginner-friendly unit
-metaphors and then moves toward real engineering constraints:
+### Garbage Collector
 
-| Level | Unit basis | Puzzle mechanic | Learning meaning |
-| --- | --- | --- |
-| 1 | `Allocator` | Choose the correct unit-target pair for reserving workspace | Memory allocation is the first systems concept. |
-| 2 | `Garbage Collector` / `Patch Healer` | Mark roots, detach a stale listener, then sweep unreachable objects | GC cannot free objects that are still reachable from roots. |
-| 3 | `Firewall` / `Injector` / `Patch Healer` | Classify incoming requests as allow, block or trusted patch | Security is not "block everything"; it is correct filtering. |
-| 4 | `Thread Guard` / `Deadlock` | Inspect a wait-for graph and break circular wait safely | Deadlock is a dependency cycle between processes and resources. |
-| 5 | `Cache Runner` / `Coroutine Archer` / `Overclock` | Build a safe retried request pipeline in order | Speed, async work and cache need correctness rules. |
+Finds dead allied units, frees their allocated Memory, removes them, then exits. It costs CPU but no Memory.
 
-The defense framing is still the same:
+- Strong: recovers Memory after losses.
+- Weak: cannot fight or heal living units.
+- IT meaning: GC frees dead/unreachable allocations, not active objects.
 
-`Educational problem -> operation -> system consequence -> IT meaning`
+### Patch Healer
 
-## Tech Stack
+Repairs living allied processes.
 
-- Kotlin 2.2
-- LibGDX / LWJGL3 for the desktop client
-- Ktor WebSockets for networking
-- PostgreSQL + Exposed for user data
-- Gradle multi-module build
+- Strong: keeps live pushes alive.
+- Weak: does not reclaim Memory.
+- IT meaning: patches stabilize running services; they are not garbage collection.
 
-Use JDK 21. On this machine the Android Studio JBR works:
+### Thread Guard
 
-```bash
-export JAVA_HOME="/Applications/Android Studio.app/Contents/jbr/Contents/Home"
-```
+Defends a local area.
+
+- Strong: holds nodes and approaches.
+- Weak: slow and poor at chasing.
+- IT meaning: synchronization protects critical sections but reduces throughput.
+
+### Firewall
+
+Heavy defensive boundary.
+
+- Strong: static defense.
+- Weak: expensive and slow.
+- IT meaning: boundaries filter hostile traffic before critical parts.
+
+### Injector
+
+Aggressive attacker that prioritizes factories and Core.
+
+- Strong: structure pressure.
+- Weak: fragile.
+- IT meaning: injection is powerful and risky because it changes execution directly.
+
+### Coroutine Archer
+
+Long-range attacker.
+
+- Strong: safe damage.
+- Weak: fragile.
+- IT meaning: asynchronous work can continue without blocking the whole system.
+
+### Deadlock
+
+Area stun.
+
+- Strong: interrupts enemy execution.
+- Weak: no damage.
+- IT meaning: deadlock is progress failure caused by circular waiting.
+
+### Overclock
+
+Temporary boost.
+
+- Strong: accelerates active allied processes.
+- Weak: situational.
+- IT meaning: throughput boosts are temporary and resource-dependent.
 
 ## Run
 
-Start PostgreSQL first. The default server config expects:
-
-```text
-jdbc:postgresql://localhost:5432/game
-user: gameuser
-password: password
-```
-
-One Docker-based option:
+Start PostgreSQL first:
 
 ```bash
 cd server
 ./run-postgresql.sh
 cd ..
-```
-
-Then open three terminals from the project root:
-
-```bash
+# Run server:
+Bash
 ./gradlew server:run
-```
-
-```bash
+# Run two clients:
+./gradlew client:run
 ./gradlew client:run
 ```
-
-```bash
-./gradlew client:run
-```
-
-The server runs on `localhost:8080`. The client uses
-`MEMORY_LEAK_SERVER_WS` when it is set; otherwise it connects to
-`ws://localhost:8080`.
-
-## Demo Scenario
-
-1. Start PostgreSQL.
-2. Start the server.
-3. Start two desktop clients.
-4. Register or log in with two accounts.
-5. Optionally open `Deck / Cards` and save a 6-card deck.
-6. Press `Find 1v1 Match` in both clients.
-7. Select cards, click the arena to deploy them, capture `Memory`/`CPU` nodes.
-8. Push toward the enemy `Core`.
-9. Destroy the `Core` and show the victory/defeat screen.
-
-For the non-PvP educational demo, open `Puzzle Lab` from the main menu and solve
-one of the constrained system puzzles.
 
 ## Controls
 
-- `WASD` / arrows - move camera.
-- `Q` / `E` - zoom.
-- Click a card - select it.
-- Click arena - deploy selected card.
-- Hover objects - see gameplay and IT explanation.
+WASD / arrows - move camera.
+Q / E - zoom.
+Click card - select card.
+Click arena - set rally/work target.
+Build Factory buttons - scale production near your Core.
+Forfeit - leave match with automatic defeat after confirmation.
+Hover objects - see gameplay role and IT explanation.
 
-## Defense Responsibility Zones
+## Demo Scenario
 
-- Relevance and concept: learning problem, mapping IT concepts to mechanics,
-  and why this game loop was chosen.
-- Client: LibGDX desktop UI, map rendering, card deck, HUD, hover info and
-  controls.
-- Server: Ktor WebSockets, matchmaking, rooms, authoritative economy, combat
-  and victory logic.
-- Shared: common API, events, commands, ECS components, unit configs and world
-  configs.
-- Demo: launch flow, recorded video, GitHub link and match walkthrough.
+Start server and two clients.
+Login with two accounts.
+Find a 1v1 match.
+Use Allocator on Memory Sources to create usable Memory.
+Use Allocator or Cache Runner to control CPU nodes.
+Build extra factories to increase production throughput.
+Use combat units to pressure factories and Core.
+Let dead units remain as memory leaks.
+Use Garbage Collector to reclaim dead allied units.
+End the match by destroying Core or forfeiting.
+Show post-match statistics.
 
-## Future Work
+---
 
-- Android client.
-- Redis-backed matchmaking/session scaling.
-- Ratings and match history.
-- Replays.
-- 2v2 mode.
-- Larger tutorial with step-by-step learning tasks.
+## Что сделано по поведению юнитов
+
+- `Allocator`: не стоит Memory, стоит CPU. Идёт к ближайшей ноде. На Memory Source создаёт пачку Memory и исчезает. На CPU Node связывает/захватывает ноду и исчезает.
+- `Garbage Collector`: не стоит Memory, стоит много CPU. Не лечит. Ищет только мёртвые свои юниты, идёт к ним, делает sweep, возвращает их `allocatedMemory`, удаляет объект, затем сам исчезает.
+- `Patch Healer`: лечит только живых союзников. Не освобождает Memory.
+- `Thread Guard`: удерживает область и атакует вражеские юниты поблизости.
+- `Firewall`: более тяжёлая оборонительная версия Thread Guard.
+- `Injector`: приоритетно атакует Factory/Core, затем юнитов.
+- `Coroutine Archer`: дальняя атака, хрупкий асинхронный “процесс”.
+- `Deadlock`: временно станит процессы в области.
+- `Overclock`: временно ускоряет союзные процессы в области.
+- Мёртвые юниты остаются на карте как “утечки” до GC.
+- Фабрики можно строить около Core, они увеличивают очереди и скорость производства.

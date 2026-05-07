@@ -76,7 +76,6 @@ class MyGame : Game() {
 
         deck.filter { it in validTypes }.forEach { unitType ->
             if (normalized.size >= DECK_SIZE) return@forEach
-
             val copies = copyCounts.getOrDefault(unitType, 0)
             if (copies < MAX_CARD_COPIES) {
                 copyCounts[unitType] = copies + 1
@@ -93,11 +92,13 @@ class MyGame : Game() {
         saveDeck()
     }
 
-    private fun loadDeck(playerId: Int): List<UnitType> {
-        val raw = Gdx.app
-            .getPreferences("memory-leak-arena")
-            .getString(deckKey(playerId), "")
+    fun returnToMainMenu() {
+        matchHandler.clear()
+        setScreen(com.project.client.ui.screens.MainScreen(this))
+    }
 
+    private fun loadDeck(playerId: Int): List<UnitType> {
+        val raw = Gdx.app.getPreferences("memory-leak-arena").getString(deckKey(playerId), "")
         if (raw.isBlank()) return UnitRegistry.defaultDeck
 
         val loaded = raw.split(",")
@@ -116,11 +117,7 @@ class MyGame : Game() {
     private fun saveDeck() {
         val playerId = playerId ?: return
         val encoded = selectedDeck.joinToString(",") { it.name }
-
-        Gdx.app
-            .getPreferences("memory-leak-arena")
-            .putString(deckKey(playerId), encoded)
-            .flush()
+        Gdx.app.getPreferences("memory-leak-arena").putString(deckKey(playerId), encoded).flush()
     }
 
     private fun deckKey(playerId: Int): String {
@@ -130,25 +127,11 @@ class MyGame : Game() {
     private fun onEvent(event: Event) {
         Gdx.app.postRunnable {
             when (event) {
-                is MatchFoundEvent -> {
-                    (screen as? MatchMakingScreen)?.startGame(event)
-                }
-
-                is GameStartEvent -> {
-                    (screen as? GameScreen)?.startGame(event)
-                }
-
-                is GameStateSnapshotEvent -> {
-                    (screen as? GameScreen)?.updateGameState(event)
-                }
-
-                is GameOverEvent -> {
-                    (screen as? GameScreen)?.finishGame(event)
-                }
-
-                is SystemMessageEvent -> {
-                    (screen as? GameScreen)?.showSystemMessage(event.message)
-                }
+                is MatchFoundEvent -> (screen as? MatchMakingScreen)?.startGame(event)
+                is GameStartEvent -> (screen as? GameScreen)?.startGame(event)
+                is GameStateSnapshotEvent -> (screen as? GameScreen)?.updateGameState(event)
+                is GameOverEvent -> (screen as? GameScreen)?.finishGame(event)
+                is SystemMessageEvent -> (screen as? GameScreen)?.showSystemMessage(event.message)
             }
         }
     }
@@ -158,7 +141,6 @@ class MyGame : Game() {
             listenSocket.close()
         }
         TextureCache.dispose()
-
         super.dispose()
     }
 }

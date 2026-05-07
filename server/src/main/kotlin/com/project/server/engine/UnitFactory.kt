@@ -24,23 +24,24 @@ object UnitFactory {
         world: GameWorld,
         unitType: UnitType,
         owner: OwnerType,
-        spawnX: Float,
-        spawnY: Float,
-        rallyX: Float,
-        rallyY: Float
+        x: Float,
+        y: Float
     ): Entity {
         val config = UnitRegistry.getConfig(unitType)
         val entity = world.createEntity()
 
-        entity.add(Transform(spawnX, spawnY))
+        entity.add(Transform(x, y))
         entity.add(Owner(owner))
-        entity.add(Sprite(config.sprite, getVisualScale(unitType)))
+        entity.add(Sprite(config.sprite, 1f))
         entity.add(
             Unit(
                 typeName = config.unitType,
                 role = config.role,
                 costMemory = config.costMemory,
-                costCpu = config.costCpu
+                costCpu = config.costCpu,
+                allocatedMemory = config.allocatedMemory,
+                memoryWorkPower = config.memoryWorkPower,
+                cpuRedirectPower = config.cpuRedirectPower
             )
         )
         entity.add(Health(config.health, config.health))
@@ -53,41 +54,19 @@ object UnitFactory {
             )
         )
         entity.add(Velocity(0f, 0f))
-        entity.add(Target(targetX = rallyX, targetY = rallyY))
+        entity.add(Target(targetX = x, targetY = y))
         entity.add(StatusEffects())
 
         when (config.role) {
-            UnitRole.CAPTURE -> entity.add(CaptureBehavior(rallyX, rallyY))
-            UnitRole.SUPPORT -> entity.add(SupportBehavior(rallyX, rallyY))
-            UnitRole.DEFENSE -> entity.add(DefenseBehavior(rallyX, rallyY))
-            UnitRole.ATTACK -> entity.add(AttackBehavior(rallyX, rallyY))
+            UnitRole.CAPTURE -> entity.add(CaptureBehavior(x, y))
+            UnitRole.SUPPORT -> entity.add(SupportBehavior(x, y))
+            UnitRole.DEFENSE -> entity.add(DefenseBehavior(x, y))
+            UnitRole.ATTACK -> entity.add(AttackBehavior(x, y))
             UnitRole.SPELL -> {
+                // Spells are not persistent units and should be handled before this method.
             }
         }
 
-        world.addEntity(entity)
-
-        DebugLog.spawn(
-            "UnitFactory created id=${entity.id} type=$unitType role=${config.role} owner=$owner " +
-                    "spawn=$spawnX,$spawnY rally=$rallyX,$rallyY hp=${config.health} speed=${config.speed} " +
-                    "sprite=${config.sprite} scale=${getVisualScale(unitType)}"
-        )
-
-        return entity
-    }
-
-    private fun getVisualScale(unitType: UnitType): Float {
-        return when (unitType) {
-            UnitType.ALLOCATOR -> 1.0f
-            UnitType.GARBAGE_COLLECTOR -> 1.08f
-            UnitType.THREAD_GUARD -> 1.22f
-            UnitType.INJECTOR -> 1.08f
-            UnitType.DEADLOCK -> 1.0f
-            UnitType.OVERCLOCK -> 1.0f
-            UnitType.CACHE_RUNNER -> 0.82f
-            UnitType.FIREWALL -> 1.34f
-            UnitType.COROUTINE_ARCHER -> 0.98f
-            UnitType.PATCH_HEALER -> 0.96f
-        }
+        return world.addEntity(entity)
     }
 }

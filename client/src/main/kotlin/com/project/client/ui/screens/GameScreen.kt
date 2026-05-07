@@ -22,6 +22,8 @@ import com.project.shared.engine.entities.components.Core
 import com.project.shared.engine.entities.components.Factory
 import com.project.shared.engine.entities.components.FactoryType
 import com.project.shared.engine.entities.components.Health
+import com.project.shared.engine.entities.components.ProcessPhase
+import com.project.shared.engine.entities.components.ProcessState
 import com.project.shared.engine.entities.components.ResourceNode
 import com.project.shared.engine.entities.components.ResourceNodeType
 import com.project.shared.engine.entities.components.Unit
@@ -41,8 +43,6 @@ class GameScreen(private val game: MyGame) : ScreenAdapter() {
     private var gameFinished = false
     private var selectedCard: UnitType? = null
     private var isDeployingCard = false
-    private var lastSnapshot: GameStateSnapshotEvent? = null
-    private var lastLoggedTick = -1L
 
     override fun show() {
         worldStage.buildUI()
@@ -51,19 +51,32 @@ class GameScreen(private val game: MyGame) : ScreenAdapter() {
         worldViewport.camera = camera
         camera.initialize()
 
-        worldStage.onWorldClicked = { x, y ->
-            deploySelectedCard(x, y)
-        }
+        worldStage.onWorldClicked = { x, y -> deploySelectedCard(x, y) }
 
         uiStage.onCardSelected = { unitType ->
-            if (gameFinished) {
-                uiStage.showToast("Match is finished")
-            } else if (isDeployingCard) {
-                uiStage.showToast("Wait for current deployment")
-            } else {
+            if (gameFinished) uiStage.showToast("Match is finished")
+            else if (isDeployingCard) uiStage.showToast("Wait for current deployment")
+            else {
                 selectedCard = unitType
                 uiStage.setSelectedCard(unitType)
             }
+        }
+
+        uiStage.onBuildFactory = { factoryType ->
+            socket.buildFactory(game.getPlayerId(), game.matchHandler.getRoomId(), factoryType) { response ->
+                uiStage.showToast(response.description)
+            }
+        }
+
+        uiStage.onForfeitConfirmed = {
+            socket.forfeit(game.getPlayerId(), game.matchHandler.getRoomId()) { response ->
+                uiStage.showToast(response.description)
+            }
+        }
+
+        uiStage.onExitAfterGame = {
+            socket.close()
+            game.returnToMainMenu()
         }
 
         Gdx.input.inputProcessor = InputMultiplexer(uiStage, worldStage)
@@ -71,26 +84,17 @@ class GameScreen(private val game: MyGame) : ScreenAdapter() {
         worldStage.show()
         uiStage.show()
 
-        socket.sendPlayerReady(
-            playerId = game.getPlayerId(),
-            roomId = game.matchHandler.getRoomId()
-        ) { response ->
-            onReadyResult(response)
-        }
+        socket.sendPlayerReady(game.getPlayerId(), game.matchHandler.getRoomId()) { response -> onReadyResult(response) }
     }
 
     override fun render(delta: Float) {
         camera.update(delta)
-
         Gdx.gl.glClearColor(UiTheme.background.r, UiTheme.background.g, UiTheme.background.b, UiTheme.background.a)
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT)
-
         worldStage.act(delta)
         worldStage.draw()
-
         uiStage.act(delta)
         uiStage.draw()
-
         updateHoverInfo()
     }
 
@@ -113,24 +117,14 @@ class GameScreen(private val game: MyGame) : ScreenAdapter() {
     fun startGame(event: GameStartEvent) {
         gameStarted = true
         uiStage.startGame(event.message)
-        uiStage.showToast("Game started. Select a card, then click the arena.")
-        Gdx.app.log("GameScreen", "Game started: ${event.message}")
+        uiStage.showToast("Allocator creates Memory. Garbage Collector frees dead allocations.")
     }
 
     fun updateGameState(snapshotEvent: GameStateSnapshotEvent) {
-        lastSnapshot = snapshotEvent
-
-        // Логируем не каждый снапшот, а примерно раз в секунду.
-        if (snapshotEvent.tick - lastLoggedTick >= 20L) {
-            lastLoggedTick = snapshotEvent.tick
-        }
-
         worldStage.applySnapshot(snapshotEvent)
+        worldStage.applyTextEvents(snapshotEvent.textEvents)
 
-        val resources = snapshotEvent.resources[game.getPlayerId()]
-        if (resources != null) {
-            uiStage.updateResources(resources)
-        }
+        snapshotEvent.resources[game.getPlayerId()]?.let { uiStage.updateResources(it) }
 
         val cooldowns = snapshotEvent.cardCooldownsMs[game.getPlayerId()].orEmpty()
         val queues = snapshotEvent.factoryQueueSizes[game.getPlayerId()].orEmpty()
@@ -141,22 +135,13 @@ class GameScreen(private val game: MyGame) : ScreenAdapter() {
         gameFinished = true
         gameStarted = false
         isDeployingCard = false
-
-        val isWin = event.winnerPlayerId == game.getPlayerId()
-        uiStage.showGameOver(isWin, event.reason)
-
         selectedCard = null
         uiStage.clearSelectedCard()
-
-        Gdx.app.log(
-            "GameScreen",
-            "Game over: winner=${event.winnerPlayerId} loser=${event.loserPlayerId} reason=${event.reason}"
-        )
+        uiStage.showGameOver(event.winnerPlayerId == game.getPlayerId(), event.reason, event.stats)
     }
 
     fun showSystemMessage(message: String) {
         uiStage.showToast(message)
-        Gdx.app.log("GameScreen", message)
     }
 
     private fun deploySelectedCard(worldX: Float, worldY: Float) {
@@ -175,38 +160,29 @@ class GameScreen(private val game: MyGame) : ScreenAdapter() {
             return
         }
 
-        val card = selectedCard
-
-        if (card == null) {
+        val card = selectedCard ?: run {
             uiStage.showToast("Select a card first")
             return
         }
 
         val config = UnitRegistry.getConfig(card)
+        val isManualTargetCard = config.role == UnitRole.SPELL
 
-        // ВАЖНО: блокируем повторный deploy сразу, до ответа сервера.
         isDeployingCard = true
         selectedCard = null
         uiStage.clearSelectedCard()
 
-        Gdx.app.log("GameScreen", "Deploying card=$card x=$worldX y=$worldY")
-        uiStage.showToast("Deploying ${config.displayName}...")
+        if (isManualTargetCard) {
+            uiStage.showToast("Casting ${config.displayName} at selected point...")
+        } else {
+            uiStage.showToast("Scheduling ${config.displayName}. It will choose target automatically.")
+        }
 
-        socket.playCard(
-            playerId = game.getPlayerId(),
-            roomId = game.matchHandler.getRoomId(),
-            unitType = card,
-            targetX = worldX,
-            targetY = worldY
-        ) { response ->
+        socket.playCard(game.getPlayerId(), game.matchHandler.getRoomId(), card, worldX, worldY) { response ->
             isDeployingCard = false
-
-            Gdx.app.log("GameScreen", "Deploy response=$response")
-
             if (response.success) {
                 uiStage.showToast(response.description)
             } else {
-                // Если не получилось — вернём выбранную карту, чтобы игрок мог повторить.
                 selectedCard = card
                 uiStage.setSelectedCard(card)
                 uiStage.showToast(response.description.ifBlank { "Cannot play card" })
@@ -232,167 +208,94 @@ class GameScreen(private val game: MyGame) : ScreenAdapter() {
         val core = hovered.components.filterIsInstance<Core>().firstOrNull()
         val factory = hovered.components.filterIsInstance<Factory>().firstOrNull()
         val node = hovered.components.filterIsInstance<ResourceNode>().firstOrNull()
+        val process = hovered.components.filterIsInstance<ProcessState>().firstOrNull()
 
         val text = when {
-            unit != null -> buildUnitHoverText(
-                unit = unit,
-                combat = combat,
-                health = health,
-                owner = hovered.owner
-            )
-
-            core != null -> buildCoreHoverText(
-                health = health,
-                owner = hovered.owner
-            )
-
-            factory != null -> buildFactoryHoverText(
-                factory = factory,
-                health = health,
-                owner = hovered.owner
-            )
-
+            unit != null -> buildUnitHoverText(unit, combat, health, process, hovered.owner)
+            core != null -> buildCoreHoverText(health, hovered.owner)
+            factory != null -> buildFactoryHoverText(factory, health, hovered.owner)
             node != null -> buildNodeHoverText(node)
-
             else -> "Unknown object"
         }
 
         uiStage.showHoverInfo(text)
     }
 
-    private fun buildUnitHoverText(
-        unit: Unit,
-        combat: CombatStats?,
-        health: Health?,
-        owner: OwnerType
-    ): String {
+    private fun buildUnitHoverText(unit: Unit, combat: CombatStats?, health: Health?, process: ProcessState?, owner: OwnerType): String {
         val config = UnitRegistry.getConfig(unit.typeName)
 
         return buildString {
             appendLine(config.displayName)
             appendLine("${formatOwner(owner)} · ${formatRole(config.role)}")
-
-            if (health != null) {
-                appendLine("HP: ${health.current}/${health.max}")
+            appendLine("Memory held: ${unit.allocatedMemory}")
+            if (health != null) appendLine("HP: ${health.current}/${health.max}")
+            if (combat != null && config.role != UnitRole.SPELL && combat.damage > 0) {
+                appendLine("Damage: ${combat.damage} · Range: ${combat.attackRange.toInt()} · Speed: ${combat.moveSpeed.toInt()}")
             }
-
-            if (combat != null && config.role != UnitRole.SPELL) {
-                appendLine("Damage: ${combat.damage}")
-                appendLine("Range: ${combat.attackRange.toInt()}")
-                appendLine("Speed: ${combat.moveSpeed.toInt()}")
+            if (process != null) {
+                appendLine("State: ${formatPhase(process.phase)}")
+                if (process.lastEvent.isNotBlank()) appendLine("Event: ${process.lastEvent}")
             }
-
-            appendLine("Cost: ${config.costMemory} Memory / ${config.costCpu} CPU")
             appendLine()
             appendLine(config.gameDescription)
+            appendLine("Strong: ${config.strengths}")
+            appendLine("Weak: ${config.weaknesses}")
             appendLine()
-            appendLine("IT: ${config.techDescription}")
+            appendLine("IT: ${config.realFeature}")
         }
     }
 
-    private fun buildCoreHoverText(
-        health: Health?,
-        owner: OwnerType
-    ): String {
+    private fun buildCoreHoverText(health: Health?, owner: OwnerType): String {
         return buildString {
             appendLine("Core")
             appendLine(formatOwner(owner))
-
-            if (health != null) {
-                appendLine("HP: ${health.current}/${health.max}")
-            }
-
+            if (health != null) appendLine("HP: ${health.current}/${health.max}")
             appendLine()
-            appendLine("Main static objective of the instance.")
-            appendLine("Destroy the enemy Core to win the match.")
-            appendLine()
-            appendLine("IT: represents the central runtime/kernel of a digital system.")
+            appendLine("Destroying the Core terminates the whole instance.")
+            appendLine("IT: central runtime/kernel failure stops the system.")
         }
     }
 
-    private fun buildFactoryHoverText(
-        factory: Factory,
-        health: Health?,
-        owner: OwnerType
-    ): String {
+    private fun buildFactoryHoverText(factory: Factory, health: Health?, owner: OwnerType): String {
         val title = when (factory.factoryType) {
             FactoryType.BASIC -> "Basic Factory"
             FactoryType.SUPPORT -> "Support Factory"
         }
 
-        val description = when (factory.factoryType) {
-            FactoryType.BASIC -> "Base production infrastructure for combat units."
-            FactoryType.SUPPORT -> "Infrastructure focused on support and advanced system tools."
-        }
-
-        val cards = when (factory.factoryType) {
-            FactoryType.BASIC -> "Cards: Allocator, Injector, Cache Runner, Coroutine Archer"
-            FactoryType.SUPPORT -> "Cards: Garbage Collector, Thread Guard, Firewall, Patch Healer, Deadlock, Overclock"
-        }
-
-        val tech = when (factory.factoryType) {
-            FactoryType.BASIC -> "IT: a basic build pipeline that produces system processes."
-            FactoryType.SUPPORT -> "IT: auxiliary services that keep the system stable and extensible."
-        }
-
         return buildString {
             appendLine(title)
             appendLine(formatOwner(owner))
-
-            if (health != null) {
-                appendLine("HP: ${health.current}/${health.max}")
-            }
-
-            appendLine("Production: x${"%.1f".format(factory.productionMultiplier)}")
+            if (health != null) appendLine("HP: ${health.current}/${health.max}")
+            appendLine("Production multiplier: x${"%.2f".format(factory.productionMultiplier)}")
             appendLine()
-            appendLine(description)
-            appendLine(cards)
-            appendLine()
-            appendLine(tech)
+            appendLine("Build more factories to increase parallel production and queue capacity.")
+            appendLine("IT: scaling build pipelines increases throughput, but consumes Memory and CPU.")
         }
     }
 
     private fun buildNodeHoverText(node: ResourceNode): String {
         val title = when (node.nodeType) {
             ResourceNodeType.CPU -> "CPU Node"
-            ResourceNodeType.MEMORY -> "Memory Node"
-        }
-
-        val ownerText = when (node.capturedBy) {
-            1 -> "Controlled by Player 1"
-            2 -> "Controlled by Player 2"
-            else -> "Neutral"
-        }
-
-        val progressText = when {
-            node.captureProgressPlayer1 > node.captureProgressPlayer2 ->
-                "Capture: Player 1 ${(node.captureProgressPlayer1 * 100).toInt()}%"
-
-            node.captureProgressPlayer2 > node.captureProgressPlayer1 ->
-                "Capture: Player 2 ${(node.captureProgressPlayer2 * 100).toInt()}%"
-
-            else -> "Capture: 0%"
-        }
-
-        val gameplay = when (node.nodeType) {
-            ResourceNodeType.CPU -> "Gives CPU income. CPU helps deploy stronger cards and maintain tempo."
-            ResourceNodeType.MEMORY -> "Gives Memory income. Memory is the main card deployment resource."
-        }
-
-        val tech = when (node.nodeType) {
-            ResourceNodeType.CPU -> "IT: CPU represents compute throughput and execution capacity."
-            ResourceNodeType.MEMORY -> "IT: Memory represents available working space for active processes."
+            ResourceNodeType.MEMORY -> "Memory Source"
         }
 
         return buildString {
             appendLine(title)
-            appendLine(ownerText)
-            appendLine(progressText)
-            appendLine("Income: +${node.incomePerSecond}/s")
+            appendLine(
+                when (node.capturedBy) {
+                    1 -> "Controlled by Player 1"
+                    2 -> "Controlled by Player 2"
+                    else -> "Neutral"
+                }
+            )
             appendLine()
-            appendLine(gameplay)
-            appendLine()
-            appendLine(tech)
+            if (node.nodeType == ResourceNodeType.MEMORY) {
+                appendLine("Allocator must work here to create usable Memory batches.")
+                appendLine("IT: memory exists as capacity, but a process must allocate it before use.")
+            } else {
+                appendLine("Controlled CPU nodes increase CPU income.")
+                appendLine("IT: CPU throughput limits how many operations the system can run.")
+            }
         }
     }
 
@@ -406,11 +309,20 @@ class GameScreen(private val game: MyGame) : ScreenAdapter() {
 
     private fun formatRole(role: UnitRole): String {
         return when (role) {
-            UnitRole.CAPTURE -> "Capturer"
-            UnitRole.SUPPORT -> "Support"
-            UnitRole.DEFENSE -> "Defender"
-            UnitRole.ATTACK -> "Attacker"
-            UnitRole.SPELL -> "Spell"
+            UnitRole.CAPTURE -> "Resource operation"
+            UnitRole.SUPPORT -> "Maintenance"
+            UnitRole.DEFENSE -> "Protection"
+            UnitRole.ATTACK -> "Intervention"
+            UnitRole.SPELL -> "System effect"
+        }
+    }
+
+    private fun formatPhase(phase: ProcessPhase): String {
+        return when (phase) {
+            ProcessPhase.RUNNING -> "running"
+            ProcessPhase.COMPLETED -> "completed"
+            ProcessPhase.DEAD -> "dead, waiting for GC"
+            ProcessPhase.GARBAGE_COLLECTING -> "garbage collecting"
         }
     }
 }

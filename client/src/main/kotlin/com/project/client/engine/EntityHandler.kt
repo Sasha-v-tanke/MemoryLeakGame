@@ -10,6 +10,8 @@ import com.project.shared.engine.entities.OwnerType
 import com.project.shared.engine.entities.components.Core
 import com.project.shared.engine.entities.components.Factory
 import com.project.shared.engine.entities.components.Health
+import com.project.shared.engine.entities.components.ProcessPhase
+import com.project.shared.engine.entities.components.ProcessState
 import com.project.shared.engine.entities.components.ResourceNode
 import com.project.shared.engine.entities.components.ResourceNodeType
 import com.project.shared.engine.entities.components.Sprite
@@ -198,13 +200,9 @@ class EntityHandler(
         }
     }
 
-    private fun applyEntityVisuals(
-        entityGroup: Group,
-        hpGroup: Group,
-        state: EntityState,
-        health: Health?
-    ) {
+    private fun applyEntityVisuals(entityGroup: Group, hpGroup: Group, state: EntityState, health: Health?) {
         val unit = state.components.filterIsInstance<Unit>().firstOrNull()
+        val process = state.components.filterIsInstance<ProcessState>().firstOrNull()
         val isNode = state.components.any { it is ResourceNode }
 
         val sprite = entityGroup.findActor<Image>(SPRITE_NAME)
@@ -237,7 +235,7 @@ class EntityHandler(
         aura?.color = auraColor(state)
         sprite?.color = spriteTint(state.owner, unit?.typeName)
 
-        val deadAlpha = if (health?.isDead == true) 0.34f else 1f
+        val deadAlpha = if (health?.isDead == true || process?.phase == ProcessPhase.DEAD) 0.34f else 1f
         entityGroup.color = Color.WHITE
         entityGroup.color.a = deadAlpha
         hpGroup.color = Color.WHITE
@@ -271,6 +269,12 @@ class EntityHandler(
 
         return when (unitType) {
             UnitType.ALLOCATOR -> Color(0.70f, 0.90f, 1f, 1f)
+            UnitType.BUFFER -> Color(0.58f, 0.84f, 1f, 1f)
+            UnitType.MEMORY_POOL -> Color(0.46f, 0.72f, 1f, 1f)
+            UnitType.DMA_CONTROLLER -> Color(0.62f, 1f, 0.95f, 1f)
+            UnitType.CPU_SCHEDULER -> Color(1f, 0.88f, 0.55f, 1f)
+            UnitType.LOAD_BALANCER -> Color(1f, 0.78f, 0.38f, 1f)
+            UnitType.INTERRUPT_HANDLER -> Color(1f, 0.95f, 0.62f, 1f)
             UnitType.CACHE_RUNNER -> Color(0.62f, 0.86f, 1f, 1f)
             UnitType.INJECTOR -> Color(1f, 0.72f, 0.72f, 1f)
             UnitType.COROUTINE_ARCHER -> Color(1f, 0.80f, 0.64f, 1f)
@@ -280,6 +284,16 @@ class EntityHandler(
             UnitType.FIREWALL -> Color(1f, 0.80f, 0.62f, 1f)
             UnitType.DEADLOCK -> Color(0.86f, 0.74f, 1f, 1f)
             UnitType.OVERCLOCK -> Color(1f, 0.90f, 0.68f, 1f)
+            UnitType.STACK_FRAME -> Color(0.82f, 0.95f, 1f, 1f)
+            UnitType.HEAP_BLOCK -> Color(0.72f, 0.82f, 1f, 1f)
+            UnitType.POINTER -> Color(0.90f, 0.96f, 1f, 1f)
+            UnitType.NULL_POINTER -> Color(1f, 0.55f, 0.72f, 1f)
+            UnitType.EXCEPTION_HANDLER -> Color(0.82f, 1f, 0.92f, 1f)
+            UnitType.LOOP -> Color(0.78f, 1f, 0.74f, 1f)
+            UnitType.RECURSIVE_CALL -> Color(0.92f, 0.78f, 1f, 1f)
+            UnitType.MUTEX -> Color(0.86f, 0.90f, 1f, 1f)
+            UnitType.SEMAPHORE -> Color(0.82f, 1f, 0.86f, 1f)
+            UnitType.OBSERVER -> Color(0.72f, 0.92f, 1f, 1f)
         }
     }
 }

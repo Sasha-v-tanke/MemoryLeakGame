@@ -14,8 +14,9 @@ enum class ResourceNodeType {
 data class ResourceNode(
     val nodeType: ResourceNodeType,
     var capturedBy: Int? = null,
-    var captureProgressPlayer1: Float = 0f,
-    var captureProgressPlayer2: Float = 0f,
+    var captureProgressPlayer1: Float = 0.5f,
+    var captureProgressPlayer2: Float = 0.5f,
     val captureRadius: Float = 105f,
-    val incomePerSecond: Int = 1
+    val incomePerSecond: Int = 1,
+    val totalCpuShare: Int = 4
 ) : Component
