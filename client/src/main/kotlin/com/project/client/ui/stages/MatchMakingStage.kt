@@ -31,11 +31,11 @@ class MatchMakingStage(
         val box = panel()
         root.add(box).width(620f)
 
-        val title = titleLabel("Searching Opponent...", 1.24f).apply {
+        val title = titleLabel("Поиск противника...", 1.24f).apply {
             setAlignment(Align.center)
         }
 
-        statusLabel = subtitleLabel("Waiting for another system instance").apply {
+        statusLabel = subtitleLabel("Ожидание другой системной инстанции").apply {
             setAlignment(Align.center)
             wrap = true
             color = UiTheme.statusInfo
@@ -46,7 +46,7 @@ class MatchMakingStage(
             color = Color(0.79f, 0.93f, 1f, 1f)
         }
 
-        cancelButton = TextButton("Cancel", skin)
+        cancelButton = TextButton("Отмена", skin)
         UiTheme.styleDangerButton(cancelButton)
 
         box.defaults().pad(8f)

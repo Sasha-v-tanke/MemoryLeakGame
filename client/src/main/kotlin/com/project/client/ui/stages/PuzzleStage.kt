@@ -77,24 +77,24 @@ class PuzzleStage(
 
     private val trafficCases = listOf(
         TrafficCase(
-            request = "GET /state with valid player token",
+            request = "GET /state с валидным токеном",
             expectedAction = "firewall_allow",
-            reason = "Read-only authenticated traffic should pass."
+            reason = "Только чтение с аутентификацией должно пройти."
         ),
         TrafficCase(
-            request = "POST /inject from unknown token",
+            request = "POST /inject с неизвестным токеном",
             expectedAction = "firewall_block",
-            reason = "Injector-like command from an unknown identity must be blocked."
+            reason = "Команда, похожая на Injector от неизвестной идентичности, должна быть заблокирована."
         ),
         TrafficCase(
-            request = "PATCH /core/hotfix signed by owner",
+            request = "PATCH /core/hotfix подписано владельцем",
             expectedAction = "firewall_patch",
-            reason = "A trusted patch should be applied, not treated as hostile injection."
+            reason = "Доверенный патч должен быть применен, а не считаться враждебной инъекцией."
         ),
         TrafficCase(
-            request = "DELETE /match from replay bot",
+            request = "DELETE /match из replay бота",
             expectedAction = "firewall_block",
-            reason = "Replay bots may read data, but must not mutate live match state."
+            reason = "Боты воспроизведения могут читать данные, но не должны изменять живое состояние матча."
         )
     )
 
@@ -102,168 +102,168 @@ class PuzzleStage(
         LabAction(
             id = "allocator_memory",
             title = "Allocator -> Memory Node",
-            operation = "Send Allocator to reserve working memory.",
-            itMeaning = "Allocator is the beginner concept: memory is a limited workspace that must be explicitly obtained."
+            operation = "Отправить Allocator для захвата рабочей памяти.",
+            itMeaning = "Allocator - это базовая концепция: память - это ограниченное рабочее пространство, которое должно быть явно получено."
         ),
         LabAction(
             id = "cache_cpu",
             title = "Cache Runner -> CPU Node",
-            operation = "Run fast toward CPU throughput.",
-            itMeaning = "Cache Runner is about tempo, not creating the memory workspace required by this task."
+            operation = "Быстро идти к пропускной способности CPU.",
+            itMeaning = "Cache Runner - это про скорость, а не про создание рабочего памяти, необходимого для этой задачи."
         ),
         LabAction(
             id = "inject_core",
             title = "Injector -> Core",
-            operation = "Attack the central process.",
-            itMeaning = "Injector is a risky intervention tool; it does not solve missing memory."
+            operation = "Атаковать центральный процесс.",
+            itMeaning = "Injector - это рискованный инструмент вмешательства; он не решает проблему нехватки памяти."
         ),
         LabAction(
             id = "gc_empty_heap",
             title = "GC -> Empty Heap",
-            operation = "Try to collect before anything is allocated.",
-            itMeaning = "Garbage Collector frees unreachable objects; it cannot create useful workspace from nothing."
+            operation = "Попытаться собрать мусор перед любым выделением.",
+            itMeaning = "Garbage Collector освобождает недостижимые объекты; не может создать полезное рабочее пространство из ничего."
         )
     )
 
     private val heapActions = listOf(
         LabAction(
             id = "mark_from_roots",
-            title = "Mark from GC roots",
-            operation = "Trace AppRoot, MatchRegistry and EventBus references.",
-            itMeaning = "Garbage Collector starts from roots and only frees unreachable objects."
+            title = "Отметить из GC roots",
+            operation = "Проследить ссылки AppRoot, MatchRegistry и EventBus.",
+            itMeaning = "Garbage Collector начинает с корней и освобождает только недостижимые объекты."
         ),
         LabAction(
             id = "detach_listener",
-            title = "Detach stale listener",
-            operation = "Remove EventBus -> ClosedRoomListener reference.",
-            itMeaning = "Many leaks survive GC because an observer/listener keeps old state reachable."
+            title = "Отсоединить устаревший listener",
+            operation = "Удалить ссылку EventBus -> ClosedRoomListener.",
+            itMeaning = "Многие утечки остаются живы, потому что observer/listener держит старое состояние досягаемым."
         ),
         LabAction(
             id = "sweep_heap",
-            title = "Sweep unreachable",
-            operation = "Collect ClosedRoom and ReplayBuffer after references are fixed.",
-            itMeaning = "Sweep is safe only after reachability says the objects are really dead."
+            title = "Очистить недостижимое",
+            operation = "Собрать ClosedRoom и ReplayBuffer после исправления ссылок.",
+            itMeaning = "Sweep безопасен только если досягаемость говорит, что объекты действительно мертвы."
         ),
         LabAction(
             id = "force_gc",
-            title = "Force GC now",
-            operation = "Request immediate garbage collection.",
-            itMeaning = "Forcing GC is not a fix while leaked objects are still reachable."
+            title = "Принудительно запустить GC",
+            operation = "Запросить немедленную сборку мусора.",
+            itMeaning = "Принуждение к GC не исправляет ситуацию, пока утёкшие объекты все еще досягаемы."
         ),
         LabAction(
             id = "null_socket",
-            title = "Null active socket",
-            operation = "Clear MatchRegistry -> ActiveRoom -> Socket.",
-            itMeaning = "Freeing live objects is not cleanup; it breaks the running session."
+            title = "Обнулить активный сокет",
+            operation = "Очистить MatchRegistry -> ActiveRoom -> Socket.",
+            itMeaning = "Освобождение живых объектов - это не очистка; это нарушает живую сессию."
         )
     )
 
     private val firewallActions = listOf(
         LabAction(
             id = "firewall_allow",
-            title = "Allow",
-            operation = "Let the current request pass.",
-            itMeaning = "Firewall should not block legitimate authenticated traffic."
+            title = "Разрешить",
+            operation = "Пропустить текущий запрос.",
+            itMeaning = "Firewall не должна блокировать легитимный аутентифицированный трафик."
         ),
         LabAction(
             id = "firewall_block",
-            title = "Block",
-            operation = "Reject the current request.",
-            itMeaning = "Firewall protects Core and factories from hostile mutations."
+            title = "Заблокировать",
+            operation = "Отклонить текущий запрос.",
+            itMeaning = "Firewall защищает Core и фабрики от враждебных мутаций."
         ),
         LabAction(
             id = "firewall_patch",
-            title = "Apply Patch",
-            operation = "Accept trusted hotfix and update the vulnerable component.",
-            itMeaning = "Patch Healer represents maintenance that restores safe operation."
+            title = "Применить Patch",
+            operation = "Принять доверенный hotfix и обновить уязвимый компонент.",
+            itMeaning = "Patch Healer представляет техническое обслуживание, которое восстанавливает безопасную работу."
         )
     )
 
     private val deadlockActions = listOf(
         LabAction(
             id = "inspect_wait_graph",
-            title = "Trace wait-for graph",
+            title = "Проследить граф ожидания",
             operation = "RenderThread -> SocketLock -> NetworkThread -> FrameLock -> RenderThread",
-            itMeaning = "Deadlock is a cycle in a resource wait graph."
+            itMeaning = "Deadlock - это цикл в графе ожидания ресурсов."
         ),
         LabAction(
             id = "rollback_network",
-            title = "Rollback NetworkThread",
-            operation = "Release SocketLock and cancel the partial network section.",
-            itMeaning = "Thread Guard should break hold-and-wait without destroying the critical thread."
+            title = "Откатить NetworkThread",
+            operation = "Освободить SocketLock и отменить частичный сетевой раздел.",
+            itMeaning = "Thread Guard должен разорвать hold-and-wait без уничтожения критического потока."
         ),
         LabAction(
             id = "install_lock_order",
-            title = "Install lock order",
-            operation = "All threads acquire FrameLock before SocketLock.",
-            itMeaning = "A global lock order prevents circular wait from returning."
+            title = "Установить порядок блокировок",
+            operation = "Все потоки получают FrameLock перед SocketLock.",
+            itMeaning = "Глобальный порядок блокировок предотвращает циклическое ожидание."
         ),
         LabAction(
             id = "resume_network",
-            title = "Resume NetworkThread",
-            operation = "Retry the network section after the lock order is active.",
-            itMeaning = "Recovery is complete when useful work continues under the corrected rule."
+            title = "Возобновить NetworkThread",
+            operation = "Повторить сетевой раздел после того, как новый порядок активен.",
+            itMeaning = "Восстановление завершено, когда полезная работа продолжается по исправленному правилу."
         ),
         LabAction(
             id = "kill_render",
-            title = "Kill RenderThread",
-            operation = "Terminate the thread that owns FrameLock.",
-            itMeaning = "This breaks the cycle, but destroys a critical component."
+            title = "Убить RenderThread",
+            operation = "Завершить поток, владеющий FrameLock.",
+            itMeaning = "Это разрывает цикл, но уничтожает критический компонент."
         )
     )
 
     private val pipelineActions = listOf(
         LabAction(
             id = "auth",
-            title = "Auth",
-            operation = "Validate token and bind request to player id.",
-            itMeaning = "A request pipeline must establish identity before mutation."
+            title = "Аутентификация",
+            operation = "Проверить токен и привязать запрос к ID игрока.",
+            itMeaning = "Конвейер запросов должен установить идентичность перед изменением."
         ),
         LabAction(
             id = "idempotency",
-            title = "Idempotency Key",
-            operation = "Attach retry key to collapse repeated POST /buy commands.",
-            itMeaning = "Cache Runner's speed needs safety: retries must not duplicate side effects."
+            title = "Ключ идемпотентности",
+            operation = "Прикрепить ключ повтора для свертывания повторных команд POST /buy.",
+            itMeaning = "Скорость Cache Runner нуждается в безопасности: повторы не должны дублировать побочные эффекты."
         ),
         LabAction(
             id = "commit",
             title = "DB Commit",
-            operation = "Persist purchase and resource delta atomically.",
-            itMeaning = "The committed transaction is the source of truth."
+            operation = "Сохранить покупку и изменение ресурсов атомарно.",
+            itMeaning = "Зафиксированная транзакция - это источник истины."
         ),
         LabAction(
             id = "event",
             title = "Coroutine Event",
-            operation = "Queue PurchaseCommitted after DB commit.",
-            itMeaning = "Coroutine Archer represents async work that must start after the authoritative write."
+            operation = "Поставить PurchaseCommitted в очередь после DB commit.",
+            itMeaning = "Coroutine Archer представляет асинхронную работу, которая должна начаться после авторитетной записи."
         ),
         LabAction(
             id = "invalidate",
-            title = "Invalidate Cache",
-            operation = "Drop stale player resources cache.",
-            itMeaning = "Cache speed is useful only when stale reads are controlled."
+            title = "Инвалидировать Cache",
+            operation = "Сбросить кэш устаревших ресурсов игрока.",
+            itMeaning = "Скорость Cache полезна только когда контролируются устаревшие чтения."
         ),
         LabAction(
             id = "response",
-            title = "Response",
-            operation = "Return success to the client.",
-            itMeaning = "The response must be sent after the system can defend the result."
+            title = "Ответ",
+            operation = "Вернуть успех клиенту.",
+            itMeaning = "Ответ должен быть отправлен после того, как система может защитить результат."
         ),
         LabAction(
             id = "reset_pipeline",
-            title = "Reset Sequence",
-            operation = "Clear the attempted pipeline order.",
-            itMeaning = "Final levels allow experimentation without restarting the whole lab."
+            title = "Сбросить последовательность",
+            operation = "Очистить попытанный порядок конвейера.",
+            itMeaning = "Финальные уровни позволяют экспериментировать без перезагрузки всей лаборатории."
         )
     )
 
     private val levels = listOf(
         LabLevel(
-            name = "1. Allocator Basics",
+            name = "1. Основы Allocator",
             unitBasis = "Allocator",
             kind = LabKind.ALLOCATOR_ROUTE,
-            incident = "A new Instance has CPU, but no working memory reserved for units.",
-            objective = "Pick the unit-target pair that creates usable workspace.",
+            incident = "Новая инстанция имеет CPU, но зарезервированной рабочей памяти для юнитов нет.",
+            objective = "Выберите пару юнит-цель, которая создает используемое рабочее пространство.",
             maxSteps = 3,
             initial = { LabState() },
             actions = allocatorActions,
@@ -274,8 +274,8 @@ class PuzzleStage(
             name = "2. Garbage Collector",
             unitBasis = "Garbage Collector + Patch Healer",
             kind = LabKind.MARK_SWEEP,
-            incident = "A closed match is still retained: EventBus -> ClosedRoomListener -> ClosedRoom -> ReplayBuffer.",
-            objective = "Use mark/sweep thinking: trace roots, detach the stale listener, then sweep unreachable objects.",
+            incident = "Закрытый матч все еще удерживается: EventBus -> ClosedRoomListener -> ClosedRoom -> ReplayBuffer.",
+            objective = "Используйте mark/sweep логику: проследите корни, отсоедините устаревший listener, затем очистите недостижимые объекты.",
             maxSteps = 5,
             initial = { LabState() },
             actions = heapActions,
@@ -286,8 +286,8 @@ class PuzzleStage(
             name = "3. Firewall Filter",
             unitBasis = "Firewall + Injector + Patch Healer",
             kind = LabKind.FIREWALL_FILTER,
-            incident = "Requests are arriving at Core. Some are valid operations, one is Injector-like, one is a signed patch.",
-            objective = "Classify each request as Allow, Block, or Apply Patch. One mistake means the filter policy is unsafe.",
+            incident = "Запросы идут в Core. Одни - валидные операции, один - похож на Injector, один - подписанный патч.",
+            objective = "Классифицируйте каждый запрос как Allow, Block или Apply Patch. Одна ошибка означает, что фильтр небезопасен.",
             maxSteps = trafficCases.size,
             initial = { LabState() },
             actions = firewallActions,
@@ -298,8 +298,8 @@ class PuzzleStage(
             name = "4. Thread Guard",
             unitBasis = "Thread Guard + Deadlock",
             kind = LabKind.DEADLOCK_GRAPH,
-            incident = "RenderThread owns FrameLock and waits for SocketLock. NetworkThread owns SocketLock and waits for FrameLock.",
-            objective = "Break the wait-for cycle, keep RenderThread alive, and install a rule that prevents the same deadlock.",
+            incident = "RenderThread владеет FrameLock и ждет SocketLock. NetworkThread владеет SocketLock и ждет FrameLock.",
+            objective = "Разорвите граф ожидания, оставьте RenderThread живым и установите правило, предотвращающее один и тот же deadlock.",
             maxSteps = 5,
             initial = { LabState() },
             actions = deadlockActions,
@@ -315,8 +315,8 @@ class PuzzleStage(
             name = "5. Async Pipeline",
             unitBasis = "Cache Runner + Coroutine Archer + Overclock",
             kind = LabKind.PIPELINE_ORDER,
-            incident = "Client retries POST /buy after timeout. The server needs speed, async events and cache, but cannot duplicate the purchase.",
-            objective = "Build the safe order: Auth -> Idempotency -> DB Commit -> Coroutine Event -> Invalidate Cache -> Response.",
+            incident = "Клиент повторяет POST /buy после timeout. Серверу нужна скорость, асинхронные события и кэш, но без дублирования покупки.",
+            objective = "Постройте безопасный порядок: Auth -> Idempotency -> DB Commit -> Coroutine Event -> Invalidate Cache -> Response.",
             maxSteps = 8,
             initial = { LabState() },
             actions = pipelineActions,
@@ -354,7 +354,7 @@ class PuzzleStage(
         val title = titleLabel("Puzzle Lab", 1.28f).apply {
             setAlignment(Align.left)
         }
-        val backButton = TextButton("Back", skin)
+        val backButton = TextButton("Назад", skin)
         UiTheme.styleSecondaryButton(backButton, compact = true)
 
         header.add(title).padTop(15f).growX().left()
@@ -389,7 +389,7 @@ class PuzzleStage(
 
     private fun buildLevelPanel(table: Table) {
         val modeLabel = subtitleLabel(
-            "Levels unlock one by one. Each level uses a different mechanic and starts from the game units' IT metaphor.",
+            "Уровни раскрываются по одному. Каждый уровень использует другую механику и начинается с IT метафоры игровых юнитов.",
             0.94f
         ).apply {
             wrap = true
@@ -425,7 +425,7 @@ class PuzzleStage(
                     if (index <= highestUnlockedLevel) {
                         selectLevel(index)
                     } else {
-                        log("Locked: solve level ${index} first.")
+                        log("Заблокирован: сначала решите уровень ${index}.")
                         refresh()
                     }
                     true
@@ -435,7 +435,7 @@ class PuzzleStage(
             }
         }
 
-        val resetButton = TextButton("Reset Level", skin)
+        val resetButton = TextButton("Сбросить уровень", skin)
         UiTheme.styleSecondaryButton(resetButton)
         resetButton.addListener { event ->
             if (event is InputEvent && event.type == InputEvent.Type.touchDown) {
@@ -459,7 +459,7 @@ class PuzzleStage(
 
     private fun buildActionPanel(table: Table) {
         val formula = subtitleLabel(
-            "Goal: learn the IT rule behind the unit, then apply it in a small system.",
+            "Цель: изучить IT правило за юнитом, затем применить его в маленькой системе.",
             0.96f
         ).apply {
             setAlignment(Align.center)
@@ -528,7 +528,7 @@ class PuzzleStage(
         val level = levels[currentLevelIndex]
         state = level.initial()
         logLines.clear()
-        log("Loaded ${level.name}. Unit basis: ${level.unitBasis}.")
+        log("Загружен ${level.name}. Основа юнитов: ${level.unitBasis}.")
         refresh()
     }
 
@@ -538,14 +538,14 @@ class PuzzleStage(
 
         val message = when (actionId) {
             "allocator_memory" -> allocatorMemory()
-            "cache_cpu" -> wrong("Cache Runner is fast, but this level needs memory workspace first.")
-            "inject_core" -> wrong("Injector attacks or modifies; it does not reserve safe memory.")
-            "gc_empty_heap" -> wrong("Garbage Collector needs unreachable allocations to clean.")
+            "cache_cpu" -> wrong("Cache Runner быстр, но этому уровню нужна рабочая память сначала.")
+            "inject_core" -> wrong("Injector атакует или изменяет; он не резервирует безопасную память.")
+            "gc_empty_heap" -> wrong("Garbage Collector нуждается в недостижимых выделениях для очистки.")
 
             "mark_from_roots" -> markHeapFromRoots()
             "detach_listener" -> detachStaleListener()
             "sweep_heap" -> sweepHeap()
-            "force_gc" -> "Forced GC did not help because reachability is still wrong."
+            "force_gc" -> "Принудительный GC не помог потому что досягаемость все еще неправильна."
             "null_socket" -> nullActiveSocket()
 
             "firewall_allow",
@@ -567,7 +567,7 @@ class PuzzleStage(
 
             "reset_pipeline" -> resetPipeline()
 
-            else -> "Unknown operation."
+            else -> "Неизвестная операция."
         }
 
         state.steps += 1
@@ -577,41 +577,41 @@ class PuzzleStage(
 
     private fun allocatorMemory(): String {
         state.allocatorSolved = true
-        return "Allocator captured Memory Node. The Instance now has workspace for future processes."
+        return "Allocator захватил Memory Node. Инстанция теперь имеет рабочее пространство для будущих процессов."
     }
 
     private fun wrong(message: String): String {
-        return "Not yet: $message"
+        return "Не совсем: $message"
     }
 
     private fun markHeapFromRoots(): String {
         state.heapMarked = true
         return if (state.staleListenerDetached) {
-            "Roots traced again: ClosedRoom is now unreachable."
+            "Корни переотслежены: ClosedRoom теперь недостижим."
         } else {
-            "Roots traced: EventBus still keeps ClosedRoomListener alive, so the closed match is still reachable."
+            "Корни отслежены: EventBus все еще держит ClosedRoomListener живым, поэтому закрытый матч все еще досягаем."
         }
     }
 
     private fun detachStaleListener(): String {
         state.staleListenerDetached = true
-        return "Detached stale listener from EventBus. The old match can become unreachable after marking."
+        return "Отсоединен устаревший listener от EventBus. Старый матч может стать недостижимым после маркировки."
     }
 
     private fun sweepHeap(): String {
-        if (!state.heapMarked) return "Sweep blocked: mark phase must run first."
-        if (!state.staleListenerDetached) return "Sweep found no collectible match because EventBus still references the listener."
+        if (!state.heapMarked) return "Sweep заблокирован: фаза mark должна запуститься первой."
+        if (!state.staleListenerDetached) return "Sweep не нашел ничего для сборки потому что EventBus все еще ссылается на listener."
         state.heapSwept = true
-        return "Swept ClosedRoom and ReplayBuffer while keeping the active socket reachable."
+        return "Очищены ClosedRoom и ReplayBuffer сохраняя активный сокет досягаемым."
     }
 
     private fun nullActiveSocket(): String {
         state.activeSocketLost = true
-        return "Active socket was removed. That frees memory by breaking the live session, so the fix is invalid."
+        return "Активный сокет был удален. Это освобождает память, нарушив живую сессию, поэтому исправление неправильно."
     }
 
     private fun handleTraffic(actionId: String): String {
-        if (state.trafficIndex >= trafficCases.size) return "All requests are already classified."
+        if (state.trafficIndex >= trafficCases.size) return "Все запросы уже классифицированы."
 
         val traffic = trafficCases[state.trafficIndex]
         val correct = actionId == traffic.expectedAction
@@ -619,18 +619,18 @@ class PuzzleStage(
 
         if (!correct) {
             state.firewallErrors += 1
-            return "Wrong filter decision for '${traffic.request}'. ${traffic.reason}"
+            return "Неправильное решение фильтра для '${traffic.request}'. ${traffic.reason}"
         }
 
         if (actionId == "firewall_patch") state.patchApplied = true
-        return "Correct: ${traffic.reason}"
+        return "Правильно: ${traffic.reason}"
     }
 
     private fun inspectWaitGraph(): String {
         return if (hasDeadlockCycle(state)) {
-            "Cycle found: RenderThread -> SocketLock -> NetworkThread -> FrameLock -> RenderThread."
+            "Цикл найден: RenderThread -> SocketLock -> NetworkThread -> FrameLock -> RenderThread."
         } else {
-            "No cycle remains in the wait-for graph."
+            "В графе ожидания не остается циклов."
         }
     }
 
@@ -639,53 +639,53 @@ class PuzzleStage(
         state.networkHoldsSocketLock = false
         state.networkWaitsFrameLock = false
         state.renderWaitsSocketLock = false
-        return "NetworkThread rolled back and released SocketLock. RenderThread can finish."
+        return "NetworkThread откачен и освободил SocketLock. RenderThread может завершиться."
     }
 
     private fun installLockOrder(): String {
         if (!state.networkRolledBack) {
-            return "Rule noted, but the active cycle still needs one participant to release its lock."
+            return "Правило отмечено, но активный цикл все еще требует, чтобы один участник отпустил свою блокировку."
         }
 
         state.lockOrderInstalled = true
-        return "Lock order installed: FrameLock before SocketLock."
+        return "Порядок блокировок установлен: FrameLock перед SocketLock."
     }
 
     private fun resumeNetworkThread(): String {
         if (!state.lockOrderInstalled) {
             state.networkWaitsFrameLock = true
-            return "NetworkThread resumed without a rule and can recreate the same deadlock."
+            return "NetworkThread возобновлен без правила и может пересоздать один и тот же deadlock."
         }
 
         state.networkWaitsFrameLock = false
         state.networkHoldsSocketLock = false
-        return "NetworkThread resumed under the new lock order."
+        return "NetworkThread возобновлен под новым порядком блокировок."
     }
 
     private fun killRenderThread(): String {
         state.criticalThreadKilled = true
         state.renderHoldsFrameLock = false
         state.renderWaitsSocketLock = false
-        return "RenderThread was killed. The deadlock is gone, but a critical component is lost."
+        return "RenderThread был убит. Deadlock исчез, но критический компонент потерян."
     }
 
     private fun addPipelineStep(step: String): String {
-        if (state.pipeline.size >= expectedPipeline.size) return "Pipeline is already full."
+        if (state.pipeline.size >= expectedPipeline.size) return "Конвейер уже полон."
 
         state.pipeline += step
         val expectedStep = expectedPipeline[state.pipeline.lastIndex]
         if (step != expectedStep) {
             state.pipelineBroken = true
-            return "Pipeline order is unsafe: expected ${pipelineName(expectedStep)} before ${pipelineName(step)}."
+            return "Порядок конвейера небезопасен: ожидается ${pipelineName(expectedStep)} перед ${pipelineName(step)}."
         }
 
-        return "Added ${pipelineName(step)} in the safe position."
+        return "Добавлен ${pipelineName(step)} в безопасной позиции."
     }
 
     private fun resetPipeline(): String {
         state.pipeline.clear()
         state.pipelineBroken = false
-        return "Pipeline sequence cleared."
+        return "Последовательность конвейера очищена."
     }
 
     private fun refresh() {
@@ -695,7 +695,7 @@ class PuzzleStage(
 
         titleLabel.setText(level.name)
         incidentLabel.setText(level.incident)
-        objectiveLabel.setText("${level.objective}\nSteps: ${state.steps}/${level.maxSteps}")
+        objectiveLabel.setText("${level.objective}\nШаги: ${state.steps}/${level.maxSteps}")
         systemLabel.setText(systemSnapshot(level.kind))
 
         val solved = level.isSolved(state)
@@ -703,19 +703,19 @@ class PuzzleStage(
         when {
             solved -> {
                 resultLabel.setText(
-                    if (currentLevelIndex < levels.lastIndex) "Solved. Next level unlocked."
-                    else "Solved. Puzzle Lab complete."
+                    if (currentLevelIndex < levels.lastIndex) "Решено. Следующий уровень разблокирован."
+                    else "Решено. Лаборатория завершена."
                 )
                 resultLabel.color = UiTheme.statusOk
             }
 
             failed -> {
-                resultLabel.setText("Failed. Reset this level and try a safer engineering decision.")
+                resultLabel.setText("Неудача. Сбросьте этот уровень и попробуйте более безопасное инженерное решение.")
                 resultLabel.color = UiTheme.statusWarn
             }
 
             else -> {
-                resultLabel.setText("Choose the next operation.")
+                resultLabel.setText("Выберите следующую операцию.")
                 resultLabel.color = UiTheme.statusInfo
             }
         }
@@ -739,9 +739,9 @@ class PuzzleStage(
     private fun refreshLevelButtons() {
         levelButtons.forEachIndexed { index, button ->
             val prefix = when {
-                index > highestUnlockedLevel -> "Locked"
-                index < highestUnlockedLevel -> "Done"
-                else -> "Open"
+                index > highestUnlockedLevel -> "Заблокирован"
+                index < highestUnlockedLevel -> "Решено"
+                else -> "Открыто"
             }
             button.setText("$prefix: ${levels[index].name}")
             button.color = if (index == currentLevelIndex) {
@@ -755,54 +755,54 @@ class PuzzleStage(
     private fun systemSnapshot(kind: LabKind): String {
         return when (kind) {
             LabKind.ALLOCATOR_ROUTE -> buildString {
-                appendLine("SYSTEM STATE")
-                appendLine("Instance memory workspace: ${enabled(state.allocatorSolved)}")
-                appendLine("Available unit metaphor: Allocator reserves memory.")
-                appendLine("Wrong tools teach contrast: cache is speed, injector is intervention, GC is cleanup.")
+                appendLine("СОСТОЯНИЕ СИСТЕМЫ")
+                appendLine("Рабочее пространство памяти: ${enabled(state.allocatorSolved)}")
+                appendLine("Доступный юнит-метафор: Allocator резервирует память.")
+                appendLine("Неправильные инструменты учат контрасту: cache это скорость, injector это вмешательство, GC это очистка.")
             }
 
             LabKind.MARK_SWEEP -> buildString {
-                appendLine("HEAP GRAPH")
+                appendLine("ГРАФ HEAP")
                 appendLine("EventBus -> ClosedRoomListener: ${enabled(!state.staleListenerDetached)}")
-                appendLine("ClosedRoom -> ReplayBuffer reachable: ${enabled(!state.staleListenerDetached && !state.heapSwept)}")
-                appendLine("Mark phase completed: ${enabled(state.heapMarked)}")
-                appendLine("Unreachable objects swept: ${enabled(state.heapSwept)}")
-                appendLine("Active socket alive: ${enabled(!state.activeSocketLost)}")
+                appendLine("ClosedRoom -> ReplayBuffer досягаемо: ${enabled(!state.staleListenerDetached && !state.heapSwept)}")
+                appendLine("Фаза Mark завершена: ${enabled(state.heapMarked)}")
+                appendLine("Недостижимые объекты очищены: ${enabled(state.heapSwept)}")
+                appendLine("Активный сокет живой: ${enabled(!state.activeSocketLost)}")
             }
 
             LabKind.FIREWALL_FILTER -> buildString {
-                appendLine("REQUEST FILTER")
-                appendLine("Current request:")
+                appendLine("ФИЛЬТР ЗАПРОСОВ")
+                appendLine("Текущий запрос:")
                 appendLine(currentTrafficText())
-                appendLine("Handled: ${state.trafficIndex}/${trafficCases.size}")
-                appendLine("Errors: ${state.firewallErrors}")
-                appendLine("Trusted patch applied: ${enabled(state.patchApplied)}")
+                appendLine("Обработано: ${state.trafficIndex}/${trafficCases.size}")
+                appendLine("Ошибок: ${state.firewallErrors}")
+                appendLine("Доверенный патч применен: ${enabled(state.patchApplied)}")
             }
 
             LabKind.DEADLOCK_GRAPH -> buildString {
-                appendLine("WAIT-FOR GRAPH")
-                appendLine("RenderThread holds: ${held(state.renderHoldsFrameLock, "FrameLock")}")
-                appendLine("RenderThread waits: ${waits(state.renderWaitsSocketLock, "SocketLock")}")
-                appendLine("NetworkThread holds: ${held(state.networkHoldsSocketLock, "SocketLock")}")
-                appendLine("NetworkThread waits: ${waits(state.networkWaitsFrameLock, "FrameLock")}")
-                appendLine("Lock order rule: ${enabled(state.lockOrderInstalled)}")
-                appendLine("Cycle detected: ${enabled(hasDeadlockCycle(state))}")
-                appendLine("Critical thread alive: ${enabled(!state.criticalThreadKilled)}")
+                appendLine("ГРАФ ОЖИДАНИЯ")
+                appendLine("RenderThread держит: ${held(state.renderHoldsFrameLock, "FrameLock")}")
+                appendLine("RenderThread ждет: ${waits(state.renderWaitsSocketLock, "SocketLock")}")
+                appendLine("NetworkThread держит: ${held(state.networkHoldsSocketLock, "SocketLock")}")
+                appendLine("NetworkThread ждет: ${waits(state.networkWaitsFrameLock, "FrameLock")}")
+                appendLine("Правило порядка блокировок: ${enabled(state.lockOrderInstalled)}")
+                appendLine("Цикл обнаружен: ${enabled(hasDeadlockCycle(state))}")
+                appendLine("Критический поток живой: ${enabled(!state.criticalThreadKilled)}")
             }
 
             LabKind.PIPELINE_ORDER -> buildString {
-                appendLine("PIPELINE ORDER")
-                appendLine("Expected:")
+                appendLine("ПОРЯДОК КОНВЕЙЕРА")
+                appendLine("Ожидаемый:")
                 appendLine(expectedPipeline.joinToString(" -> ") { pipelineName(it) })
-                appendLine("Current:")
-                appendLine(state.pipeline.joinToString(" -> ") { pipelineName(it) }.ifBlank { "empty" })
-                appendLine("Order safe: ${enabled(!state.pipelineBroken)}")
+                appendLine("Текущий:")
+                appendLine(state.pipeline.joinToString(" -> ") { pipelineName(it) }.ifBlank { "пусто" })
+                appendLine("Порядок безопасен: ${enabled(!state.pipelineBroken)}")
             }
         }
     }
 
     private fun currentTrafficText(): String {
-        return trafficCases.getOrNull(state.trafficIndex)?.request ?: "all requests handled"
+        return trafficCases.getOrNull(state.trafficIndex)?.request ?: "все запросы обработаны"
     }
 
     private fun loadProgress(): Int {
@@ -849,12 +849,12 @@ class PuzzleStage(
 
     private fun pipelineName(step: String): String {
         return when (step) {
-            "auth" -> "Auth"
-            "idempotency" -> "Idempotency"
+            "auth" -> "Аутентификация"
+            "idempotency" -> "Идемпотентность"
             "commit" -> "DB Commit"
             "event" -> "Coroutine Event"
-            "invalidate" -> "Cache Invalidate"
-            "response" -> "Response"
+            "invalidate" -> "Инвалидировать Cache"
+            "response" -> "Ответ"
             else -> step
         }
     }

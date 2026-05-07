@@ -603,11 +603,15 @@ object UnitRegistry {
 
     val defaultDeck: List<UnitType> = listOf(
         UnitType.ALLOCATOR,
+        UnitType.BUFFER,
         UnitType.CPU_SCHEDULER,
+        UnitType.CACHE_RUNNER,
         UnitType.GARBAGE_COLLECTOR,
         UnitType.THREAD_GUARD,
         UnitType.INJECTOR,
-        UnitType.DEADLOCK
+        UnitType.PATCH_HEALER,
+        UnitType.DEADLOCK,
+        UnitType.OVERCLOCK
     )
 
     fun getConfig(type: UnitType): UnitConfig {

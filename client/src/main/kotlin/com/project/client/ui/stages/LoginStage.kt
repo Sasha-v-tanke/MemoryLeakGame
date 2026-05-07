@@ -31,19 +31,19 @@ class LoginStage(
             setAlignment(Align.center)
         }
 
-        val subtitle = subtitleLabel("Desktop 1v1 Card RTS · Systems Architecture Training").apply {
+        val subtitle = subtitleLabel("Карточная RTS на рабочем столе · Обучение архитектуре систем").apply {
             setAlignment(Align.center)
         }
 
-        val versionLine = mutedLabel("Build focus: Memory / CPU / Concurrency mechanics", 0.95f).apply {
+        val versionLine = mutedLabel("Фокус: механика памяти / CPU / параллелизма", 0.95f).apply {
             setAlignment(Align.center)
         }
 
         val usernameField = TextField("", skin)
-        usernameField.messageText = "username"
+        usernameField.messageText = "логин"
 
         val passwordField = TextField("", skin).apply {
-            messageText = "password"
+            messageText = "пароль"
             isPasswordMode = true
             setPasswordCharacter('*')
         }
@@ -54,8 +54,8 @@ class LoginStage(
             color = UiTheme.statusInfo
         }
 
-        val loginButton = TextButton("Login", skin)
-        val registerButton = TextButton("Create account", skin)
+        val loginButton = TextButton("Вход", skin)
+        val registerButton = TextButton("Создать аккаунт", skin)
         UiTheme.stylePrimaryButton(loginButton)
         UiTheme.styleSecondaryButton(registerButton)
 
@@ -63,9 +63,9 @@ class LoginStage(
         box.add(title).growX().row()
         box.add(subtitle).growX().padTop(2f).row()
         box.add(versionLine).growX().padBottom(18f).row()
-        box.add(mutedLabel("Username", 0.95f)).left().growX().row()
+        box.add(mutedLabel("Логин", 0.95f)).left().growX().row()
         box.add(usernameField).height(42f).growX().row()
-        box.add(mutedLabel("Password", 0.95f)).left().growX().row()
+        box.add(mutedLabel("Пароль", 0.95f)).left().growX().row()
         box.add(passwordField).height(42f).growX().row()
         box.add(loginButton).height(44f).growX().padTop(12f).row()
         box.add(registerButton).height(38f).growX().row()
@@ -77,12 +77,12 @@ class LoginStage(
                 val password = passwordField.text
 
                 if (username.isBlank() || password.isBlank()) {
-                    messageLabel.setText("Enter username and password.")
+                    messageLabel.setText("Введите логин и пароль.")
                     messageLabel.color = UiTheme.statusError
                     return@addListener true
                 }
 
-                messageLabel.setText("Connecting...")
+                messageLabel.setText("Подключение...")
                 messageLabel.color = UiTheme.statusInfo
 
                 authSocket.login(username, password) { response ->

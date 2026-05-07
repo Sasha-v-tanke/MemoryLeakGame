@@ -30,10 +30,10 @@ class RegisterStage(
             setAlignment(Align.center)
         }
 
-        val usernameField = TextField("", skin).apply { messageText = "username" }
+        val usernameField = TextField("", skin).apply { messageText = "логин" }
         val emailField = TextField("", skin).apply { messageText = "email" }
         val passwordField = TextField("", skin).apply {
-            messageText = "password"
+            messageText = "пароль"
             isPasswordMode = true
             setPasswordCharacter('*')
         }
@@ -44,18 +44,18 @@ class RegisterStage(
             color = UiTheme.statusInfo
         }
 
-        val registerButton = TextButton("Sign up", skin)
-        val backButton = TextButton("Back to login", skin)
+        val registerButton = TextButton("Регистрация", skin)
+        val backButton = TextButton("Назад к входу", skin)
         UiTheme.stylePrimaryButton(registerButton)
         UiTheme.styleSecondaryButton(backButton)
 
         box.defaults().pad(7f)
         box.add(title).growX().padBottom(16f).row()
-        box.add(mutedLabel("Username", 0.95f)).left().growX().row()
+        box.add(mutedLabel("Логин", 0.95f)).left().growX().row()
         box.add(usernameField).height(42f).growX().row()
         box.add(mutedLabel("Email", 0.95f)).left().growX().row()
         box.add(emailField).height(42f).growX().row()
-        box.add(mutedLabel("Password", 0.95f)).left().growX().row()
+        box.add(mutedLabel("Пароль", 0.95f)).left().growX().row()
         box.add(passwordField).height(42f).growX().row()
         box.add(registerButton).height(44f).growX().padTop(12f).row()
         box.add(backButton).height(38f).growX().row()
@@ -68,17 +68,17 @@ class RegisterStage(
                 val password = passwordField.text
 
                 if (username.isBlank() || email.isBlank() || password.isBlank()) {
-                    messageLabel.setText("Fill username, email and password.")
+                    messageLabel.setText("Заполните логин, email и пароль.")
                     messageLabel.color = UiTheme.statusError
                     return@addListener true
                 }
 
-                messageLabel.setText("Creating account...")
+                messageLabel.setText("Создание аккаунта...")
                 messageLabel.color = UiTheme.statusInfo
 
                 authSocket.register(username, password, email) { response ->
                     if (response.success) {
-                        messageLabel.setText("Account created. You can login now.")
+                        messageLabel.setText("Аккаунт создан. Теперь вы можете войти.")
                         messageLabel.color = UiTheme.statusOk
                     } else {
                         messageLabel.setText(response.message)

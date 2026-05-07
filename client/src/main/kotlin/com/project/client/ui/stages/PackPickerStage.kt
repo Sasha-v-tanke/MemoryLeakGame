@@ -39,7 +39,7 @@ class PackPickerStage(
         }
 
         val rulesLabel = subtitleLabel(
-            "Rules: exactly ${MyGame.DECK_SIZE} cards · up to ${MyGame.MAX_CARD_COPIES} copies per card",
+            "Правила: ровно ${MyGame.DECK_SIZE} карт · до ${MyGame.MAX_CARD_COPIES} копий каждой карты",
             0.97f
         ).apply {
             setAlignment(Align.center)
@@ -69,9 +69,9 @@ class PackPickerStage(
             cardCountLabels[config.unitType] = countLabel
 
             val nameLabel = titleLabel(config.displayName, 1.05f)
-            val roleLabel = mutedLabel("Role: ${formatRole(config.role)}", 0.94f)
+            val roleLabel = mutedLabel("Роль: ${formatRole(config.role)}", 0.94f)
             val statLabel = subtitleLabel(
-                "Cost: ${config.costMemory} Memory / ${config.costCpu} CPU · HP ${config.health} · DMG ${config.damage} · SPD ${config.speed.toInt()}",
+                "Стоимость: ${config.costMemory} Memory / ${config.costCpu} CPU · HP ${config.health} · DMG ${config.damage} · SPD ${config.speed.toInt()}",
                 0.94f
             )
 
@@ -124,9 +124,9 @@ class PackPickerStage(
         val scroll = ScrollPane(cardsTable, skin)
         scroll.setFadeScrollBars(false)
 
-        val saveButton = TextButton("Save Deck", skin)
-        val resetButton = TextButton("Reset Default", skin)
-        val backButton = TextButton("Back", skin)
+        val saveButton = TextButton("Сохранить", skin)
+        val resetButton = TextButton("По умолчанию", skin)
+        val backButton = TextButton("Назад", skin)
         UiTheme.stylePrimaryButton(saveButton)
         UiTheme.styleSecondaryButton(resetButton)
         UiTheme.styleSecondaryButton(backButton)
@@ -157,7 +157,7 @@ class PackPickerStage(
                 game.resetDeck()
                 draftDeck.clear()
                 draftDeck += game.getSelectedDeck()
-                messageLabel.setText("Default deck restored.")
+                messageLabel.setText("Колода восстановлена.")
                 messageLabel.color = UiTheme.statusOk
                 refreshDeckState()
                 true
@@ -180,20 +180,20 @@ class PackPickerStage(
 
     private fun addCard(unitType: UnitType) {
         if (draftDeck.size >= MyGame.DECK_SIZE) {
-            messageLabel.setText("Deck is full: ${MyGame.DECK_SIZE} cards.")
+            messageLabel.setText("Колода полна: ${MyGame.DECK_SIZE} карт.")
             messageLabel.color = UiTheme.statusWarn
             return
         }
 
         val copies = draftDeck.count { it == unitType }
         if (copies >= MyGame.MAX_CARD_COPIES) {
-            messageLabel.setText("Only ${MyGame.MAX_CARD_COPIES} copies of one card are allowed.")
+            messageLabel.setText("Только ${MyGame.MAX_CARD_COPIES} копии одной карты разрешены.")
             messageLabel.color = UiTheme.statusWarn
             return
         }
 
         draftDeck += unitType
-        messageLabel.setText("${UnitRegistry.getConfig(unitType).displayName} added.")
+        messageLabel.setText("${UnitRegistry.getConfig(unitType).displayName} добавлена.")
         messageLabel.color = UiTheme.statusOk
         refreshDeckState()
     }
@@ -202,10 +202,10 @@ class PackPickerStage(
         val removed = draftDeck.remove(unitType)
 
         if (removed) {
-            messageLabel.setText("${UnitRegistry.getConfig(unitType).displayName} removed.")
+            messageLabel.setText("${UnitRegistry.getConfig(unitType).displayName} удалена.")
             messageLabel.color = UiTheme.statusInfo
         } else {
-            messageLabel.setText("This card is not in the deck.")
+            messageLabel.setText("Этой карты нет в колоде.")
             messageLabel.color = UiTheme.statusWarn
         }
 
@@ -214,7 +214,7 @@ class PackPickerStage(
 
     private fun saveDeck() {
         if (draftDeck.size != MyGame.DECK_SIZE) {
-            messageLabel.setText("Select exactly ${MyGame.DECK_SIZE} cards before saving.")
+            messageLabel.setText("Выберите ровно ${MyGame.DECK_SIZE} карт перед сохранением.")
             messageLabel.color = UiTheme.statusWarn
             return
         }
@@ -222,7 +222,7 @@ class PackPickerStage(
         game.setSelectedDeck(draftDeck)
         draftDeck.clear()
         draftDeck += game.getSelectedDeck()
-        messageLabel.setText("Deck saved. It will be used in the next match.")
+        messageLabel.setText("Колода сохранена. Будет использована в следующем матче.")
         messageLabel.color = UiTheme.statusOk
         refreshDeckState()
     }
@@ -230,14 +230,14 @@ class PackPickerStage(
     private fun refreshDeckState() {
         UnitRegistry.all().forEach { config ->
             val copies = draftDeck.count { it == config.unitType }
-            cardCountLabels[config.unitType]?.setText("In deck: $copies/${MyGame.MAX_CARD_COPIES}")
+            cardCountLabels[config.unitType]?.setText("В колоде: $copies/${MyGame.MAX_CARD_COPIES}")
         }
 
         val names = draftDeck.joinToString(" · ") { UnitRegistry.getConfig(it).displayName }
-            .ifBlank { "empty" }
+            .ifBlank { "пусто" }
 
         deckSummaryLabel.setText(
-            "Current deck: ${draftDeck.size}/${MyGame.DECK_SIZE}\n$names"
+            "Текущая колода: ${draftDeck.size}/${MyGame.DECK_SIZE}\n$names"
         )
     }
 
@@ -253,11 +253,11 @@ class PackPickerStage(
 
     private fun formatRole(role: UnitRole): String {
         return when (role) {
-            UnitRole.CAPTURE -> "Capture"
-            UnitRole.ATTACK -> "Attack"
-            UnitRole.DEFENSE -> "Defense"
-            UnitRole.SUPPORT -> "Support"
-            UnitRole.SPELL -> "Spell"
+            UnitRole.CAPTURE -> "Захват"
+            UnitRole.ATTACK -> "Атака"
+            UnitRole.DEFENSE -> "Защита"
+            UnitRole.SUPPORT -> "Поддержка"
+            UnitRole.SPELL -> "Заклинание"
         }
     }
 }

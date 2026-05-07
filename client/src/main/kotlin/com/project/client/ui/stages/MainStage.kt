@@ -11,6 +11,7 @@ import com.project.client.ui.screens.MatchMakingScreen
 import com.project.client.ui.screens.PackPickerScreen
 import com.project.client.ui.screens.PuzzleScreen
 import com.project.client.ui.screens.SettingsScreen
+import com.project.client.ui.screens.TutorialScreen
 import com.project.client.ui.theme.UiTheme
 
 class MainStage(
@@ -29,29 +30,31 @@ class MainStage(
             setAlignment(Align.center)
         }
 
-        val playerLabel = subtitleLabel("Instance owner: ${game.getUsername()} #${game.getPlayerId()}", 1.03f).apply {
+        val playerLabel = subtitleLabel("Владелец процесса: ${game.getUsername()} #${game.getPlayerId()}", 1.03f).apply {
             setAlignment(Align.center)
         }
 
-        val deckStatus = Label("Deck ready: ${game.getSelectedDeck().size}/${MyGame.DECK_SIZE} cards", skin).apply {
+        val deckStatus = Label("Колода готова: ${game.getSelectedDeck().size}/${MyGame.DECK_SIZE} карт", skin).apply {
             setAlignment(Align.center)
             color = UiTheme.statusInfo
         }
 
         val concept = subtitleLabel(
-            "Capture infrastructure nodes, sustain economy, and break the enemy Core.",
+            "Захватывайте узлы инфраструктуры, защищайте ресурсы, разломайте ядро противника.",
             0.98f
         ).apply {
             setAlignment(Align.center)
             wrap = true
         }
 
-        val playButton = TextButton("Find 1v1 Match", skin)
-        val puzzleButton = TextButton("Puzzle Lab", skin)
-        val deckButton = TextButton("Deck / Cards", skin)
-        val settingsButton = TextButton("Settings", skin)
+        val playButton = TextButton("Матч 1 на 1", skin)
+        val puzzleButton = TextButton("Лаборатория", skin)
+        val tutorialButton = TextButton("Обучение", skin)
+        val deckButton = TextButton("Колода", skin)
+        val settingsButton = TextButton("Параметры", skin)
         UiTheme.stylePrimaryButton(playButton)
         UiTheme.styleSecondaryButton(puzzleButton)
+        UiTheme.styleSecondaryButton(tutorialButton)
         UiTheme.styleSecondaryButton(deckButton)
         UiTheme.styleSecondaryButton(settingsButton)
 
@@ -62,6 +65,7 @@ class MainStage(
         box.add(concept).width(600f).padBottom(18f).row()
         box.add(playButton).height(48f).growX().row()
         box.add(puzzleButton).height(42f).growX().row()
+        box.add(tutorialButton).height(42f).growX().row()
         box.add(deckButton).height(42f).growX().row()
         box.add(settingsButton).height(42f).growX().row()
 
@@ -77,6 +81,15 @@ class MainStage(
         puzzleButton.addListener { event ->
             if (event is InputEvent && event.type == InputEvent.Type.touchDown) {
                 game.setScreen(PuzzleScreen(game))
+                true
+            } else {
+                false
+            }
+        }
+
+        tutorialButton.addListener { event ->
+            if (event is InputEvent && event.type == InputEvent.Type.touchDown) {
+                game.setScreen(TutorialScreen(game))
                 true
             } else {
                 false

@@ -27,17 +27,16 @@ class SettingsStage(
         }
 
         val text = subtitleLabel(
-            "Controls:\n" +
-                    "WASD / Arrows — move camera\n" +
-                    "Q / E — zoom\n" +
-                    "Click card — select card\n" +
-                    "Click arena — deploy selected card\n\n" +
-                    "Server URL can be changed with MEMORY_LEAK_SERVER_WS env variable."
+            "Управление:\n" +
+                    "WASD / Стрелки — двигать камеру\n" +
+                    "Q / E — масштабирование\n" +
+                    "Клик на карту — выбрать карту\n" +
+                    "Клик на арену — если выбрана карта\n"
         ).apply {
             wrap = true
         }
 
-        val backButton = TextButton("Back", skin)
+        val backButton = TextButton("Назад", skin)
         UiTheme.styleSecondaryButton(backButton)
 
         box.defaults().pad(8f)
