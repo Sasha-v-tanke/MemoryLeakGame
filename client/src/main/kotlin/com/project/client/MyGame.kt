@@ -23,7 +23,7 @@ import kotlinx.coroutines.launch
 
 class MyGame : Game() {
     companion object {
-        const val DECK_SIZE = 6
+        const val DECK_SIZE = 10
         const val MAX_CARD_COPIES = 2
     }
 

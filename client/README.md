@@ -47,7 +47,7 @@ MEMORY_LEAK_SERVER_WS=ws://192.168.1.10:8080 ./gradlew client:run
 
 ## Deck Rules
 
-- Deck size: 6 cards.
+- Deck size: 10 cards.
 - Maximum copies of one card: 2.
 - If no saved deck exists, the default deck is used.
 - The selected deck is saved locally per player profile and used in the next

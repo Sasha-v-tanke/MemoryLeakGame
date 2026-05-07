@@ -7,8 +7,8 @@ object GameConfig {
     const val tickMillis = 50L
     const val snapshotEveryTicks = 2L
 
-    const val startingMemory = 4
-    const val startingCpu = 6
+    const val startingMemory = 10
+    const val startingCpu = 10
 
     const val baseMemoryIncome = 0
     const val baseCpuIncome = 1
