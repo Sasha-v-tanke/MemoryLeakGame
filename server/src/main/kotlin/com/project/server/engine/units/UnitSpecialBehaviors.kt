@@ -36,24 +36,29 @@ class UnitSpecialBehaviors(private val world: GameWorld) {
 
         world.getAliveEntities()
             .filter {
-                val unit = it.get(UnitComponent::class.java) ?: return@filter false
+                val unit = it.get(com.project.shared.engine.entities.components.Unit::class.java) ?: return@filter false
                 unit.memoryWorkPower > 0f
             }
             .forEach { worker ->
-                val unit = worker.get(UnitComponent::class.java) ?: return@forEach
+                println("[step 1] Worker: $worker")
+                val unit = worker.get(com.project.shared.engine.entities.components.Unit::class.java) ?: return@forEach
+
+                println("[step 1.5] Worker: $worker")
                 val transform = worker.get(Transform::class.java) ?: return@forEach
                 val process = worker.get(ProcessState::class.java) ?: return@forEach
                 val targetNode = worker.get(Target::class.java)?.targetEntityId?.let { world.getEntity(it) }
                     ?: targeting.bestMemoryNode(transform)
                     ?: return@forEach
 
+                println("[step 2] Worker: $worker")
                 val node = targetNode.get(ResourceNode::class.java) ?: return@forEach
                 if (node.nodeType != ResourceNodeType.MEMORY) return@forEach
 
+                println("[step 3] Worker: $worker")
                 val nodeTransform = targetNode.get(Transform::class.java) ?: return@forEach
                 if (GameMath.distance(transform, nodeTransform) > node.captureRadius) return@forEach
 
-                // Инициация захвата
+                println("[step 4] Worker: $worker")
                 if (process.phaseStartedAt <= 0L || process.lastEvent != "MEMORY_WORK") {
                     process.phaseStartedAt = now
                     process.internalCounter = 0
@@ -67,6 +72,7 @@ class UnitSpecialBehaviors(private val world: GameWorld) {
 
                 // Время работы контролируется через phaseStartedAt и memoryWorkDuration
                 val workDuration = UnitConfig.SpecialConstants.MEMORY_WORK_DURATION
+                println("Time waiting: ${now - process.phaseStartedAt} / $workDuration, progress: ${process.internalCounter}")
                 if (now - process.phaseStartedAt < workDuration) return@forEach
 
                 // Захват завершён - добавляем память и удаляем юнита

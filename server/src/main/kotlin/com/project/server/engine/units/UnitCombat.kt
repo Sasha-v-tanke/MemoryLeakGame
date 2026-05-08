@@ -69,6 +69,7 @@ class UnitCombat(private val world: GameWorld) {
                 val unit = entity.get(UnitComponent::class.java) ?: return@forEach
                 if (
                     unit.typeName == UnitType.ALLOCATOR ||
+                    unit.typeName == UnitType.BUFFER ||
                     unit.typeName == UnitType.GARBAGE_COLLECTOR ||
                     unit.typeName == UnitType.PATCH_HEALER ||
                     unit.typeName == UnitType.MUTEX ||
@@ -140,8 +141,10 @@ class UnitCombat(private val world: GameWorld) {
         units.forEach { unit ->
             val unitComponent = unit.get(UnitComponent::class.java) ?: return@forEach
             if (unitComponent.typeName == UnitType.ALLOCATOR ||
+                unitComponent.typeName == UnitType.BUFFER ||
                 unitComponent.typeName == UnitType.GARBAGE_COLLECTOR ||
-                unitComponent.typeName == UnitType.PATCH_HEALER)
+                unitComponent.typeName == UnitType.PATCH_HEALER
+            )
                 return@forEach
 
             val target = unit.get(Target::class.java) ?: return@forEach

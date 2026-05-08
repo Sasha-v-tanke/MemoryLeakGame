@@ -8,6 +8,7 @@ import com.project.shared.engine.entities.components.CombatStats
 import com.project.shared.engine.entities.components.DefenseBehavior
 import com.project.shared.engine.entities.components.Health
 import com.project.shared.engine.entities.components.Owner
+import com.project.shared.engine.entities.components.ProcessState
 import com.project.shared.engine.entities.components.Sprite
 import com.project.shared.engine.entities.components.StatusEffects
 import com.project.shared.engine.entities.components.SupportBehavior
@@ -58,13 +59,18 @@ object UnitFactory {
         entity.add(StatusEffects())
 
         when (config.role) {
-            UnitRole.CAPTURE -> entity.add(CaptureBehavior(x, y))
+            UnitRole.CAPTURE -> {
+                entity.add(CaptureBehavior(x, y))
+                entity.add(ProcessState())
+            }
+
             UnitRole.SUPPORT -> entity.add(SupportBehavior(x, y))
             UnitRole.DEFENSE -> entity.add(DefenseBehavior(x, y))
             UnitRole.ATTACK -> entity.add(AttackBehavior(x, y))
             UnitRole.SPELL -> {
                 // Spells are not persistent units and should be handled before this method.
             }
+
         }
 
         return world.addEntity(entity)
