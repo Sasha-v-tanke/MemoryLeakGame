@@ -8,7 +8,8 @@ enum class ProcessPhase {
     RUNNING,
     COMPLETED,
     DEAD,
-    GARBAGE_COLLECTING
+    GARBAGE_COLLECTING,
+    WORKING,
 }
 
 @Serializable

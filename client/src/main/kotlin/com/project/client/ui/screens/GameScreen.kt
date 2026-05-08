@@ -323,6 +323,7 @@ class GameScreen(private val game: MyGame) : ScreenAdapter() {
             ProcessPhase.COMPLETED -> "completed"
             ProcessPhase.DEAD -> "dead, waiting for GC"
             ProcessPhase.GARBAGE_COLLECTING -> "garbage collecting"
+            ProcessPhase.WORKING -> "working"
         }
     }
 }
