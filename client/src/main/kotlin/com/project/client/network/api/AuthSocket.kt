@@ -13,10 +13,10 @@ class AuthSocket : WebSocket("auth") {
             send<AuthRequest>(request)
 
             receiveMessage<AuthResponse>()
-                ?: AuthResponse(false, null, null, "No response received")
+                ?: AuthResponse(false, null, null, "Нет ответа от сервера")
         } catch (e: Exception) {
             Gdx.app.error("AuthSocket", "Request failed: ${e.message}", e)
-            AuthResponse(false, null, null, "Connection error: ${e.message ?: "unknown"}")
+            AuthResponse(false, null, null, "Ошибка соединения: ${e.message ?: "неизвестна"}")
         }
     }
 

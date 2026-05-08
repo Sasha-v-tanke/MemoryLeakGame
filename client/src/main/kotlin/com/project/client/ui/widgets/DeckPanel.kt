@@ -27,7 +27,7 @@ class DeckPanel(
         background = skin.newDrawable("default-round", Color(0.020f, 0.032f, 0.060f, 0.94f))
         pad(10f)
 
-        val header = Label("Deck Runtime: cooldown and factory queue", skin, "small").apply {
+        val header = Label("Время колоды: перезарядки и очередь фабрик", skin, "small").apply {
             setAlignment(Align.left)
             color = UiTheme.statusInfo
         }

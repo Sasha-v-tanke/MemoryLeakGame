@@ -40,7 +40,7 @@ fun Application.authModule() {
                         success = false,
                         token = null,
                         playerId = null,
-                        message = "Invalid auth request: ${e.message}"
+                        message = "Неверный запрос аутентификации: ${e.message}"
                     )
                 }
 
@@ -88,19 +88,19 @@ fun register(request: RegisterRequest): AuthResponse {
     val password = request.password
 
     if (username.length < 3) {
-        return AuthResponse(false, null, null, "Username must contain at least 3 characters")
+        return AuthResponse(false, null, null, "Имя пользователя должно содержать не менее 3 символов")
     }
 
     if (password.length < 4) {
-        return AuthResponse(false, null, null, "Password must contain at least 4 characters")
+        return AuthResponse(false, null, null, "Пароль должен содержать не менее 4 символов")
     }
 
     if (!email.contains("@")) {
-        return AuthResponse(false, null, null, "Invalid email")
+        return AuthResponse(false, null, null, "Неверный email")
     }
 
     if (UserRepository.findByUsername(username) != null) {
-        return AuthResponse(false, null, null, "Username already exists")
+        return AuthResponse(false, null, null, "Имя пользователя уже существует")
     }
 
     val newUser = UserRepository.addUser(
@@ -116,7 +116,7 @@ fun register(request: RegisterRequest): AuthResponse {
         success = true,
         token = "dummy-token-${newUser.id}",
         playerId = newUser.id,
-        message = "User registered successfully"
+        message = "Пользователь успешно зарегистрирован"
     )
 }
 
@@ -125,13 +125,13 @@ fun login(request: LoginRequest): AuthResponse {
     val user = UserRepository.findByUsername(username)
 
     if (user == null || user.password != request.password) {
-        return AuthResponse(false, null, null, "Invalid username or password")
+        return AuthResponse(false, null, null, "Неверное имя пользователя или пароль")
     }
 
     return AuthResponse(
         success = true,
         token = "dummy-token-${user.id}",
         playerId = user.id,
-        message = "Login successful"
+        message = "Вход выполнен успешно"
     )
 }

@@ -22,7 +22,7 @@ class TutorialStage(
         val box = panel()
         root.add(box).grow()
 
-        val title = titleLabel("Обучение", 1.30f).apply {
+        val title = titleLabel("Обучение", 1.10f).apply {
             setAlignment(Align.center)
         }
 
@@ -74,13 +74,13 @@ class TutorialStage(
         )
 
         sections.forEach { (sectionTitle, sectionContent) ->
-            val sectionLabel = titleLabel(sectionTitle, 1.10f).apply {
+            val sectionLabel = titleLabel(sectionTitle, 1.00f).apply {
                 color = UiTheme.statusInfo
             }
             content.add(sectionLabel).growX().row()
 
             sectionContent.forEach { line ->
-                val lineLabel = subtitleLabel("• $line", 0.92f).apply {
+                val lineLabel = subtitleLabel("• $line", 0.85f).apply {
                     wrap = true
                 }
                 content.add(lineLabel).width(900f).padLeft(16f).row()

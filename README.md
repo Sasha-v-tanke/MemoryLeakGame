@@ -1,6 +1,7 @@
 # Memory Leak Arena
 
-`Memory Leak Arena` is a desktop 1v1 real-time strategy game with an educational systems-programming layer. Players control digital systems, allocate memory, reclaim dead objects, scale factories, protect their own Core, and destroy the opponent's Core.
+`Memory Leak Arena` is a desktop 1v1 real-time strategy game with an educational systems-programming layer. Players control digital systems, allocate memory, reclaim dead objects,
+scale factories, protect their own Core, and destroy the opponent's Core.
 
 The project is built as a Kotlin multi-module application:
 
@@ -16,16 +17,16 @@ The game explains programming concepts through match consequences:
 
 ## Current Mechanics
 
-| Concept | Game behavior | Learning meaning |
-| --- | --- | --- |
-| Memory allocation | `Allocator` works at a Memory Source, creates usable Memory, then exits | Memory capacity is not automatically usable; it must be allocated. |
-| Garbage collection | `Garbage Collector` sweeps dead allied units and restores their held Memory | GC reclaims dead/unreachable allocations; it does not heal living objects. |
-| Memory leak | Dead units remain dimmed on the map until GC removes them | Dead objects still occupy memory if not collected. |
-| CPU throughput | CPU grows over time and from CPU nodes | CPU limits how many operations the system can run. |
-| Factory scaling | Building extra factories increases production parallelism and queue capacity | More build pipelines improve throughput but cost resources. |
-| Core failure | Destroying Core ends the match | Central runtime/kernel failure terminates the system. |
-| Deadlock | Area stun | Processes stop making progress when circular waiting blocks execution. |
-| Overclock | Temporary speed boost | Throughput can be raised temporarily at compute cost. |
+| Concept            | Game behavior                                                                | Learning meaning                                                           |
+|--------------------|------------------------------------------------------------------------------|----------------------------------------------------------------------------|
+| Memory allocation  | `Allocator` works at a Memory Source, creates usable Memory, then exits      | Memory capacity is not automatically usable; it must be allocated.         |
+| Garbage collection | `Garbage Collector` sweeps dead allied units and restores their held Memory  | GC reclaims dead/unreachable allocations; it does not heal living objects. |
+| Memory leak        | Dead units remain dimmed on the map until GC removes them                    | Dead objects still occupy memory if not collected.                         |
+| CPU throughput     | CPU grows over time and from CPU nodes                                       | CPU limits how many operations the system can run.                         |
+| Factory scaling    | Building extra factories increases production parallelism and queue capacity | More build pipelines improve throughput but cost resources.                |
+| Core failure       | Destroying Core ends the match                                               | Central runtime/kernel failure terminates the system.                      |
+| Deadlock           | Area stun                                                                    | Processes stop making progress when circular waiting blocks execution.     |
+| Overclock          | Temporary speed boost                                                        | Throughput can be raised temporarily at compute cost.                      |
 
 ## Units
 
@@ -145,8 +146,11 @@ Show post-match statistics.
 
 ## Что сделано по поведению юнитов
 
+Например:
+
 - `Allocator`: не стоит Memory, стоит CPU. Идёт к ближайшей ноде. На Memory Source создаёт пачку Memory и исчезает. На CPU Node связывает/захватывает ноду и исчезает.
-- `Garbage Collector`: не стоит Memory, стоит много CPU. Не лечит. Ищет только мёртвые свои юниты, идёт к ним, делает sweep, возвращает их `allocatedMemory`, удаляет объект, затем сам исчезает.
+- `Garbage Collector`: не стоит Memory, стоит много CPU. Не лечит. Ищет только мёртвые свои юниты, идёт к ним, делает sweep, возвращает их `allocatedMemory`, удаляет объект, затем
+  сам исчезает.
 - `Patch Healer`: лечит только живых союзников. Не освобождает Memory.
 - `Thread Guard`: удерживает область и атакует вражеские юниты поблизости.
 - `Firewall`: более тяжёлая оборонительная версия Thread Guard.

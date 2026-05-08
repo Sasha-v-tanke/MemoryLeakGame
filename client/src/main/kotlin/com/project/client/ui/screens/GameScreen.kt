@@ -54,8 +54,8 @@ class GameScreen(private val game: MyGame) : ScreenAdapter() {
         worldStage.onWorldClicked = { x, y -> deploySelectedCard(x, y) }
 
         uiStage.onCardSelected = { unitType ->
-            if (gameFinished) uiStage.showToast("Match is finished")
-            else if (isDeployingCard) uiStage.showToast("Wait for current deployment")
+            if (gameFinished) uiStage.showToast("Матч завершён")
+            else if (isDeployingCard) uiStage.showToast("Подождите: текущая отправка карты в процессе")
             else {
                 selectedCard = unitType
                 uiStage.setSelectedCard(unitType)
@@ -117,7 +117,7 @@ class GameScreen(private val game: MyGame) : ScreenAdapter() {
     fun startGame(event: GameStartEvent) {
         gameStarted = true
         uiStage.startGame(event.message)
-        uiStage.showToast("Allocator creates Memory. Garbage Collector frees dead allocations.")
+        uiStage.showToast("Allocator создаёт Memory. Garbage Collector освобождает мёртвые выделения.")
     }
 
     fun updateGameState(snapshotEvent: GameStateSnapshotEvent) {
@@ -146,22 +146,22 @@ class GameScreen(private val game: MyGame) : ScreenAdapter() {
 
     private fun deploySelectedCard(worldX: Float, worldY: Float) {
         if (gameFinished) {
-            uiStage.showToast("Match is finished")
+            uiStage.showToast("Матч завершён")
             return
         }
 
         if (!gameStarted) {
-            uiStage.showToast("Wait: game starts when both players are ready")
+            uiStage.showToast("Подождите: игра начнётся, когда оба игрока будут готовы")
             return
         }
 
         if (isDeployingCard) {
-            uiStage.showToast("Deployment in progress")
+            uiStage.showToast("Развёртывание в процессе")
             return
         }
 
         val card = selectedCard ?: run {
-            uiStage.showToast("Select a card first")
+            uiStage.showToast("Сначала выберите карту")
             return
         }
 
@@ -173,20 +173,20 @@ class GameScreen(private val game: MyGame) : ScreenAdapter() {
         uiStage.clearSelectedCard()
 
         if (isManualTargetCard) {
-            uiStage.showToast("Casting ${config.displayName} at selected point...")
+            uiStage.showToast("Применение ${config.displayName} в выбранной точке...")
         } else {
-            uiStage.showToast("Scheduling ${config.displayName}. It will choose target automatically.")
+            uiStage.showToast("Планирование ${config.displayName}. Цель будет выбрана автоматически.")
         }
 
         socket.playCard(game.getPlayerId(), game.matchHandler.getRoomId(), card, worldX, worldY) { response ->
             isDeployingCard = false
-            if (response.success) {
-                uiStage.showToast(response.description)
-            } else {
-                selectedCard = card
-                uiStage.setSelectedCard(card)
-                uiStage.showToast(response.description.ifBlank { "Cannot play card" })
-            }
+                if (response.success) {
+                    uiStage.showToast(response.description)
+                } else {
+                    selectedCard = card
+                    uiStage.setSelectedCard(card)
+                    uiStage.showToast(response.description.ifBlank { "Невозможно разыграть карту" })
+                }
         }
     }
 
@@ -215,7 +215,7 @@ class GameScreen(private val game: MyGame) : ScreenAdapter() {
             core != null -> buildCoreHoverText(health, hovered.owner)
             factory != null -> buildFactoryHoverText(factory, health, hovered.owner)
             node != null -> buildNodeHoverText(node)
-            else -> "Unknown object"
+            else -> "Неизвестный объект"
         }
 
         uiStage.showHoverInfo(text)
@@ -227,19 +227,19 @@ class GameScreen(private val game: MyGame) : ScreenAdapter() {
         return buildString {
             appendLine(config.displayName)
             appendLine("${formatOwner(owner)} · ${formatRole(config.role)}")
-            appendLine("Memory held: ${unit.allocatedMemory}")
+            appendLine("Удержано Memory: ${unit.allocatedMemory}")
             if (health != null) appendLine("HP: ${health.current}/${health.max}")
             if (combat != null && config.role != UnitRole.SPELL && combat.damage > 0) {
-                appendLine("Damage: ${combat.damage} · Range: ${combat.attackRange.toInt()} · Speed: ${combat.moveSpeed.toInt()}")
+                appendLine("Урон: ${combat.damage} · Дальность: ${combat.attackRange.toInt()} · Скорость: ${combat.moveSpeed.toInt()}")
             }
             if (process != null) {
-                appendLine("State: ${formatPhase(process.phase)}")
-                if (process.lastEvent.isNotBlank()) appendLine("Event: ${process.lastEvent}")
+                appendLine("Состояние: ${formatPhase(process.phase)}")
+                if (process.lastEvent.isNotBlank()) appendLine("Событие: ${process.lastEvent}")
             }
             appendLine()
             appendLine(config.gameDescription)
-            appendLine("Strong: ${config.strengths}")
-            appendLine("Weak: ${config.weaknesses}")
+            appendLine("Сильные стороны: ${config.strengths}")
+            appendLine("Слабые стороны: ${config.weaknesses}")
             appendLine()
             appendLine("IT: ${config.realFeature}")
         }
@@ -247,12 +247,12 @@ class GameScreen(private val game: MyGame) : ScreenAdapter() {
 
     private fun buildCoreHoverText(health: Health?, owner: OwnerType): String {
         return buildString {
-            appendLine("Core")
+            appendLine("Ядро")
             appendLine(formatOwner(owner))
             if (health != null) appendLine("HP: ${health.current}/${health.max}")
             appendLine()
-            appendLine("Destroying the Core terminates the whole instance.")
-            appendLine("IT: central runtime/kernel failure stops the system.")
+            appendLine("Уничтожение Ядра завершает экземпляр системы.")
+            appendLine("IT: сбой центрального рантайма/ядра останавливает систему.")
         }
     }
 
@@ -266,64 +266,64 @@ class GameScreen(private val game: MyGame) : ScreenAdapter() {
             appendLine(title)
             appendLine(formatOwner(owner))
             if (health != null) appendLine("HP: ${health.current}/${health.max}")
-            appendLine("Production multiplier: x${"%.2f".format(factory.productionMultiplier)}")
+            appendLine("Множитель производства: x${"%.2f".format(factory.productionMultiplier)}")
             appendLine()
-            appendLine("Build more factories to increase parallel production and queue capacity.")
-            appendLine("IT: scaling build pipelines increases throughput, but consumes Memory and CPU.")
+            appendLine("Постройте больше фабрик, чтобы увеличить параллельное производство и ёмкость очереди.")
+            appendLine("IT: масштабирование конвейеров сборки увеличивает пропускную способность, но потребляет Memory и CPU.")
         }
     }
 
     private fun buildNodeHoverText(node: ResourceNode): String {
         val title = when (node.nodeType) {
-            ResourceNodeType.CPU -> "CPU Node"
-            ResourceNodeType.MEMORY -> "Memory Source"
+            ResourceNodeType.CPU -> "CPU-узел"
+            ResourceNodeType.MEMORY -> "Источник Memory"
         }
 
         return buildString {
             appendLine(title)
             appendLine(
                 when (node.capturedBy) {
-                    1 -> "Controlled by Player 1"
-                    2 -> "Controlled by Player 2"
-                    else -> "Neutral"
+                    1 -> "Контролируется Игроком 1"
+                    2 -> "Контролируется Игроком 2"
+                    else -> "Нейтральный"
                 }
             )
             appendLine()
             if (node.nodeType == ResourceNodeType.MEMORY) {
-                appendLine("Allocator must work here to create usable Memory batches.")
-                appendLine("IT: memory exists as capacity, but a process must allocate it before use.")
+                appendLine("Allocator должен работать здесь, чтобы создать пригодные пачки Memory.")
+                appendLine("IT: Memory существует как ёмкость, но процесс должен выделить её перед использованием.")
             } else {
-                appendLine("Controlled CPU nodes increase CPU income.")
-                appendLine("IT: CPU throughput limits how many operations the system can run.")
+                appendLine("Контролируемые CPU-узлы увеличивают поступление CPU.")
+                appendLine("IT: пропускная способность CPU ограничивает количество операций, которые система может выполнять.")
             }
         }
     }
 
     private fun formatOwner(owner: OwnerType): String {
         return when (owner) {
-            OwnerType.PLAYER_1 -> "Player 1"
-            OwnerType.PLAYER_2 -> "Player 2"
-            OwnerType.WORLD -> "Neutral"
+            OwnerType.PLAYER_1 -> "Игрок 1"
+            OwnerType.PLAYER_2 -> "Игрок 2"
+            OwnerType.WORLD -> "Нейтральный"
         }
     }
 
     private fun formatRole(role: UnitRole): String {
         return when (role) {
-            UnitRole.CAPTURE -> "Resource operation"
-            UnitRole.SUPPORT -> "Maintenance"
-            UnitRole.DEFENSE -> "Protection"
-            UnitRole.ATTACK -> "Intervention"
-            UnitRole.SPELL -> "System effect"
+            UnitRole.CAPTURE -> "Захват ресурсов"
+            UnitRole.SUPPORT -> "Поддержка"
+            UnitRole.DEFENSE -> "Защита"
+            UnitRole.ATTACK -> "Атака"
+            UnitRole.SPELL -> "Эффект"
         }
     }
 
     private fun formatPhase(phase: ProcessPhase): String {
         return when (phase) {
-            ProcessPhase.RUNNING -> "running"
-            ProcessPhase.COMPLETED -> "completed"
-            ProcessPhase.DEAD -> "dead, waiting for GC"
-            ProcessPhase.GARBAGE_COLLECTING -> "garbage collecting"
-            ProcessPhase.WORKING -> "working"
+            ProcessPhase.RUNNING -> "выполняется"
+            ProcessPhase.COMPLETED -> "завершён"
+            ProcessPhase.DEAD -> "мертв (ожидание GC)"
+            ProcessPhase.GARBAGE_COLLECTING -> "сборка мусора"
+            ProcessPhase.WORKING -> "в работе"
         }
     }
 }

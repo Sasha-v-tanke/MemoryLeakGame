@@ -22,7 +22,7 @@ class SettingsStage(
         val box = panel()
         root.add(box).width(620f)
 
-        val title = titleLabel("Settings", 1.30f).apply {
+        val title = titleLabel("Настройки", 1.30f).apply {
             setAlignment(Align.center)
         }
 

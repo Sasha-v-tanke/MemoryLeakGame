@@ -18,11 +18,11 @@ object UnitRegistry {
             memoryWorkPower = 34f,
             cpuRedirectPower = 0f,
             sprite = "units/allocator.png",
-            gameDescription = "Fast memory worker. Finds Memory Sources, allocates a small safe batch, then exits.",
-            techDescription = "Allocation reserves usable memory for future processes. It is a short-lived operation.",
-            strengths = "Very fast, no Memory cost, reliable early economy.",
-            weaknesses = "No combat value, small batch, dies easily.",
-            realFeature = "Allocators request memory, return usable space, then finish."
+            gameDescription = "Быстрый работник памяти. Находит источники Memory, выделяет небольшой безопасный блок и уходит.",
+            techDescription = "Выделение резервирует память для будущих процессов. Операция короткая по времени.",
+            strengths = "Очень быстрый, не требует Memory, надёжен на ранней стадии экономики.",
+            weaknesses = "Не участвует в бою, малый объём выделяемой памяти, уязвим.",
+            realFeature = "Allocator запрашивает память, возвращает пригодный для использования кусок и завершается."
         ),
 
         UnitType.BUFFER to UnitConfig(
@@ -41,11 +41,11 @@ object UnitRegistry {
             memoryWorkPower = 46f,
             cpuRedirectPower = 0f,
             sprite = "units/buffer.png",
-            gameDescription = "Allocates a larger temporary Memory batch, but works slower than Allocator.",
-            techDescription = "A buffer stores data in transit. It improves throughput, but oversized buffers can hide pressure.",
-            strengths = "Larger Memory batch, more durable than Allocator.",
-            weaknesses = "Slower, higher CPU cost, still cannot fight.",
-            realFeature = "Buffers smooth bursts, but they are temporary storage and must be sized carefully."
+            gameDescription = "Выделяет более крупную временную пачку Memory, но работает медленнее, чем Allocator.",
+            techDescription = "Буфер хранит данные в транзите. Увеличивает пропускную способность, но слишком большие буферы скрывают нагрузку.",
+            strengths = "Более крупная пачка Memory, живучее, чем Allocator.",
+            weaknesses = "Медленнее, выше стоимость CPU, по-прежнему не боевая единица.",
+            realFeature = "Буферы сглаживают всплески, но являются временным хранилищем и требуют правильного размера."
         ),
 
         UnitType.MEMORY_POOL to UnitConfig(
@@ -64,11 +64,11 @@ object UnitRegistry {
             memoryWorkPower = 62f,
             cpuRedirectPower = 0f,
             sprite = "units/memory_pool.png",
-            gameDescription = "Slow heavy memory worker. Allocates a large batch and then exits.",
-            techDescription = "A memory pool preallocates chunks to reduce future allocation overhead.",
-            strengths = "Largest Memory batch, harder to kill.",
-            weaknesses = "Slow to reach source, expensive CPU, vulnerable to interruption.",
-            realFeature = "Pools trade upfront cost for faster repeated allocations later."
+            gameDescription = "Медленный крупный работник памяти. Выделяет большую пачку и затем уходит.",
+            techDescription = "Memory Pool предварительно выделяет чанки, чтобы снизить накладные расходы при последующих выделениях.",
+            strengths = "Наибольшая пачка Memory, труднее уничтожить.",
+            weaknesses = "Медленно добирается до источника, дорогой по CPU, уязвим к прерыванию.",
+            realFeature = "Pools платят заранее, чтобы ускорить повторные выделения позже."
         ),
 
         UnitType.DMA_CONTROLLER to UnitConfig(
@@ -87,11 +87,11 @@ object UnitRegistry {
             memoryWorkPower = 40f,
             cpuRedirectPower = 0.6f,
             sprite = "units/dma_controller.png",
-            gameDescription = "Hybrid resource unit. Allocates Memory and can redirect a small CPU share.",
-            techDescription = "DMA moves data without fully occupying the CPU, improving data transfer efficiency.",
-            strengths = "Flexible economy tool.",
-            weaknesses = "Not best at Memory or CPU, fragile.",
-            realFeature = "Direct Memory Access offloads data movement from the CPU."
+            gameDescription = "Гибридный ресурсный юнит. Выделяет Memory и может перенаправлять небольшую долю CPU.",
+            techDescription = "DMA перемещает данные без полного занятия CPU, повышая эффективность передачи.",
+            strengths = "Гибкий инструмент экономики.",
+            weaknesses = "Не лучший ни в Memory, ни в CPU, хрупок.",
+            realFeature = "Direct Memory Access разгружает CPU при перемещении данных."
         ),
 
         UnitType.CPU_SCHEDULER to UnitConfig(
@@ -110,11 +110,11 @@ object UnitRegistry {
             memoryWorkPower = 0f,
             cpuRedirectPower = 1.4f,
             sprite = "units/cpu_scheduler.png",
-            gameDescription = "Redirects CPU share from CPU nodes toward your system.",
-            techDescription = "A scheduler decides which work gets CPU time.",
-            strengths = "Efficient CPU capture, cheap, fast.",
-            weaknesses = "No combat, low HP, needs CPU node presence.",
-            realFeature = "Scheduling is proportional allocation of compute time between runnable tasks."
+            gameDescription = "Перенаправляет долю CPU с CPU-узлов в сторону вашей системы.",
+            techDescription = "Scheduler решает, какая работа получает CPU-время.",
+            strengths = "Эффективный захват CPU, дешёвый, быстрый.",
+            weaknesses = "Не боевой, низкое HP, требует присутствия CPU-узла.",
+            realFeature = "Планирование пропорционально распределяет вычислительное время между задачами."
         ),
 
         UnitType.LOAD_BALANCER to UnitConfig(
@@ -133,11 +133,11 @@ object UnitRegistry {
             memoryWorkPower = 0f,
             cpuRedirectPower = 2.2f,
             sprite = "units/load_balancer.png",
-            gameDescription = "Strong CPU redirector. Best when protected near contested CPU nodes.",
-            techDescription = "Load balancing distributes work across capacity so no worker is overloaded.",
-            strengths = "High CPU share, durable.",
-            weaknesses = "Slow, expensive, useless away from CPU nodes.",
-            realFeature = "Balancers improve throughput by distributing work proportionally."
+            gameDescription = "Сильный перенаправитель CPU. Лучший при защите возле спорных CPU-узлов.",
+            techDescription = "Load balancer распределяет работу по мощностям, чтобы избежать перегрузки отдельных исполнителей.",
+            strengths = "Большая доля CPU, вынослив.",
+            weaknesses = "Медленный, дорогой, бесполезен вдали от CPU-узлов.",
+            realFeature = "Балансировщики повышают пропускную способность через пропорциональное распределение работы."
         ),
 
         UnitType.INTERRUPT_HANDLER to UnitConfig(
@@ -156,11 +156,11 @@ object UnitRegistry {
             memoryWorkPower = 0f,
             cpuRedirectPower = 1.0f,
             sprite = "units/interrupt_handler.png",
-            gameDescription = "Fast CPU responder. Quickly contests CPU nodes but is fragile.",
-            techDescription = "Interrupt handlers respond to urgent hardware/software events before normal flow continues.",
-            strengths = "Fastest CPU contest unit.",
-            weaknesses = "Very fragile, low sustained redirect power.",
-            realFeature = "Interrupts are quick reactions, not long-running workers."
+            gameDescription = "Быстрый ответчик CPU. Быстро оспаривает CPU-узлы, но хрупок.",
+            techDescription = "Interrupt handler реагирует на срочные аппаратные/программные события прежде, чем продолжится обычный поток.",
+            strengths = "Самый быстрый юнит для захвата CPU.",
+            weaknesses = "Очень хрупок, малая постоянная сила перенаправления.",
+            realFeature = "Прерывания — быстрые реакции, а не долгоживущие работники."
         ),
 
         UnitType.GARBAGE_COLLECTOR to UnitConfig(
@@ -179,11 +179,11 @@ object UnitRegistry {
             memoryWorkPower = 0f,
             cpuRedirectPower = 0f,
             sprite = "units/garbage_collector.png",
-            gameDescription = "Finds dead allied units, frees their allocated Memory, removes them from the map, then exits.",
-            techDescription = "GC does not create memory and does not heal live objects. It reclaims unreachable/dead allocations.",
-            strengths = "Costs no Memory, recovers Memory from dead allied processes.",
-            weaknesses = "High CPU cost, cannot fight, can be killed while sweeping.",
-            realFeature = "Garbage collection is reachability cleanup: dead/unreachable objects are swept so memory can be reused."
+            gameDescription = "Находит мёртвые союзные юниты, освобождает выделенную ими Memory, удаляет их с карты и уходит.",
+            techDescription = "GC не создаёт Memory и не лечит живые объекты. Он возвращает недостижимые/мёртвые выделения.",
+            strengths = "Не требует Memory, возвращает Memory от мёртвых союзников.",
+            weaknesses = "Большая стоимость CPU, не боевая, может быть уничтожен во время обхода.",
+            realFeature = "Сборка мусора — это очистка достижимости: мёртвые объекты удаляются, чтобы память могла быть повторно использована."
         ),
 
         UnitType.THREAD_GUARD to UnitConfig(
@@ -202,11 +202,11 @@ object UnitRegistry {
             memoryWorkPower = 0f,
             cpuRedirectPower = 0f,
             sprite = "units/thread_guard.png",
-            gameDescription = "Durable defender that guards a local area around its rally point.",
-            techDescription = "A guarded thread protects critical sections and shared resources from unsafe access.",
-            strengths = "High HP, good at holding nodes and factory approaches.",
-            weaknesses = "Slow, poor at chasing, weak at attacking structures.",
-            realFeature = "Synchronization improves safety, but excessive locking reduces mobility and throughput."
+            gameDescription = "Выносливый защитник, охраняющий локальную область вокруг точки сбора.",
+            techDescription = "Защищённый поток охраняет критические секции и общие ресурсы от небезопасного доступа.",
+            strengths = "Высокое HP, хорош в удержании узлов и подходов к фабрикам.",
+            weaknesses = "Медленный, плохо преследует, слаб против структур.",
+            realFeature = "Синхронизация повышает безопасность, но чрезмерная блокировка снижает подвижность и пропускную способность."
         ),
 
         UnitType.INJECTOR to UnitConfig(
@@ -225,11 +225,11 @@ object UnitRegistry {
             memoryWorkPower = 0f,
             cpuRedirectPower = 0f,
             sprite = "units/injector.png",
-            gameDescription = "Aggressive process that prioritizes factories and the enemy Core.",
-            techDescription = "Injection is powerful because it changes important execution paths directly, but it is risky without protection.",
-            strengths = "High structure pressure, fast kill threat.",
-            weaknesses = "Fragile if focused by defenders.",
-            realFeature = "Dependency/code injection can be productive or dangerous depending on validation and boundaries."
+            gameDescription = "Агрессивный процесс, который приоритетно атакует фабрики и ядро противника.",
+            techDescription = "Инъекция мощна, так как изменяет важные пути выполнения напрямую, но опасна без защиты.",
+            strengths = "Сильное давление на структуры, быстрое устранение целей.",
+            weaknesses = "Хрупок при фокусе со стороны защитников.",
+            realFeature = "Внедрение зависимостей/кода может быть полезным или опасным в зависимости от проверки и границ."
         ),
 
         UnitType.DEADLOCK to UnitConfig(
@@ -248,11 +248,11 @@ object UnitRegistry {
             memoryWorkPower = 0f,
             cpuRedirectPower = 0f,
             sprite = "units/deadlock.png",
-            gameDescription = "Area control spell that temporarily stops enemy processes.",
-            techDescription = "A deadlock blocks progress because processes wait on each other forever.",
-            strengths = "Can flip fights and stop dangerous pushes.",
-            weaknesses = "Expensive CPU cooldown, no direct damage.",
-            realFeature = "Deadlocks are not slowdowns; they are progress failures caused by circular waiting."
+            gameDescription = "Спелл контроля области, временно останавливающий вражеские процессы.",
+            techDescription = "Deadlock блокирует прогресс, потому что процессы бесконечно ждут друг друга.",
+            strengths = "Может перевернуть сражение и остановить опасные атаки.",
+            weaknesses = "Дорогой по CPU и имеет кулдаун, не наносит прямого урона.",
+            realFeature = "Deadlock — это не замедление, а ошибка прогресса, вызванная круговым ожиданием."
         ),
 
         UnitType.OVERCLOCK to UnitConfig(
@@ -271,11 +271,11 @@ object UnitRegistry {
             memoryWorkPower = 0f,
             cpuRedirectPower = 0f,
             sprite = "units/overclock.png",
-            gameDescription = "Temporary throughput boost for allied processes in an area.",
-            techDescription = "Overclocking increases throughput for a limited time, but consumes compute headroom.",
-            strengths = "Great for timing attacks and faster GC/Allocator operations.",
-            weaknesses = "Does nothing without active allied processes.",
-            realFeature = "Performance boosts are situational and bounded by stability and resource limits."
+            gameDescription = "Временное повышение пропускной способности союзных процессов в области.",
+            techDescription = "Overclock увеличивает пропускную способность на ограниченное время, но потребляет вычислительные ресурсы.",
+            strengths = "Хорош для синхронных атак и ускорения GC/Allocator операций.",
+            weaknesses = "Бессмыслен, если рядом нет активных союзных процессов.",
+            realFeature = "Улучшение производительности ситуативно и ограничено стабильностью и ресурсами."
         ),
 
         UnitType.CACHE_RUNNER to UnitConfig(
@@ -294,11 +294,11 @@ object UnitRegistry {
             memoryWorkPower = 0f,
             cpuRedirectPower = 0.8f,
             sprite = "units/cache_runner.png",
-            gameDescription = "Fast scout/capturer that lightly redirects CPU and harasses weak processes.",
-            techDescription = "Cache locality gives speed, but cached state is small and fragile.",
-            strengths = "Very fast tempo and early CPU contest.",
-            weaknesses = "Low HP and weak sustained CPU share.",
-            realFeature = "Caches improve access speed, but invalidation and small capacity make them fragile."
+            gameDescription = "Быстрый разведчик/захватчик, слегка перенаправляет CPU и докучает слабым процессам.",
+            techDescription = "Локальность кэша даёт скорость, но кэшированное состояние мало и хрупко.",
+            strengths = "Очень быстрый темп и ранняя конкуренция за CPU.",
+            weaknesses = "Низкое HP и малая устойчивость перенаправления CPU.",
+            realFeature = "Кэши улучшают скорость доступа, но инвалидация и малый объём делают их хрупкими."
         ),
 
         UnitType.FIREWALL to UnitConfig(
@@ -317,11 +317,11 @@ object UnitRegistry {
             memoryWorkPower = 0f,
             cpuRedirectPower = 0f,
             sprite = "units/firewall.png",
-            gameDescription = "Slow defensive boundary that holds a narrow approach.",
-            techDescription = "A firewall filters hostile traffic before it reaches critical system parts.",
-            strengths = "Excellent static defense and Core protection.",
-            weaknesses = "Slow, expensive, poor map pressure.",
-            realFeature = "Security boundaries are strongest when positioned before critical resources."
+            gameDescription = "Медленная защитная граница, которая удерживает узкий подход.",
+            techDescription = "Firewall фильтрует враждебный трафик прежде, чем он достигнет критических частей системы.",
+            strengths = "Отличная статическая защита и защита Ядра.",
+            weaknesses = "Медленная, дорогая, слабое давление на карте.",
+            realFeature = "Позиционные границы безопасности наиболее эффективны перед критическими ресурсами."
         ),
 
         UnitType.COROUTINE_ARCHER to UnitConfig(
@@ -340,11 +340,11 @@ object UnitRegistry {
             memoryWorkPower = 0f,
             cpuRedirectPower = 0f,
             sprite = "units/coroutine_archer.png",
-            gameDescription = "Long-range attacker that performs work from a safe distance.",
-            techDescription = "Coroutines represent asynchronous work that can continue without blocking the whole system.",
-            strengths = "Long range and safe damage.",
-            weaknesses = "Fragile, needs guards.",
-            realFeature = "Async tasks are efficient, but require scheduling and lifecycle control."
+            gameDescription = "Дальний стрелок, который действует с безопасного расстояния.",
+            techDescription = "Коррутины — это асинхронная работа, которая продолжается без блокировки всей системы.",
+            strengths = "Длинная дальность и безопасный урон.",
+            weaknesses = "Хрупкий, требует прикрытия.",
+            realFeature = "Асинхронные задачи эффективны, но требуют планирования и контроля жизненного цикла."
         ),
 
         UnitType.PATCH_HEALER to UnitConfig(
@@ -363,11 +363,11 @@ object UnitRegistry {
             memoryWorkPower = 0f,
             cpuRedirectPower = 0f,
             sprite = "units/patch_healer.png",
-            gameDescription = "Repairs living allied processes and helps a push survive.",
-            techDescription = "A patch fixes live system behavior; unlike GC, it does not reclaim dead allocations.",
-            strengths = "Cheap sustain for living units.",
-            weaknesses = "Fragile, no memory recovery.",
-            realFeature = "Patching stabilizes live services; it is maintenance, not garbage collection."
+            gameDescription = "Восстанавливает живые союзные процессы и помогает удерживать атаку.",
+            techDescription = "Патч исправляет поведение живой системы; в отличие от GC, не возвращает мёртвую память.",
+            strengths = "Дёшево поддерживает живые юниты.",
+            weaknesses = "Хрупкий, не восстанавливает память.",
+            realFeature = "Патчирование стабилизирует живые сервисы; это обслуживание, а не сборка мусора."
         ),
 
         UnitType.STACK_FRAME to UnitConfig(
@@ -386,11 +386,11 @@ object UnitRegistry {
             memoryWorkPower = 0f,
             cpuRedirectPower = 0f,
             sprite = "units/stack_frame.png",
-            gameDescription = "Short-lived burst attacker. Executes one quick strike, then returns from the call.",
-            techDescription = "A stack frame stores local data for one function call and disappears after return.",
-            strengths = "Cheap, fast, good for burst trades.",
-            weaknesses = "Does not persist; poor long fights.",
-            realFeature = "Stack allocation is fast and scoped to function execution."
+            gameDescription = "Краткоживущий атакующий всплеск. Выполняет один быстрый удар, затем возвращается.",
+            techDescription = "Stack frame хранит локальные данные для одного вызова функции и исчезает после возврата.",
+            strengths = "Дёшево, быстро, хорошо для всплесковых обменов.",
+            weaknesses = "Не сохраняется; плохо в долгих боях.",
+            realFeature = "Стековое выделение быстро и ограничено временем выполнения функции."
         ),
 
         UnitType.HEAP_BLOCK to UnitConfig(
@@ -409,11 +409,11 @@ object UnitRegistry {
             memoryWorkPower = 0f,
             cpuRedirectPower = 0f,
             sprite = "units/heap_block.png",
-            gameDescription = "Bulky memory-heavy blocker. Good wall, bad tempo.",
-            techDescription = "Heap objects live beyond a single call and must be managed or collected.",
-            strengths = "High HP for CPU cost; creates a body on the map.",
-            weaknesses = "Consumes much Memory and becomes leak material when dead.",
-            realFeature = "Heap allocation is flexible but needs lifecycle management."
+            gameDescription = "Массивный блок с большим потреблением Memory. Хорошая стена, плохой темп.",
+            techDescription = "Heap-объекты живут дольше одного вызова и должны управляться или собираться.",
+            strengths = "Большое HP за счёт CPU; создаёт тело на карте.",
+            weaknesses = "Потребляет много Memory и становится утечкой при смерти.",
+            realFeature = "Выделение в куче гибкое, но требует управления жизненным циклом."
         ),
 
         UnitType.POINTER to UnitConfig(
@@ -432,11 +432,11 @@ object UnitRegistry {
             memoryWorkPower = 0f,
             cpuRedirectPower = 0f,
             sprite = "units/pointer.png",
-            gameDescription = "Marks enemy targets so allied attacks deal more damage to the referenced object.",
-            techDescription = "A pointer references an object; the reference itself is lightweight but changes how code accesses data.",
-            strengths = "Amplifies focus fire.",
-            weaknesses = "Weak alone and fragile.",
-            realFeature = "References are powerful because many operations can point to the same object."
+            gameDescription = "Помечает вражеские цели, чтобы союзные атаки наносили больше урона по отмеченному объекту.",
+            techDescription = "Pointer ссылается на объект; сама ссылка лёгкая, но меняет доступ к данным.",
+            strengths = "Усиливает сосредоточенный огонь.",
+            weaknesses = "Слаб сам по себе и хрупок.",
+            realFeature = "Ссылки мощны, потому что многие операции могут указывать на один и тот же объект."
         ),
 
         UnitType.NULL_POINTER to UnitConfig(
@@ -455,11 +455,11 @@ object UnitRegistry {
             memoryWorkPower = 0f,
             cpuRedirectPower = 0f,
             sprite = "units/null_pointer.png",
-            gameDescription = "Single-target crash spell. Damages and briefly stuns the nearest enemy process.",
-            techDescription = "Null pointer access crashes execution because code dereferences nothing.",
-            strengths = "Great pick-off tool.",
-            weaknesses = "Single target, requires timing.",
-            realFeature = "Null references are not empty objects; they are invalid references."
+            gameDescription = "Спелл на одного врага, вызывает падение. Наносит урон и кратковременно оглушает ближайший процесс.",
+            techDescription = "Доступ к null pointer вызывает крах выполнения, так как код разыменовывает ничего.",
+            strengths = "Отличный инструмент для добивания.",
+            weaknesses = "Одинокая цель, требует тайминга.",
+            realFeature = "Null-ссылки не являются объектами; это недопустимые ссылки."
         ),
 
         UnitType.EXCEPTION_HANDLER to UnitConfig(
@@ -478,11 +478,11 @@ object UnitRegistry {
             memoryWorkPower = 0f,
             cpuRedirectPower = 0f,
             sprite = "units/exception_handler.png",
-            gameDescription = "Protects nearby allies from one fatal crash by catching the exception.",
-            techDescription = "Exception handling prevents local failure from terminating the whole flow.",
-            strengths = "Can save an important unit once.",
-            weaknesses = "Limited shield and weak combat.",
-            realFeature = "Handled exceptions preserve control flow; unhandled exceptions crash the process."
+            gameDescription = "Защищает nearby союзников от одного фатального краха, перехватывая исключение.",
+            techDescription = "Обработка исключений предотвращает локальную ошибку от завершения всего потока.",
+            strengths = "Может спасти важный юнит один раз.",
+            weaknesses = "Ограниченный щит и слаб в бою.",
+            realFeature = "Обработанные исключения сохраняют поток управления; необработанные приводят к краху."
         ),
 
         UnitType.LOOP to UnitConfig(
@@ -501,11 +501,11 @@ object UnitRegistry {
             memoryWorkPower = 0f,
             cpuRedirectPower = 0f,
             sprite = "units/loop.png",
-            gameDescription = "Repeats a small attack very often. Efficient against low armor targets.",
-            techDescription = "Loops repeat instructions until a condition changes.",
-            strengths = "Consistent repeated pressure.",
-            weaknesses = "Low burst and vulnerable to area control.",
-            realFeature = "Loops are simple and powerful, but bad termination conditions create runaway work."
+            gameDescription = "Многократно повторяет небольшой удар. Эффективен против слабо защищённых целей.",
+            techDescription = "Циклы повторяют инструкции, пока не изменится условие.",
+            strengths = "Постоянное повторяющееся давление.",
+            weaknesses = "Низкий взрывной урон и уязвимость к контролю области.",
+            realFeature = "Циклы просты и мощны, но плохие условия завершения создают неконтролируемую работу."
         ),
 
         UnitType.RECURSIVE_CALL to UnitConfig(
@@ -524,11 +524,11 @@ object UnitRegistry {
             memoryWorkPower = 0f,
             cpuRedirectPower = 0f,
             sprite = "units/recursive_call.png",
-            gameDescription = "Grows stronger every few seconds, but eventually risks stack overflow damage to itself.",
-            techDescription = "Recursion solves nested problems elegantly, but each call consumes stack depth.",
-            strengths = "Scales if protected.",
-            weaknesses = "Can damage itself after too much depth.",
-            realFeature = "Recursive algorithms need a base case and depth awareness."
+            gameDescription = "Становится сильнее каждые несколько секунд, но в конечном счёте рискует повредить себя из-за переполнения стека.",
+            techDescription = "Рекурсия элегантно решает вложенные задачи, но каждый вызов потребляет глубину стека.",
+            strengths = "Усиливается при наличии защиты.",
+            weaknesses = "Может причинить себе урон при слишком большой глубине.",
+            realFeature = "Рекурсивные алгоритмы нуждаются в базовом случае и контроле глубины."
         ),
 
         UnitType.MUTEX to UnitConfig(
@@ -547,11 +547,11 @@ object UnitRegistry {
             memoryWorkPower = 0f,
             cpuRedirectPower = 0f,
             sprite = "units/mutex.png",
-            gameDescription = "Protects nearby allied processes by reducing incoming damage.",
-            techDescription = "A mutex allows one thread at a time into a critical section.",
-            strengths = "Damage mitigation aura.",
-            weaknesses = "Slow and can contribute to deadlock risk if misused.",
-            realFeature = "Mutual exclusion improves correctness but can reduce concurrency."
+            gameDescription = "Защищает nearby союзные процессы, уменьшая входящий урон.",
+            techDescription = "Mutex позволяет одному потоку одновременно входить в критическую секцию.",
+            strengths = "Аура смягчения урона.",
+            weaknesses = "Медленный и может способствовать риску взаимной блокировки при неправильном использовании.",
+            realFeature = "Взаимное исключение повышает корректность, но может уменьшить параллелизм."
         ),
 
         UnitType.SEMAPHORE to UnitConfig(
@@ -570,11 +570,11 @@ object UnitRegistry {
             memoryWorkPower = 0f,
             cpuRedirectPower = 0f,
             sprite = "units/semaphore.png",
-            gameDescription = "Boosts throughput of nearby allied processes by allowing limited parallel access.",
-            techDescription = "A semaphore controls how many workers may use a resource at the same time.",
-            strengths = "Local speed/attack tempo aura.",
-            weaknesses = "Weak alone, needs a group.",
-            realFeature = "Semaphores coordinate limited parallelism rather than exclusive access."
+            gameDescription = "Увеличивает пропускную способность nearby союзных процессов, позволяя ограниченный параллельный доступ.",
+            techDescription = "Semaphore контролирует, сколько работников могут использовать ресурс одновременно.",
+            strengths = "Локальная аура скорости/темпа атаки.",
+            weaknesses = "Слаб в одиночку, нужен отряд.",
+            realFeature = "Семафоры координируют ограниченный параллелизм, а не эксклюзивный доступ."
         ),
 
         UnitType.OBSERVER to UnitConfig(
@@ -593,11 +593,11 @@ object UnitRegistry {
             memoryWorkPower = 0f,
             cpuRedirectPower = 0f,
             sprite = "units/observer.png",
-            gameDescription = "Marks enemies from range, making them more vulnerable.",
-            techDescription = "Observer pattern lets objects react to changes without tight coupling.",
-            strengths = "Improves team focus and target visibility.",
-            weaknesses = "Fragile and low direct damage.",
-            realFeature = "Observers decouple notification from action, but uncontrolled listeners can leak memory."
+            gameDescription = "Помечает врагов с дистанции, делая их уязвимее.",
+            techDescription = "Паттерн Наблюдатель позволяет объектам реагировать на изменения без жёсткой связки.",
+            strengths = "Улучшает фокус команды и видимость целей.",
+            weaknesses = "Хрупкий и наносит мало прямого урона.",
+            realFeature = "Наблюдатели разъединяют уведомление и действие, но неконтролируемые слушатели могут приводить к утечкам памяти."
         )
     )
 

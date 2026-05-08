@@ -18,7 +18,7 @@ class PlayerStatusHandler(private val playerIds: List<Int>) {
 
     fun setPlayerReady(playerReady: PlayerReadyRequest) {
         if (playerReady.playerId !in playerIds) {
-            throw IllegalArgumentException("Player ID does not belong to this room")
+            throw IllegalArgumentException("ID игрока не принадлежит этой комнате")
         }
 
         statuses[playerReady.playerId] = true

@@ -26,7 +26,7 @@ class RegisterStage(
         val box = panel()
         root.add(box).width(620f)
 
-        val title = titleLabel("Create Instance Profile", 1.30f).apply {
+        val title = titleLabel("Создать профиль экземпляра", 1.30f).apply {
             setAlignment(Align.center)
         }
 

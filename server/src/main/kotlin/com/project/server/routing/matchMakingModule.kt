@@ -35,7 +35,7 @@ fun Application.matchMakingModule() {
                                 outgoing.send(
                                     Frame.Text(
                                         json.encodeToString(
-                                            FindMatchResponse(false, "Listen session not found")
+                                                    FindMatchResponse(false, "Сессия прослушивания не найдена")
                                         )
                                     )
                                 )
@@ -54,9 +54,9 @@ fun Application.matchMakingModule() {
                     application.log.error("Matchmaking error", e)
                     outgoing.send(
                         Frame.Text(
-                            json.encodeToString(
-                                FindMatchResponse(false, "Matchmaking error: ${e.message}")
-                            )
+                                json.encodeToString(
+                                FindMatchResponse(false, "Ошибка подбора матча: ${e.message}")
+                             )
                         )
                     )
                 }

@@ -68,15 +68,15 @@ open class BaseStage(viewport: Viewport) : Stage(viewport) {
 
     private fun installReadableFont() {
         val generator = FreeTypeFontGenerator(Gdx.files.internal("fonts/Arial.ttf"))
-        val defaultFont = generator.generateFont(fontParameter(19)).apply {
+        val defaultFont = generator.generateFont(fontParameter(16)).apply {
             setUseIntegerPositions(true)
             data.markupEnabled = false
         }
-        val smallFont = generator.generateFont(fontParameter(15)).apply {
+        val smallFont = generator.generateFont(fontParameter(13)).apply {
             setUseIntegerPositions(true)
             data.markupEnabled = false
         }
-        val titleFont = generator.generateFont(fontParameter(30)).apply {
+        val titleFont = generator.generateFont(fontParameter(24)).apply {
             setUseIntegerPositions(true)
             data.markupEnabled = false
         }

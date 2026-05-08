@@ -14,12 +14,10 @@ import com.project.shared.engine.entities.components.SupportBehavior
 import com.project.shared.engine.entities.components.Target
 import com.project.shared.engine.entities.components.Transform
 import com.project.shared.engine.entities.components.AttackBehavior
+import com.project.shared.engine.entities.units.UnitRole
 import com.project.shared.engine.entities.components.Unit as UnitComponent
 import com.project.shared.engine.entities.units.UnitType
 
-/**
- * Система боевых действий и движения юнитов
- */
 class UnitCombat(private val world: GameWorld) {
 
     interface CombatCallback {
@@ -67,17 +65,7 @@ class UnitCombat(private val world: GameWorld) {
             .filter { it.has(UnitComponent::class.java) }
             .forEach { entity ->
                 val unit = entity.get(UnitComponent::class.java) ?: return@forEach
-                if (
-                    unit.typeName == UnitType.ALLOCATOR ||
-                    unit.typeName == UnitType.BUFFER ||
-                    unit.typeName == UnitType.GARBAGE_COLLECTOR ||
-                    unit.typeName == UnitType.PATCH_HEALER ||
-                    unit.typeName == UnitType.MUTEX ||
-                    unit.typeName == UnitType.SEMAPHORE ||
-                    unit.typeName == UnitType.EXCEPTION_HANDLER ||
-                    unit.typeName == UnitType.POINTER ||
-                    unit.typeName == UnitType.OBSERVER
-                ) return@forEach
+                if (unit.role == UnitRole.CAPTURE || unit.role == UnitRole.SUPPORT) return@forEach
 
                 val transform = entity.get(Transform::class.java) ?: return@forEach
                 val target = entity.get(Target::class.java) ?: return@forEach
@@ -112,12 +100,12 @@ class UnitCombat(private val world: GameWorld) {
                     finalDamage = (finalDamage * UnitConfig.SpecialConstants.PROTECTED_DAMAGE_REDUCTION).toInt().coerceAtLeast(1)
 
                 val fatal = targetHealth.current - finalDamage <= 0
-                if (fatal && spells.tryExceptionShield(targetEntity, now)) {
-                    targetHealth.current = 1
-                    val tt = targetEntity.get(Transform::class.java)
-                    if (tt != null) callback.pushText(targetEntity.owner(), tt.x, tt.y + 42f, "exception caught")
-                    return@forEach
-                }
+                    if (fatal && spells.tryExceptionShield(targetEntity, now)) {
+                        targetHealth.current = 1
+                        val tt = targetEntity.get(Transform::class.java)
+                        if (tt != null) callback.pushText(targetEntity.owner(), tt.x, tt.y + 42f, "исключение перехвачено")
+                        return@forEach
+                    }
 
                 targetHealth.damage(finalDamage)
 
@@ -128,8 +116,8 @@ class UnitCombat(private val world: GameWorld) {
                 val targetUnit = targetEntity.get(UnitComponent::class.java)
                 if (targetHealth.isDead && targetUnit != null) {
                     callback.onUnitKilled(entity, targetEntity, targetUnit.typeName)
-                    callback.markDeadProcess(targetEntity, now, "process crashed; memory still allocated")
-                    callback.pushText(targetEntity.owner(), targetTransform.x, targetTransform.y + 42f, "dead object retained in memory")
+                    callback.markDeadProcess(targetEntity, now, "процесс упал; память всё ещё занята")
+                    callback.pushText(targetEntity.owner(), targetTransform.x, targetTransform.y + 42f, "мертвый объект остался в памяти")
                 }
             }
     }
@@ -140,12 +128,7 @@ class UnitCombat(private val world: GameWorld) {
 
         units.forEach { unit ->
             val unitComponent = unit.get(UnitComponent::class.java) ?: return@forEach
-            if (unitComponent.typeName == UnitType.ALLOCATOR ||
-                unitComponent.typeName == UnitType.BUFFER ||
-                unitComponent.typeName == UnitType.GARBAGE_COLLECTOR ||
-                unitComponent.typeName == UnitType.PATCH_HEALER
-            )
-                return@forEach
+            if (unitComponent.role == UnitRole.CAPTURE || unitComponent.role == UnitRole.SUPPORT) return@forEach
 
             val target = unit.get(Target::class.java) ?: return@forEach
             val unitTransform = unit.get(Transform::class.java) ?: return@forEach

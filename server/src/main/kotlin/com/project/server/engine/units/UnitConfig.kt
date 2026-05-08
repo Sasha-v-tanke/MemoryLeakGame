@@ -95,7 +95,6 @@ object UnitConfig {
         }
     }
 
-    // Константы для специфичной логики юнитов
     object SpecialConstants {
         const val DEFENSIVE_FIREWALL_SIDE_OFFSET = 0f
         const val DEFENSIVE_MUTEX_SIDE_OFFSET = -70f
@@ -126,7 +125,7 @@ object UnitConfig {
         const val GARBAGE_COLLECTOR_WORK_DURATION = 800L
         const val GARBAGE_COLLECTOR_WORK_RANGE = 70f
 
-        const val MEMORY_WORK_DURATION = 2200L  // Время работы захватчика памяти до исчезновения
+        const val MEMORY_WORK_DURATION = 2200L
 
         const val PATCH_HEALER_COOLDOWN = 1200L
         const val PATCH_HEALER_HEALING = 14

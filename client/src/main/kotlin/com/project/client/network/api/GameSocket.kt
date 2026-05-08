@@ -20,10 +20,10 @@ class GameSocket : WebSocket("game") {
         scope.launch {
             try {
                 send<GameRequest>(PlayerReadyRequest(playerId, roomId))
-                val response = receiveMessage<PlayerReadyResponse>() ?: PlayerReadyResponse(false, "Server response timeout")
+                val response = receiveMessage<PlayerReadyResponse>() ?: PlayerReadyResponse(false, "Таймаут ответа сервера")
                 Gdx.app.postRunnable { onResult(response) }
             } catch (e: Exception) {
-                Gdx.app.postRunnable { onResult(PlayerReadyResponse(false, "Connection error: ${e.message}")) }
+                Gdx.app.postRunnable { onResult(PlayerReadyResponse(false, "Ошибка соединения: ${e.message}")) }
             }
         }
     }
@@ -32,10 +32,10 @@ class GameSocket : WebSocket("game") {
         scope.launch {
             try {
                 send<GameRequest>(PlayCardRequest(playerId, roomId, unitType, targetX, targetY))
-                val response = receiveMessage<PlayCardResponse>() ?: PlayCardResponse(false, "Server response timeout")
+                val response = receiveMessage<PlayCardResponse>() ?: PlayCardResponse(false, "Таймаут ответа сервера")
                 Gdx.app.postRunnable { onResult(response) }
             } catch (e: Exception) {
-                Gdx.app.postRunnable { onResult(PlayCardResponse(false, "Connection error: ${e.message}")) }
+                Gdx.app.postRunnable { onResult(PlayCardResponse(false, "Ошибка соединения: ${e.message}")) }
             }
         }
     }
@@ -44,10 +44,10 @@ class GameSocket : WebSocket("game") {
         scope.launch {
             try {
                 send<GameRequest>(BuildFactoryRequest(playerId, roomId, factoryType))
-                val response = receiveMessage<BuildFactoryResponse>() ?: BuildFactoryResponse(false, "Server response timeout")
+                val response = receiveMessage<BuildFactoryResponse>() ?: BuildFactoryResponse(false, "Таймаут ответа сервера")
                 Gdx.app.postRunnable { onResult(response) }
             } catch (e: Exception) {
-                Gdx.app.postRunnable { onResult(BuildFactoryResponse(false, "Connection error: ${e.message}")) }
+                Gdx.app.postRunnable { onResult(BuildFactoryResponse(false, "Ошибка соединения: ${e.message}")) }
             }
         }
     }
@@ -56,10 +56,10 @@ class GameSocket : WebSocket("game") {
         scope.launch {
             try {
                 send<GameRequest>(ForfeitMatchRequest(playerId, roomId))
-                val response = receiveMessage<ForfeitMatchResponse>() ?: ForfeitMatchResponse(false, "Server response timeout")
+                val response = receiveMessage<ForfeitMatchResponse>() ?: ForfeitMatchResponse(false, "Таймаут ответа сервера")
                 Gdx.app.postRunnable { onResult(response) }
             } catch (e: Exception) {
-                Gdx.app.postRunnable { onResult(ForfeitMatchResponse(false, "Connection error: ${e.message}")) }
+                Gdx.app.postRunnable { onResult(ForfeitMatchResponse(false, "Ошибка соединения: ${e.message}")) }
             }
         }
     }

@@ -25,10 +25,7 @@ class UnitTargeting(private val world: GameWorld) {
         val node = when {
             unit.memoryWorkPower > 0f && unit.cpuRedirectPower <= 0f -> bestMemoryNode(transform)
             unit.cpuRedirectPower > 0f && unit.memoryWorkPower <= 0f -> bestCpuNodeForWorker(entity.owner(), transform)
-            unit.cpuRedirectPower > 0f && unit.memoryWorkPower > 0f -> {
-                // Эвристика: если мало памяти, приоритет CPU узлам
-                bestMemoryNode(transform) ?: bestCpuNodeForWorker(entity.owner(), transform)
-            }
+            unit.cpuRedirectPower > 0f && unit.memoryWorkPower > 0f -> bestMemoryNode(transform) ?: bestCpuNodeForWorker(entity.owner(), transform)
             else -> null
         } ?: return
 

@@ -171,11 +171,11 @@ class GameRoom(
     }
 
     fun playCard(request: PlayCardRequest): PlayCardResponse {
-        if (!started.get()) return PlayCardResponse(false, "Game is not started yet")
-        if (finished.get()) return PlayCardResponse(false, "Game is already finished")
+        if (!started.get()) return PlayCardResponse(false, "Игра ещё не началась")
+        if (finished.get()) return PlayCardResponse(false, "Игра уже закончена")
 
         val runtime = playerRuntimes[request.playerId]
-            ?: return PlayCardResponse(false, "Player does not belong to this room")
+            ?: return PlayCardResponse(false, "Игрок не принадлежит этой комнате")
 
         val config = UnitRegistry.getConfig(request.unitType)
         val owner = OwnerType.fromPlayerIndex(runtime.playerIndex)
@@ -189,7 +189,7 @@ class GameRoom(
 
         if (now < nextAvailableAt) {
             val seconds = ((nextAvailableAt - now) / 100L).coerceAtLeast(1) / 10f
-            return PlayCardResponse(false, "${config.displayName} cooldown: ${"%.1f".format(seconds)}s")
+            return PlayCardResponse(false, "${config.displayName} перезарядка: ${"%.1f".format(seconds)}с")
         }
 
         val isManualCard = UnitConfig.isManualTargetCard(request.unitType)
@@ -199,12 +199,12 @@ class GameRoom(
             else -> {
                 val type = UnitConfig.requiredFactoryFor(request.unitType)
                 findFactoryQueue(owner, type)
-                    ?: return PlayCardResponse(false, "${type.name.lowercase().replaceFirstChar { it.uppercase() }} Factory is required")
+                    ?: return PlayCardResponse(false, "Требуется ${type.name.lowercase().replaceFirstChar { it.uppercase() }} Factory")
             }
         }
 
-        if (runtime.memory < config.costMemory) return PlayCardResponse(false, "Not enough allocated Memory")
-        if (runtime.cpu < config.costCpu) return PlayCardResponse(false, "Not enough CPU")
+        if (runtime.memory < config.costMemory) return PlayCardResponse(false, "Недостаточно выделенной памяти")
+        if (runtime.cpu < config.costCpu) return PlayCardResponse(false, "Недостаточно CPU")
 
         runtime.memory -= config.costMemory
         runtime.cpu -= config.costCpu
@@ -214,28 +214,28 @@ class GameRoom(
             UnitType.DEADLOCK -> {
                 inc(stats[request.playerId]?.spellsCast, request.unitType)
                 castDeadlock(owner, targetX, targetY)
-                return PlayCardResponse(true, "Deadlock cast at selected area")
+                return PlayCardResponse(true, "Deadlock применён в выбранной области")
             }
 
             UnitType.OVERCLOCK -> {
                 inc(stats[request.playerId]?.spellsCast, request.unitType)
                 castOverclock(owner, targetX, targetY)
-                return PlayCardResponse(true, "Overclock cast at selected area")
+                return PlayCardResponse(true, "Overclock применён в выбранной области")
             }
 
             UnitType.NULL_POINTER -> {
                 inc(stats[request.playerId]?.spellsCast, request.unitType)
                 castNullPointer(owner, targetX, targetY)
-                return PlayCardResponse(true, "Null Pointer dereferenced at selected point")
+                return PlayCardResponse(true, "Null Pointer разыменован в выбранной точке")
             }
 
             else -> {
-                val queue = spawnFactory ?: return PlayCardResponse(false, "Factory is not available")
+                val queue = spawnFactory ?: return PlayCardResponse(false, "Фабрика недоступна")
                 if (queue.queue.size >= queueLimit(owner, queue.type)) {
                     runtime.memory += config.costMemory
                     runtime.cpu += config.costCpu
                     playerCardCooldowns[request.playerId]?.remove(request.unitType)
-                    return PlayCardResponse(false, "Factory queue is full")
+                    return PlayCardResponse(false, "Очередь фабрики заполнена")
                 }
 
                 queue.queue.addLast(
@@ -250,17 +250,17 @@ class GameRoom(
                 if (queue.readyAt <= now) queue.readyAt = now + queue.queue.first().buildMillis
 
                 inc(stats[request.playerId]?.unitsQueued, request.unitType)
-                return PlayCardResponse(true, "${config.displayName} queued. It will choose target automatically.")
+                return PlayCardResponse(true, "${config.displayName} поставлен в очередь. Цель будет выбрана автоматически.")
             }
         }
     }
 
     fun buildFactory(request: BuildFactoryRequest): BuildFactoryResponse {
-        if (!started.get()) return BuildFactoryResponse(false, "Game is not started yet")
-        if (finished.get()) return BuildFactoryResponse(false, "Game is already finished")
+        if (!started.get()) return BuildFactoryResponse(false, "Игра ещё не началась")
+        if (finished.get()) return BuildFactoryResponse(false, "Игра уже закончена")
 
         val runtime = playerRuntimes[request.playerId]
-            ?: return BuildFactoryResponse(false, "Player does not belong to this room")
+            ?: return BuildFactoryResponse(false, "Игрок не принадлежит этой комнате")
 
         val owner = OwnerType.fromPlayerIndex(runtime.playerIndex)
         val memoryCost = when (request.factoryType) {
@@ -272,10 +272,10 @@ class GameRoom(
             FactoryType.SUPPORT -> GameConfig.supportFactoryBuildCpuCost
         }
 
-        if (runtime.memory < memoryCost) return BuildFactoryResponse(false, "Not enough allocated Memory")
-        if (runtime.cpu < cpuCost) return BuildFactoryResponse(false, "Not enough CPU")
+        if (runtime.memory < memoryCost) return BuildFactoryResponse(false, "Недостаточно выделенной памяти")
+        if (runtime.cpu < cpuCost) return BuildFactoryResponse(false, "Недостаточно CPU")
 
-        val core = findCore(owner) ?: return BuildFactoryResponse(false, "Core not found")
+        val core = findCore(owner) ?: return BuildFactoryResponse(false, "Ядро не найдено")
         val position = nextFactoryPosition(owner, request.factoryType)
 
         runtime.memory -= memoryCost
@@ -288,18 +288,18 @@ class GameRoom(
         stats[request.playerId]?.factoriesBuilt = stats[request.playerId]?.factoriesBuilt?.plus(1) ?: 1
 
         val t = core.get(Transform::class.java)
-        if (t != null) pushText(owner, t.x, t.y + 90f, "Factory scaled: more parallel production")
+        if (t != null) pushText(owner, t.x, t.y + 90f, "Фабрика масштабирована: более параллельное производство")
 
-        return BuildFactoryResponse(true, "${request.factoryType.name.lowercase().replaceFirstChar { it.uppercase() }} Factory built")
+        return BuildFactoryResponse(true, "Построена ${request.factoryType.name.lowercase().replaceFirstChar { it.uppercase() }} Factory")
     }
 
     fun forfeit(request: ForfeitMatchRequest): ForfeitMatchResponse {
-        if (finished.get()) return ForfeitMatchResponse(false, "Match already finished")
+        if (finished.get()) return ForfeitMatchResponse(false, "Матч уже завершён")
         val runtime = playerRuntimes[request.playerId]
-            ?: return ForfeitMatchResponse(false, "Player does not belong to this room")
+            ?: return ForfeitMatchResponse(false, "Игрок не принадлежит этой комнате")
 
-        finishGame(runtime.playerIndex, "Forfeit: instance owner terminated the match")
-        return ForfeitMatchResponse(true, "Forfeit accepted")
+        finishGame(runtime.playerIndex, "Сдача: владелец экземпляра завершил матч")
+        return ForfeitMatchResponse(true, "Сдача принята")
     }
 
     private suspend fun startGame() {
@@ -593,7 +593,7 @@ class GameRoom(
                 stats[playerId]?.memoryFreed = stats[playerId]?.memoryFreed?.plus(freed) ?: freed
             },
             onProcessComplete = { entity ->
-                completeAndRemoveProcess(entity, "Garbage Collector finished sweep")
+                completeAndRemoveProcess(entity, "Сборщик мусора закончил обход")
             }
         )
     }
@@ -603,7 +603,7 @@ class GameRoom(
             now = now,
             textCallback = specialBehaviorsCallback,
             onProcessComplete = { entity ->
-                completeAndRemoveProcess(entity, "Process completed")
+                completeAndRemoveProcess(entity, "Процесс завершён")
             }
         )
     }
@@ -622,7 +622,7 @@ class GameRoom(
             val unit = entity.get(UnitComponent::class.java) ?: return@forEach
             val process = entity.get(ProcessState::class.java) ?: return@forEach
             if (health.isDead && process.phase == ProcessPhase.RUNNING) {
-                markDeadProcess(entity, now, "process crashed; awaiting GC")
+                markDeadProcess(entity, now, "процесс упал; ожидание GC")
                 val victimId = playerIdByOwner(entity.owner())
                 if (victimId != null) inc(stats[victimId]?.unitsLost, unit.typeName)
             }
@@ -637,7 +637,7 @@ class GameRoom(
             } ?: return
 
         val core = deadCore.get(Core::class.java) ?: return
-        finishGame(core.playerIndex, "Core destroyed")
+        finishGame(core.playerIndex, "Ядро уничтожено")
     }
 
     private fun castDeadlock(owner: OwnerType, x: Float, y: Float) {
@@ -650,12 +650,12 @@ class GameRoom(
                 val effects = enemy.get(StatusEffects::class.java) ?: return@forEach
                 if (GameMath.distance(transform.x, transform.y, x, y) <= radius) {
                     effects.stunnedUntil = now + UnitConfig.SpecialConstants.DEADLOCK_STUN_DURATION
-                    pushText(enemy.owner(), transform.x, transform.y + 42f, "deadlocked: waiting forever")
+                    pushText(enemy.owner(), transform.x, transform.y + 42f, "deadlocked: ожидание бесконечно")
                 }
             }
 
         scope.launch {
-            GameDispatcher.sendToAllPlayers(players, SystemMessageEvent("Deadlock blocked enemy execution flow"))
+            GameDispatcher.sendToAllPlayers(players, SystemMessageEvent("Deadlock блокировал выполнение врага"))
         }
     }
 
@@ -669,12 +669,12 @@ class GameRoom(
                 val effects = ally.get(StatusEffects::class.java) ?: return@forEach
                 if (GameMath.distance(transform.x, transform.y, x, y) <= radius) {
                     effects.overclockUntil = now + UnitConfig.SpecialConstants.OVERCLOCK_DURATION
-                    pushText(owner, transform.x, transform.y + 42f, "overclocked throughput")
+                    pushText(owner, transform.x, transform.y + 42f, "overclocked: повышена пропускная способность")
                 }
             }
 
         scope.launch {
-            GameDispatcher.sendToAllPlayers(players, SystemMessageEvent("Overclock boosted allied process throughput"))
+            GameDispatcher.sendToAllPlayers(players, SystemMessageEvent("Overclock увеличил пропускную способность союзных процессов"))
         }
     }
 

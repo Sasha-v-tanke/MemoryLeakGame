@@ -351,7 +351,7 @@ class PuzzleStage(
 
         val header = Table(skin)
 
-        val title = titleLabel("Puzzle Lab", 1.28f).apply {
+        val title = titleLabel("Лаборатория задач", 1.28f).apply {
             setAlignment(Align.left)
         }
         val backButton = TextButton("Назад", skin)

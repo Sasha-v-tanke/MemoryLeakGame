@@ -67,9 +67,7 @@ object UnitFactory {
             UnitRole.SUPPORT -> entity.add(SupportBehavior(x, y))
             UnitRole.DEFENSE -> entity.add(DefenseBehavior(x, y))
             UnitRole.ATTACK -> entity.add(AttackBehavior(x, y))
-            UnitRole.SPELL -> {
-                // Spells are not persistent units and should be handled before this method.
-            }
+            else -> {}
 
         }
 

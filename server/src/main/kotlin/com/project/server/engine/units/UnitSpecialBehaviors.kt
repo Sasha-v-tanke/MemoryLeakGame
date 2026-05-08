@@ -15,9 +15,6 @@ import com.project.shared.engine.entities.components.Transform
 import com.project.shared.engine.entities.components.Unit as UnitComponent
 import com.project.shared.engine.entities.units.UnitType
 
-/**
- * Специальные поведения для конкретных типов юнитов
- */
 class UnitSpecialBehaviors(private val world: GameWorld) {
 
     interface TextEventCallback {
@@ -67,15 +64,12 @@ class UnitSpecialBehaviors(private val world: GameWorld) {
                     textCallback.pushText(worker.owner(), transform.x, transform.y + 42f, UnitConfig.memoryWorkStartText(unit.typeName))
                 }
 
-                // Счётчик прогресса захвата
                 process.internalCounter += (unit.memoryWorkPower * deltaSeconds).toInt().coerceAtLeast(1)
 
-                // Время работы контролируется через phaseStartedAt и memoryWorkDuration
                 val workDuration = UnitConfig.SpecialConstants.MEMORY_WORK_DURATION
                 println("Time waiting: ${now - process.phaseStartedAt} / $workDuration, progress: ${process.internalCounter}")
                 if (now - process.phaseStartedAt < workDuration) return@forEach
 
-                // Захват завершён - добавляем память и удаляем юнита
                 val playerIndex = worker.owner().playerIndexOrNull() ?: return@forEach
                 val runtime = playerRuntimes.values.firstOrNull { it.playerIndex == playerIndex } ?: return@forEach
                 val batch = UnitConfig.memoryBatchFor(unit.typeName)
@@ -131,7 +125,6 @@ class UnitSpecialBehaviors(private val world: GameWorld) {
 
                 val freed = dead.get(UnitComponent::class.java)?.allocatedMemory ?: 0
 
-                // Добавляем освобождённую память в runtime игрока
                 val playerIndex = collector.owner().playerIndexOrNull()
                 if (playerIndex != null) {
                     val runtime = playerRuntimes.values.firstOrNull { it.playerIndex == playerIndex }

@@ -28,17 +28,17 @@ object UiTheme {
     }
 
     fun styleTitle(label: Label, scale: Float = 1.35f) {
-        label.setFontScale(1f)
+        label.setFontScale(scale)
         label.color = textPrimary
     }
 
     fun styleSubtitle(label: Label, scale: Float = 1f) {
-        label.setFontScale(1f)
+        label.setFontScale(scale)
         label.color = textSecondary
     }
 
     fun styleMuted(label: Label, scale: Float = 1f) {
-        label.setFontScale(1f)
+        label.setFontScale(scale)
         label.color = textMuted
     }
 

@@ -80,7 +80,6 @@ object TextureCache {
 
         val pixmap = Pixmap(width, height, Pixmap.Format.RGBA8888)
 
-        // Base dark tech gradient
         for (y in 0 until height) {
             val t = y.toFloat() / height.toFloat()
             val r = 0.035f + t * 0.030f
@@ -90,7 +89,6 @@ object TextureCache {
             pixmap.drawLine(0, y, width, y)
         }
 
-        // Circuit-like horizontal/vertical traces
         pixmap.setColor(0.22f, 0.40f, 0.62f, 0.23f)
         var x = 32
         while (x < width) {
@@ -103,12 +101,10 @@ object TextureCache {
             y += 88
         }
 
-        // Brighter lanes for battlefield readability
         pixmap.setColor(0.35f, 0.62f, 0.86f, 0.16f)
         pixmap.fillRectangle(width / 2 - 120, 0, 240, height)
         pixmap.fillRectangle(0, height / 2 - 90, width, 180)
 
-        // Corner and center accents
         pixmap.setColor(0.62f, 0.84f, 1f, 0.20f)
         pixmap.fillCircle(width / 2, height / 2, 90)
         pixmap.setColor(0.18f, 0.32f, 0.50f, 0.25f)

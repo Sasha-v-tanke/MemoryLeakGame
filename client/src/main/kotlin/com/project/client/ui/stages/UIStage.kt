@@ -46,7 +46,7 @@ class UIStage(
         buildHoverInfo()
         buildToast()
         buildGameOver()
-        showToast("Waiting for opponent readiness...")
+        showToast("Ожиданием противника...")
     }
 
     private fun buildTopBar() {
@@ -59,21 +59,21 @@ class UIStage(
         val panel = panel(Color(0.03f, 0.06f, 0.12f, 0.90f), 12f)
 
         statusLabel = Label(
-            "Room: ${game.matchHandler.getRoomId().take(8)} · You: P${game.matchHandler.getPlayerIndex()} · Opponent: ${game.matchHandler.getOpponentId()}",
+            "Матч: ${game.matchHandler.getRoomId().take(8)}  ·  Вы: P${game.matchHandler.getPlayerIndex()} · Оппонент: ${game.matchHandler.getOpponentId()}",
             skin
         ).apply { color = Color(0.84f, 0.92f, 1f, 1f) }
 
-        objectiveLabel = Label("Objective: allocate Memory, scale factories, break enemy Core", skin).apply {
+        objectiveLabel = Label("Захватывай память и CPU, расширяй фабрики, уничтожь ядро противника", skin).apply {
             color = Color(0.68f, 0.84f, 1f, 1f)
         }
 
-        resourcesLabel = Label("Memory: - | CPU: -", skin).apply {
+        resourcesLabel = Label("Память: - | CPU: -", skin).apply {
             color = UiTheme.statusOk
         }
 
-        val buildBasicButton = TextButton("Build Basic Factory", skin)
-        val buildSupportButton = TextButton("Build Support Factory", skin)
-        val forfeitButton = TextButton("Forfeit", skin)
+        val buildBasicButton = TextButton("Построить Basic Factory", skin)
+        val buildSupportButton = TextButton("Построить Support Factory", skin)
+        val forfeitButton = TextButton("Сдаться", skin)
 
         UiTheme.styleSecondaryButton(buildBasicButton, compact = true)
         UiTheme.styleSecondaryButton(buildSupportButton, compact = true)
@@ -124,7 +124,7 @@ class UIStage(
         val panel = panel(Color(0.03f, 0.05f, 0.10f, 0.92f), 12f)
         panel.defaults().pad(4f)
 
-        selectedCardLabel = Label("Selected: none · click card, then click arena", skin).apply {
+        selectedCardLabel = Label("Выбрано: none  ·  выбери карту, потом нажми на арену", skin).apply {
             setAlignment(Align.center)
             color = Color(0.85f, 0.92f, 1f, 1f)
         }
@@ -192,8 +192,8 @@ class UIStage(
     }
 
     fun startGame(message: String) {
-        statusLabel.setText("Game started · Protect your Core · Destroy enemy Core")
-        objectiveLabel.setText("Allocator creates Memory · GC frees dead allocations · factories scale production")
+        statusLabel.setText("Игра началась · Защити Ядро · Уничтожь Ядро противника")
+        objectiveLabel.setText("Allocator захватывает память · GC освобождает память от потерянных юнитов · фабрики ускоряют производство")
         showToast(message)
     }
 
@@ -204,7 +204,11 @@ class UIStage(
             else -> UiTheme.statusOk
         }
         resourcesLabel.setText(
-            "Memory: ${resources.memory} | CPU: ${resources.cpu} (+${resources.cpuIncome}/s) | Allocated: ${resources.memoryAllocatedTotal} | Freed: ${resources.memoryFreedTotal} | Factories: ${resources.factoriesBuilt}"
+            "Память: ${resources.memory} | CPU: ${resources.cpu} (+${resources.cpuIncome}/s) | Захвачено: ${resources.memoryAllocatedTotal} | Освобождено: ${
+                resources
+                    .memoryFreedTotal
+            } |" +
+                    " Фабрики: ${resources.factoriesBuilt}"
         )
     }
 
@@ -220,7 +224,7 @@ class UIStage(
     }
 
     fun clearSelectedCard() {
-        selectedCardLabel.setText("Selected: none · click card, then click arena")
+        selectedCardLabel.setText("Выбрано: none  ·  выбери карту, потом нажми на арену")
         deckPanel.setSelectedCard(null)
     }
 
@@ -264,13 +268,13 @@ class UIStage(
             pad(24f)
         }
 
-        val title = Label(if (isWin) "SYSTEM ONLINE" else "CORE DUMPED", skin).apply {
+        val title = Label(if (isWin) "Противник уничтожен" else "Ядро уничтожено", skin).apply {
             setAlignment(Align.center)
             color = if (isWin) Color(0.34f, 1f, 0.72f, 1f) else Color(1f, 0.40f, 0.40f, 1f)
         }
 
         val details = Label(
-            (if (isWin) "Enemy Core destroyed. Your instance survived." else "Your Core was destroyed. System instance terminated.") +
+            (if (isWin) "Ядро противника уничтожено. Твое Ядро выжило." else "Твоя Ядро уничтожено. Процесс терминирован.") +
                     "\nReason: $reason",
             skin
         ).apply {
@@ -285,7 +289,7 @@ class UIStage(
         val scroll = ScrollPane(statsBox, skin)
         scroll.setFadeScrollBars(false)
 
-        val exitButton = TextButton("Exit to Main Menu", skin)
+        val exitButton = TextButton("Выход в меню", skin)
         UiTheme.stylePrimaryButton(exitButton)
         exitButton.addListener { event ->
             if (event is InputEvent && event.type == InputEvent.Type.touchDown) {
@@ -314,21 +318,21 @@ class UIStage(
     }
 
     private fun formatStats(stats: com.project.shared.engine.PlayerMatchStats?): String {
-        if (stats == null) return "No data"
+        if (stats == null) return "Нет информации"
         return buildString {
-            appendLine("Queued: ${stats.unitsQueued}")
-            appendLine("Produced: ${stats.unitsProduced}")
-            appendLine("Lost: ${stats.unitsLost}")
-            appendLine("Killed: ${stats.enemyUnitsKilled}")
-            appendLine("Memory allocated: ${stats.memoryAllocated}")
-            appendLine("Memory freed by GC: ${stats.memoryFreed}")
-            appendLine("Factories built: ${stats.factoriesBuilt}")
-            appendLine("Spells: ${stats.spellsCast}")
+            appendLine("Очередь: ${stats.unitsQueued}")
+            appendLine("Произведено: ${stats.unitsProduced}")
+            appendLine("Потеряно: ${stats.unitsLost}")
+            appendLine("Убито: ${stats.enemyUnitsKilled}")
+            appendLine("Памяти выделено: ${stats.memoryAllocated}")
+            appendLine("Памяти освобождено: ${stats.memoryFreed}")
+            appendLine("Фабрики: ${stats.factoriesBuilt}")
+            appendLine("Магия: ${stats.spellsCast}")
         }
     }
 
     private fun showForfeitConfirm() {
-        val dialog = object : Dialog("Forfeit match?", skin) {
+        val dialog = object : Dialog("Принять поражение?", skin) {
             override fun result(obj: Any?) {
                 if (obj == true) {
                     onForfeitConfirmed()

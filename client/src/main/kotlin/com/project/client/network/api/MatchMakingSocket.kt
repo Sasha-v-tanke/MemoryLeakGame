@@ -18,13 +18,13 @@ class MatchMakingSocket(private val playerId: Int) : WebSocket("matchmaking") {
                 send<MatchMakingRequest>(FindMatchRequest(playerId))
 
                 val response = receiveMessage<FindMatchResponse>()
-                    ?: FindMatchResponse(false, "No response received")
+                    ?: FindMatchResponse(false, "Нет ответа от сервера")
 
                 Gdx.app.postRunnable { callback(response) }
             } catch (e: Exception) {
                 Gdx.app.postRunnable {
                     onFindError?.invoke(e)
-                    callback(FindMatchResponse(false, "Error: ${e.message}"))
+                    callback(FindMatchResponse(false, "Ошибка: ${e.message}"))
                 }
             }
         }
@@ -36,13 +36,13 @@ class MatchMakingSocket(private val playerId: Int) : WebSocket("matchmaking") {
                 send<MatchMakingRequest>(CancelMatchRequest(playerId))
 
                 val response = receiveMessage<CancelMatchResponse>()
-                    ?: CancelMatchResponse(false, "No response received")
+                    ?: CancelMatchResponse(false, "Нет ответа от сервера")
 
                 Gdx.app.postRunnable { callback(response) }
             } catch (e: Exception) {
                 Gdx.app.postRunnable {
                     onCancelError?.invoke(e)
-                    callback(CancelMatchResponse(false, "Error: ${e.message}"))
+                    callback(CancelMatchResponse(false, "Ошибка: ${e.message}"))
                 }
             }
         }

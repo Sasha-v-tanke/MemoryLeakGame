@@ -32,7 +32,7 @@ object EntityFactory {
         when (config.kind) {
             WorldObjectKind.CORE -> {
                 val playerIndex = config.owner.playerIndexOrNull()
-                    ?: error("Core must belong to player")
+                    ?: error("Ядро должно принадлежать игроку")
 
                 entity.add(Core(playerIndex))
                 entity.add(Health(config.health, config.health))
