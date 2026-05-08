@@ -1,79 +1,61 @@
 # Memory Leak Arena Server
 
-The server is an authoritative Ktor WebSocket backend. It owns matchmaking,
-game rooms, resource income, card deployment, unit movement, combat, support
-logic, node capture and victory detection.
+## Сервер — authoritative backend на Ktor WebSocket. Он управляет matchmaking, игровыми комнатами, поступлением ресурсов, deployment карточек, движением юнитов, боевой логикой,
 
-## Responsibilities
+support-логикой, захватом нод и определением победы.
 
-- Auth over `/auth`.
-- Listen socket over `/listen` for async events.
-- Matchmaking over `/matchmaking`.
-- Game commands over `/game`.
-- PostgreSQL-backed user storage.
-- Authoritative game state snapshots.
+## Ответственности
 
-Clients send commands; the server calculates the real match state.
+* Auth через /auth.
+* Listen socket через /listen для асинхронных событий.
+* Matchmaking через /matchmaking.
+* Игровые команды через /game.
+* PostgreSQL-backed хранение пользователей.
+* Authoritative snapshots состояния игры.
 
-## Requirements
+Клиенты отправляют команды; сервер вычисляет реальное состояние матча.
 
-- JDK 21.
-- PostgreSQL.
-- Gradle wrapper from the project root.
+## Требования
 
-Default database config:
+* JDK 21.
+* PostgreSQL.
+* Gradle wrapper из корня проекта.
 
-```text
+## Конфигурация БД по умолчанию:
+
 MEMORY_LEAK_DB_URL=jdbc:postgresql://localhost:5432/game
 MEMORY_LEAK_DB_USER=gameuser
 MEMORY_LEAK_DB_PASSWORD=password
-```
 
-## Start PostgreSQL
+## Запуск PostgreSQL
 
-From `server/`:
+Из server/:
 
-```bash
-./run-postgresql.sh
-```
+```./run-postgresql.sh```
 
-The script starts a Docker container named `memory-leak-postgres` with the
-default database/user/password expected by the server.
+Скрипт запускает Docker-контейнер memory-leak-postgres со стандартной БД/пользователем/паролем, ожидаемыми сервером.
 
-## Run Server
+Запуск сервера
 
-From the project root:
+Из корня проекта:
 
-```bash
-./gradlew server:run
-```
+```./gradlew server:run```
 
-The server listens on port `8080`.
+Сервер слушает порт 8080.
 
-Verbose game logs are disabled by default. To enable them:
+## Подробные игровые логи по умолчанию отключены. Чтобы включить их:
 
-```bash
-MEMORY_LEAK_DEBUG=true ./gradlew server:run
-```
+```MEMORY_LEAK_DEBUG=true ./gradlew server:run```
 
-## Game Loop
+## Игровой цикл
 
-After both players are ready, the server:
+После готовности обоих игроков сервер:
 
-1. Builds the world from `WorldConfig`.
-2. Sends initial state snapshots.
-3. Applies card commands from clients.
-4. Updates resource income every second.
-5. Captures `Memory`/`CPU` nodes when capturer units stand nearby.
-6. Selects targets based on unit role.
-7. Moves units, applies combat and support logic.
-8. Ends the game when a `Core` reaches zero HP.
-
-## Defense Talking Points
-
-- The server is authoritative: clients do not calculate resources, damage or
-  victory.
-- `Memory` and `CPU` are not just UI counters; they are enforced by server-side
-  card costs.
-- `Deadlock` and `Overclock` are server-side status effects, so their behavior
-  is synchronized for both players.
+1. Создаёт мир из WorldConfig.
+2. Отправляет initial state snapshots.
+3. Применяет card-команды от клиентов.
+4. Обновляет поступление ресурсов каждую секунду.
+5. Захватывает Memory/CPU-ноды, если рядом стоят capturer-юниты.
+6. Выбирает цели на основе роли юнита.
+7. Двигает юниты, применяет боевую и support-логику.
+8. Завершает игру, когда Core достигает нуля HP.

@@ -1,162 +1,162 @@
-# Memory Leak Arena
+Memory Leak Arena
 
-`Memory Leak Arena` is a desktop 1v1 real-time strategy game with an educational systems-programming layer. Players control digital systems, allocate memory, reclaim dead objects,
-scale factories, protect their own Core, and destroy the opponent's Core.
+Memory Leak Arena — это desktop 1v1 RTS-игра в реальном времени с образовательным слоем по системному программированию. Игроки управляют цифровыми системами, выделяют память,
+очищают мёртвые объекты, масштабируют фабрики, защищают собственное Core и уничтожают Core противника.
 
-The project is built as a Kotlin multi-module application:
+Проект построен как Kotlin multi-module приложение:
 
-- `client` - LibGDX desktop client.
-- `server` - Ktor WebSocket authoritative game server.
-- `shared` - shared DTOs, events, ECS components, commands and game configs.
+* client — desktop-клиент на LibGDX.
+* server — authoritative game server на Ktor WebSocket.
+* shared — общие DTO, события, ECS-компоненты, команды и игровые конфиги.
 
-## Core Learning Model
+Основная образовательная модель
 
-The game explains programming concepts through match consequences:
+Игра объясняет концепции программирования через последствия внутри матча:
 
-`Programming concept -> visible game behavior -> player decision -> system consequence`
+Концепция программирования -> видимое поведение в игре -> решение игрока -> системное последствие
 
-## Current Mechanics
+Текущие механики
 
-| Concept            | Game behavior                                                                | Learning meaning                                                           |
-|--------------------|------------------------------------------------------------------------------|----------------------------------------------------------------------------|
-| Memory allocation  | `Allocator` works at a Memory Source, creates usable Memory, then exits      | Memory capacity is not automatically usable; it must be allocated.         |
-| Garbage collection | `Garbage Collector` sweeps dead allied units and restores their held Memory  | GC reclaims dead/unreachable allocations; it does not heal living objects. |
-| Memory leak        | Dead units remain dimmed on the map until GC removes them                    | Dead objects still occupy memory if not collected.                         |
-| CPU throughput     | CPU grows over time and from CPU nodes                                       | CPU limits how many operations the system can run.                         |
-| Factory scaling    | Building extra factories increases production parallelism and queue capacity | More build pipelines improve throughput but cost resources.                |
-| Core failure       | Destroying Core ends the match                                               | Central runtime/kernel failure terminates the system.                      |
-| Deadlock           | Area stun                                                                    | Processes stop making progress when circular waiting blocks execution.     |
-| Overclock          | Temporary speed boost                                                        | Throughput can be raised temporarily at compute cost.                      |
+Концепция Поведение в игре Образовательный смысл
+Выделение памяти Allocator работает у Memory Source, создаёт используемую Memory и исчезает Ёмкость памяти не становится автоматически доступной; её нужно выделить.
+Сборка мусора Garbage Collector очищает мёртвых союзных юнитов и возвращает удерживаемую ими Memory
+GC освобождает мёртвые/недостижимые аллокации; он не лечит живые объекты.
+Утечка памяти Мёртвые юниты остаются затемнёнными на карте, пока GC их не удалит Мёртвые объекты всё ещё занимают память, если не были собраны.
+CPU throughput CPU растёт со временем и от CPU-нод CPU ограничивает количество операций, которые система может выполнять.
+Масштабирование фабрик Строительство дополнительных фабрик увеличивает параллелизм производства и размер очередей
+Больше production pipeline увеличивают throughput, но требуют ресурсов.
+Отказ Core Уничтожение Core завершает матч Отказ центрального runtime/kernel завершает систему.
+Deadlock Area stun Процессы перестают продвигаться из-за циклического ожидания.
+Overclock Временное ускорение Throughput можно временно увеличить ценой вычислительных ресурсов.
 
-## Units
+Юниты
 
-### Allocator
+Allocator
 
-Creates Memory from Memory Sources or binds CPU nodes. It costs CPU but no Memory. After successful work it disappears.
+Создаёт Memory из Memory Sources или привязывает CPU-ноды. Стоит CPU, но не Memory. После успешной работы исчезает.
 
-- Strong: early resource setup.
-- Weak: no combat value.
-- IT meaning: allocation is a short-lived operation that reserves usable workspace.
+* Сильная сторона: быстрый старт экономики.
+* Слабая сторона: отсутствует боевая ценность.
+* IT-смысл: allocation — краткоживущая операция, резервирующая рабочее пространство.
 
-### Garbage Collector
+Garbage Collector
 
-Finds dead allied units, frees their allocated Memory, removes them, then exits. It costs CPU but no Memory.
+Находит мёртвые союзные юниты, освобождает выделенную ими Memory, удаляет их и затем исчезает. Стоит CPU, но не Memory.
 
-- Strong: recovers Memory after losses.
-- Weak: cannot fight or heal living units.
-- IT meaning: GC frees dead/unreachable allocations, not active objects.
+* Сильная сторона: возвращает Memory после потерь.
+* Слабая сторона: не умеет сражаться и лечить живые объекты.
+* IT-смысл: GC освобождает мёртвые/недостижимые аллокации, а не активные объекты.
 
-### Patch Healer
+Patch Healer
 
-Repairs living allied processes.
+Лечит живые союзные процессы.
 
-- Strong: keeps live pushes alive.
-- Weak: does not reclaim Memory.
-- IT meaning: patches stabilize running services; they are not garbage collection.
+* Сильная сторона: поддерживает живые пуши.
+* Слабая сторона: не освобождает Memory.
+* IT-смысл: patch стабилизирует работающие сервисы, а не выполняет garbage collection.
 
-### Thread Guard
+Thread Guard
 
-Defends a local area.
+Защищает локальную область.
 
-- Strong: holds nodes and approaches.
-- Weak: slow and poor at chasing.
-- IT meaning: synchronization protects critical sections but reduces throughput.
+* Сильная сторона: удерживает ноды и подходы.
+* Слабая сторона: медленный и плохо преследует цели.
+* IT-смысл: синхронизация защищает critical section, но снижает throughput.
 
-### Firewall
+Firewall
 
-Heavy defensive boundary.
+Тяжёлая оборонительная граница.
 
-- Strong: static defense.
-- Weak: expensive and slow.
-- IT meaning: boundaries filter hostile traffic before critical parts.
+* Сильная сторона: статическая защита.
+* Слабая сторона: дорогой и медленный.
+* IT-смысл: границы фильтруют враждебный трафик до критических частей системы.
 
-### Injector
+Injector
 
-Aggressive attacker that prioritizes factories and Core.
+Агрессивный атакующий юнит, приоритетно атакующий фабрики и Core.
 
-- Strong: structure pressure.
-- Weak: fragile.
-- IT meaning: injection is powerful and risky because it changes execution directly.
+* Сильная сторона: давление на структуры.
+* Слабая сторона: хрупкость.
+* IT-смысл: injection мощен и рискован, поскольку напрямую изменяет execution.
 
-### Coroutine Archer
+Coroutine Archer
 
-Long-range attacker.
+Дальнобойный атакующий юнит.
 
-- Strong: safe damage.
-- Weak: fragile.
-- IT meaning: asynchronous work can continue without blocking the whole system.
+* Сильная сторона: безопасный урон.
+* Слабая сторона: хрупкость.
+* IT-смысл: асинхронная работа может продолжаться без блокировки всей системы.
 
-### Deadlock
+Deadlock
 
 Area stun.
 
-- Strong: interrupts enemy execution.
-- Weak: no damage.
-- IT meaning: deadlock is progress failure caused by circular waiting.
+* Сильная сторона: прерывает execution противника.
+* Слабая сторона: не наносит урон.
+* IT-смысл: deadlock — остановка прогресса из-за циклического ожидания.
 
-### Overclock
+Overclock
 
-Temporary boost.
+Временное усиление.
 
-- Strong: accelerates active allied processes.
-- Weak: situational.
-- IT meaning: throughput boosts are temporary and resource-dependent.
+* Сильная сторона: ускоряет активные союзные процессы.
+* Слабая сторона: ситуативность.
+* IT-смысл: throughput boost временный и зависит от ресурсов.
 
-## Run
+Запуск
 
-Start PostgreSQL first:
+Сначала запустите PostgreSQL:
 
-```bash
 cd server
 ./run-postgresql.sh
 cd ..
-# Run server:
-Bash
+
+# Запуск сервера:
+
 ./gradlew server:run
-# Run two clients:
+
+# Запуск двух клиентов:
+
 ./gradlew client:run
 ./gradlew client:run
-```
 
-## Controls
+Управление
 
-WASD / arrows - move camera.
-Q / E - zoom.
-Click card - select card.
-Click arena - set rally/work target.
-Build Factory buttons - scale production near your Core.
-Forfeit - leave match with automatic defeat after confirmation.
-Hover objects - see gameplay role and IT explanation.
+WASD / стрелки — перемещение камеры.
+Q / E — zoom.
+Клик по карточке — выбор карточки.
+Клик по арене — установка rally/work target.
+Кнопки Build Factory — масштабирование производства рядом с вашим Core.
+Forfeit — выход из матча с автоматическим поражением после подтверждения.
+Наведение на объекты — просмотр игровой роли и IT-объяснения.
 
-## Demo Scenario
+Демонстрационный сценарий
 
-Start server and two clients.
-Login with two accounts.
-Find a 1v1 match.
-Use Allocator on Memory Sources to create usable Memory.
-Use Allocator or Cache Runner to control CPU nodes.
-Build extra factories to increase production throughput.
-Use combat units to pressure factories and Core.
-Let dead units remain as memory leaks.
-Use Garbage Collector to reclaim dead allied units.
-End the match by destroying Core or forfeiting.
-Show post-match statistics.
+Запустите сервер и два клиента.
+Войдите с двух аккаунтов.
+Найдите 1v1 матч.
+Используйте Allocator на Memory Sources для создания используемой Memory.
+Используйте Allocator или Cache Runner для контроля CPU-нод.
+Стройте дополнительные фабрики для увеличения production throughput.
+Используйте боевых юнитов для давления на фабрики и Core.
+Оставляйте мёртвые юниты как memory leak.
+Используйте Garbage Collector для очистки мёртвых союзных юнитов.
+Завершите матч уничтожением Core или forfeiting.
+Покажите post-match статистику.
 
----
+⸻
 
-## Что сделано по поведению юнитов
+Что реализовано в поведении юнитов
 
-Например:
-
-- `Allocator`: не стоит Memory, стоит CPU. Идёт к ближайшей ноде. На Memory Source создаёт пачку Memory и исчезает. На CPU Node связывает/захватывает ноду и исчезает.
-- `Garbage Collector`: не стоит Memory, стоит много CPU. Не лечит. Ищет только мёртвые свои юниты, идёт к ним, делает sweep, возвращает их `allocatedMemory`, удаляет объект, затем
-  сам исчезает.
-- `Patch Healer`: лечит только живых союзников. Не освобождает Memory.
-- `Thread Guard`: удерживает область и атакует вражеские юниты поблизости.
-- `Firewall`: более тяжёлая оборонительная версия Thread Guard.
-- `Injector`: приоритетно атакует Factory/Core, затем юнитов.
-- `Coroutine Archer`: дальняя атака, хрупкий асинхронный “процесс”.
-- `Deadlock`: временно станит процессы в области.
-- `Overclock`: временно ускоряет союзные процессы в области.
-- Мёртвые юниты остаются на карте как “утечки” до GC.
-- Фабрики можно строить около Core, они увеличивают очереди и скорость производства.
+* Allocator: не стоит Memory, стоит CPU. Идёт к ближайшей ноде. На Memory Source создаёт пачку Memory и исчезает. На CPU Node связывает/захватывает ноду и исчезает.
+* Garbage Collector: не стоит Memory, стоит много CPU. Не лечит. Ищет только мёртвые союзные юниты, идёт к ним, выполняет sweep, возвращает их allocatedMemory, удаляет объект и
+  затем исчезает.
+* Patch Healer: лечит только живых союзников. Не освобождает Memory.
+* Thread Guard: удерживает область и атакует ближайшие вражеские юниты.
+* Firewall: более тяжёлая оборонительная версия Thread Guard.
+* Injector: приоритетно атакует Factory/Core, затем юнитов.
+* Coroutine Archer: дальняя атака, хрупкий асинхронный «процесс».
+* Deadlock: временно станит процессы в области.
+* Overclock: временно ускоряет союзные процессы в области.
+* Мёртвые юниты остаются на карте как «утечки» до очистки GC.
+* Фабрики можно строить рядом с Core; они увеличивают очереди и скорость производства.
